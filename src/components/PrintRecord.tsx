@@ -4,9 +4,14 @@ import type { FC } from 'react';
 
 interface PurchaseEntry {
   id: number;
+  dcno: string;
+  date: string;
+  time: string;
   name: string;
   supplier: string;
-  weights: string;
+  grosswt: number;
+  tarewt: number;
+  netwt: number;
   driver: string;
   site: string;
   remarks?: string;
@@ -22,54 +27,62 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   }
 
   return (
-    <div className="bg-white text-black p-6 w-[220mm] h-[110mm] border border-gray-300 flex flex-col justify-between font-sans">
+    <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
       <div>
-        <header className="flex justify-between items-start pb-4 border-b border-gray-300 mb-4">
+        <header className="flex justify-between items-start pb-4 border-b-2 border-gray-400 mb-4">
           <div>
-            <h1 className="text-2xl font-bold">DataLogger</h1>
-            <p className="text-sm">Purchase Record</p>
+            <h1 className="text-3xl font-bold">DataLogger</h1>
+            <p className="text-base">Purchase Record</p>
           </div>
-          <div className="text-right text-sm">
-            <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
-            <p><strong>Record ID:</strong> {data.id}</p>
+          <div className="text-right">
+            <p><strong>DC No:</strong> {data.dcno}</p>
+            <p><strong>Date:</strong> {data.date}</p>
+            <p><strong>Time:</strong> {data.time}</p>
           </div>
         </header>
 
         <main>
-          <h2 className="text-lg font-semibold mb-2">Purchase Details</h2>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
-            <div>
-              <strong className="block text-gray-600">Name:</strong>
-              <span>{data.name}</span>
-            </div>
-            <div>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+            <div className="col-span-2">
               <strong className="block text-gray-600">Supplier:</strong>
               <span>{data.supplier}</span>
             </div>
+             <div className="col-span-2">
+              <strong className="block text-gray-600">Site:</strong>
+              <span>{data.site}</span>
+            </div>
             <div>
-              <strong className="block text-gray-600">Weights:</strong>
-              <span>{data.weights}</span>
+              <strong className="block text-gray-600">Item Name:</strong>
+              <span>{data.name}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Driver:</strong>
               <span>{data.driver}</span>
             </div>
-            <div className="col-span-2">
-              <strong className="block text-gray-600">Site:</strong>
-              <span>{data.site}</span>
+            <div>
+              <strong className="block text-gray-600">Gross Weight:</strong>
+              <span>{data.grosswt.toFixed(2)} KG</span>
+            </div>
+            <div>
+              <strong className="block text-gray-600">Tare Weight:</strong>
+              <span>{data.tarewt.toFixed(2)} KG</span>
+            </div>
+            <div className="font-bold">
+              <strong className="block text-gray-600">Net Weight:</strong>
+              <span>{data.netwt.toFixed(2)} KG</span>
             </div>
             {data.remarks && (
-              <div className="col-span-2">
+              <div className="col-span-2 mt-2">
                 <strong className="block text-gray-600">Remarks:</strong>
-                <p className="mt-1">{data.remarks}</p>
+                <p className="mt-1 border p-2 rounded-md">{data.remarks}</p>
               </div>
             )}
           </div>
         </main>
       </div>
 
-      <footer className="text-center text-xs text-gray-500 pt-4 mt-4">
-        Thank you for your business.
+      <footer className="text-center text-xs text-gray-500 pt-4 mt-auto">
+        This is a computer-generated document.
       </footer>
     </div>
   );

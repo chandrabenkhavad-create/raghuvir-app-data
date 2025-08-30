@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FC } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -19,14 +19,21 @@ import { PrintRecord } from '@/components/PrintRecord';
 const purchaseSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   supplier: z.string().min(1, 'Supplier is required'),
-  weights: z.string().min(1, 'Weights are required'),
+  grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
+  tarewt: z.coerce.number().positive('Tare weight must be a positive number'),
+  netwt: z.coerce.number().positive('Net weight must be positive'),
   driver: z.string().min(1, 'Driver is required'),
   site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
 });
 
 type PurchaseFormValues = z.infer<typeof purchaseSchema>;
-type PurchaseEntry = PurchaseFormValues & { id: number };
+type PurchaseEntry = PurchaseFormValues & { 
+  id: number;
+  dcno: string;
+  date: string;
+  time: string;
+};
 
 export const PurchaseForm: FC = () => {
   const [entries, setEntries] = useState<PurchaseEntry[]>([]);
@@ -38,15 +45,29 @@ export const PurchaseForm: FC = () => {
     defaultValues: {
       name: '',
       supplier: '',
-      weights: '',
       driver: '',
       site: '',
       remarks: '',
     },
   });
 
+  const grosswt = form.watch('grosswt');
+  const tarewt = form.watch('tarewt');
+
+  useEffect(() => {
+    const net = (grosswt || 0) - (tarewt || 0);
+    form.setValue('netwt', parseFloat(net.toFixed(2)));
+  }, [grosswt, tarewt, form]);
+
   const onSubmit: SubmitHandler<PurchaseFormValues> = (data) => {
-    const newEntry: PurchaseEntry = { ...data, id: Date.now() };
+    const now = new Date();
+    const newEntry: PurchaseEntry = { 
+      ...data, 
+      id: now.getTime(),
+      dcno: `DC-${now.getTime()}`,
+      date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString(),
+    };
     setEntries((prev) => [newEntry, ...prev]);
     setLastEntry(newEntry);
     form.reset();
@@ -59,27 +80,19 @@ export const PurchaseForm: FC = () => {
   const handlePrint = () => {
     if (!lastEntry) return;
   
-    const printWindow = window.open('', '_blank', 'height=600,width=800');
+    const printWindow = window.open('', '_blank', 'height=800,width=800');
     if (printWindow) {
       const printContent = ReactDOMServer.renderToString(
         <PrintRecord data={lastEntry} />
       );
       
-      const tailwindStyles = Array.from(document.styleSheets)
-        .filter(sheet => sheet.href?.includes('tailwind'))
-        .map(sheet => `<link rel="stylesheet" href="${sheet.href}">`)
-        .join('');
-
       printWindow.document.write(`
         <html>
           <head>
             <title>Print</title>
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
             <script src="https://cdn.tailwindcss.com"></script>
           </head>
-          <body class="font-sans">
+          <body>
             ${printContent}
             <script>
               setTimeout(() => {
@@ -106,7 +119,7 @@ export const PurchaseForm: FC = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <FormField
                   control={form.control}
                   name="name"
@@ -133,20 +146,7 @@ export const PurchaseForm: FC = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="weights"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Weights</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., 500 KG" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
+                 <FormField
                   control={form.control}
                   name="driver"
                   render={({ field }) => (
@@ -161,9 +161,48 @@ export const PurchaseForm: FC = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="site"
+                  name="grosswt"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel>Gross Weight</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 1000" {...field} step="0.01" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tarewt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tare Weight</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 50" {...field} step="0.01" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="netwt"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Net Weight</FormLabel>
+                      <FormControl>
+                        <Input type="number" {...field} disabled />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="site"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-3">
                       <FormLabel>Site</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Main Construction Site" {...field} />
@@ -176,7 +215,7 @@ export const PurchaseForm: FC = () => {
                   control={form.control}
                   name="remarks"
                   render={({ field }) => (
-                    <FormItem className="md:col-span-2">
+                    <FormItem className="md:col-span-3">
                       <FormLabel>Remarks</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Any additional notes..." {...field} />
@@ -212,9 +251,9 @@ export const PurchaseForm: FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>DC No.</TableHead>
                   <TableHead>Name</TableHead>
-                  <TableHead>Supplier</TableHead>
-                  <TableHead>Weights</TableHead>
+                  <TableHead>Net Weight</TableHead>
                   <TableHead>Driver</TableHead>
                   <TableHead>Site</TableHead>
                 </TableRow>
@@ -222,9 +261,9 @@ export const PurchaseForm: FC = () => {
               <TableBody>
                 {entries.map((entry) => (
                   <TableRow key={entry.id}>
+                    <TableCell>{entry.dcno}</TableCell>
                     <TableCell>{entry.name}</TableCell>
-                    <TableCell>{entry.supplier}</TableCell>
-                    <TableCell>{entry.weights}</TableCell>
+                    <TableCell>{entry.netwt} KG</TableCell>
                     <TableCell>{entry.driver}</TableCell>
                     <TableCell>{entry.site}</TableCell>
                   </TableRow>
