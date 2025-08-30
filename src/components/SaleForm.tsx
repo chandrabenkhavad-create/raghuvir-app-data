@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
-const purchaseSchema = z.object({
+const saleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -28,21 +28,21 @@ const purchaseSchema = z.object({
   remarks: z.string().optional(),
 });
 
-type PurchaseFormValues = z.infer<typeof purchaseSchema>;
-type PurchaseEntry = PurchaseFormValues & { 
+type SaleFormValues = z.infer<typeof saleSchema>;
+type SaleEntry = SaleFormValues & { 
   id: number;
   dcno: string;
   date: string;
   time: string;
 };
 
-export const PurchaseForm: FC = () => {
-  const [entries, setEntries] = useState<PurchaseEntry[]>([]);
-  const [entryToPrint, setEntryToPrint] = useState<PurchaseEntry | null>(null);
+export const SaleForm: FC = () => {
+  const [entries, setEntries] = useState<SaleEntry[]>([]);
+  const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
 
-  const form = useForm<PurchaseFormValues>({
-    resolver: zodResolver(purchaseSchema),
+  const form = useForm<SaleFormValues>({
+    resolver: zodResolver(saleSchema),
     defaultValues: {
       name: '',
       supplier: '',
@@ -63,9 +63,9 @@ export const PurchaseForm: FC = () => {
     form.setValue('netwt', parseFloat(net.toFixed(2)));
   }, [grosswt, tarewt, form]);
 
-  const onSubmit: SubmitHandler<PurchaseFormValues> = (data) => {
+  const onSubmit: SubmitHandler<SaleFormValues> = (data) => {
     const now = new Date();
-    const newEntry: PurchaseEntry = { 
+    const newEntry: SaleEntry = { 
       ...data, 
       id: now.getTime(),
       dcno: `DC-${now.getTime()}`,
@@ -86,7 +86,7 @@ export const PurchaseForm: FC = () => {
     });
     toast({
       title: 'Success!',
-      description: 'Purchase entry has been saved.',
+      description: 'Sale entry has been saved.',
     });
   };
 
@@ -109,7 +109,7 @@ export const PurchaseForm: FC = () => {
     }
   };
   
-  const openPrintDialog = (entry: PurchaseEntry) => {
+  const openPrintDialog = (entry: SaleEntry) => {
     setEntryToPrint(entry);
   };
 
@@ -119,9 +119,9 @@ export const PurchaseForm: FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package /> Purchase Entry
+              <Package /> Sale Entry
             </CardTitle>
-            <CardDescription>Enter the details of the new purchase.</CardDescription>
+            <CardDescription>Enter the details of the new sale.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -254,7 +254,7 @@ export const PurchaseForm: FC = () => {
         {entries.length > 0 && (
           <Card className="mt-8">
             <CardHeader>
-              <CardTitle>Recent Purchase Entries</CardTitle>
+              <CardTitle>Recent Sale Entries</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>

@@ -3,7 +3,7 @@ import { FileSpreadsheet, Fuel, Package } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PurchaseForm } from '@/components/PurchaseForm';
+import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 
 export default function Home() {
@@ -19,11 +19,11 @@ export default function Home() {
           </p>
         </header>
 
-        <Tabs defaultValue="purchase" className="w-full">
+        <Tabs defaultValue="sale" className="w-full">
           <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
-            <TabsTrigger value="purchase">
+            <TabsTrigger value="sale">
               <Package className="mr-2 h-4 w-4" />
-              Purchase Entry
+              Sale Entry
             </TabsTrigger>
             <TabsTrigger value="diesel">
               <Fuel className="mr-2 h-4 w-4" />
@@ -35,8 +35,8 @@ export default function Home() {
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="purchase" className="mt-6">
-            <PurchaseForm />
+          <TabsContent value="sale" className="mt-6">
+            <SaleForm />
           </TabsContent>
           
           <TabsContent value="diesel" className="mt-6">
@@ -54,7 +54,7 @@ export default function Home() {
               <CardContent className="flex flex-col sm:flex-row gap-4">
                 <Button disabled>
                   <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Download Purchase Report
+                  Download Sale Report
                 </Button>
                 <Button disabled>
                   <FileSpreadsheet className="mr-2 h-4 w-4" />

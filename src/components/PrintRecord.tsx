@@ -2,7 +2,7 @@
 
 import type { FC } from 'react';
 
-interface PurchaseEntry {
+interface SaleEntry {
   id: number;
   dcno: string;
   date: string;
@@ -18,7 +18,7 @@ interface PurchaseEntry {
 }
 
 interface PrintRecordProps {
-  data: PurchaseEntry | null;
+  data: SaleEntry | null;
 }
 
 export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
@@ -32,7 +32,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         <header className="flex justify-between items-start pb-4 border-b-2 border-gray-400 mb-4">
           <div>
             <h1 className="text-3xl font-bold">Raghuvir Infrastructure</h1>
-            <p className="text-base">Purchase Record</p>
+            <p className="text-base">Sale Record</p>
           </div>
           <div className="text-right">
             <p><strong>DC No:</strong> {data.dcno}</p>
