@@ -90,10 +90,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Net Weight:</strong>
               <span>{data.netwt.toFixed(2)} KG</span>
             </div>
-            <div className="font-bold">
-              <strong className="block text-gray-600">Rent:</strong>
-              <span>₹{data.rent.toFixed(2)}</span>
-            </div>
             {data.remarks && (
               <div className="col-span-2 mt-2">
                 <strong className="block text-gray-600">Remarks:</strong>
@@ -113,5 +109,3 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
     </div>
   );
 };
-
-    
