@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
 
 const saleSchema = z.object({
-  dcno: z.string(),
+  dcno: z.coerce.number(),
   name: z.string().min(1, 'Name is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -40,7 +40,7 @@ export const SaleForm: FC = () => {
   const [entries, setEntries] = useState<SaleEntry[]>([]);
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
-  const [nextDcNo, setNextDcNo] = useState('DC-1');
+  const [nextDcNo, setNextDcNo] = useState(1);
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -65,13 +65,14 @@ export const SaleForm: FC = () => {
         if (data.length > 0) {
           setEntryToPrint(data[0]);
           const lastEntry = data[0];
-          const lastDcNum = parseInt(lastEntry.dcno.split('-')[1]);
-          const newDcNo = `DC-${lastDcNum + 1}`;
+          // DC numbers are now numeric
+          const lastDcNum = lastEntry.dcno;
+          const newDcNo = lastDcNum + 1;
           setNextDcNo(newDcNo);
           form.setValue('dcno', newDcNo);
         } else {
-          setNextDcNo('DC-1');
-          form.setValue('dcno', 'DC-1');
+          setNextDcNo(1);
+          form.setValue('dcno', 1);
         }
       } catch (error) {
         console.error('Failed to load sales entries:', error);
@@ -117,8 +118,7 @@ export const SaleForm: FC = () => {
       setEntries(updatedEntries);
       setEntryToPrint(newEntry);
 
-      const newDcNum = parseInt(nextDcNo.split('-')[1]) + 1;
-      const newDcNo = `DC-${newDcNum}`;
+      const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
       
       form.reset({
@@ -190,7 +190,7 @@ export const SaleForm: FC = () => {
                       <FormItem>
                         <FormLabel>DC No.</FormLabel>
                         <FormControl>
-                          <Input {...field} disabled />
+                          <Input type="number" {...field} disabled />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -4,7 +4,7 @@ import type { FC } from 'react';
 
 interface SaleEntry {
   id: number;
-  dcno: string;
+  dcno: number;
   date: string;
   time: string;
   name: string;

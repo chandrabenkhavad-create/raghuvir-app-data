@@ -24,7 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Terminal } from "lucide-react";
 
 interface SaleEntry {
-  dcno: string;
+  dcno: number;
   date: string;
   time: string;
   name: string;
