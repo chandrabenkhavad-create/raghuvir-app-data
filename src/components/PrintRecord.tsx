@@ -8,7 +8,7 @@ interface SaleEntry {
   dcno: number;
   date: string;
   time: string;
-  name: string;
+  material: string;
   supplier: string;
   transporter: string;
   grosswt: number;
@@ -62,8 +62,8 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <span>{data.site}</span>
             </div>
             <div>
-              <strong className="block text-gray-600">Item Name:</strong>
-              <span>{data.name}</span>
+              <strong className="block text-gray-600">Material:</strong>
+              <span>{data.material}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Driver:</strong>
