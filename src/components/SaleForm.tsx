@@ -40,7 +40,7 @@ export const SaleForm: FC = () => {
   const [entries, setEntries] = useState<SaleEntry[]>([]);
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
-  const [nextDcNo, setNextDcNo] = useState('1');
+  const [nextDcNo, setNextDcNo] = useState('DC-1');
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -64,13 +64,14 @@ export const SaleForm: FC = () => {
         setEntries(data);
         if (data.length > 0) {
           setEntryToPrint(data[0]);
-          const maxDcNo = Math.max(...data.map(e => parseInt(e.dcno, 10)).filter(n => !isNaN(n)));
-          const newDcNo = isFinite(maxDcNo) ? (maxDcNo + 1).toString() : '1';
+          const lastEntry = data[0];
+          const lastDcNum = parseInt(lastEntry.dcno.split('-')[1]);
+          const newDcNo = `DC-${lastDcNum + 1}`;
           setNextDcNo(newDcNo);
           form.setValue('dcno', newDcNo);
         } else {
-          setNextDcNo('1');
-          form.setValue('dcno', '1');
+          setNextDcNo('DC-1');
+          form.setValue('dcno', 'DC-1');
         }
       } catch (error) {
         console.error('Failed to load sales entries:', error);
@@ -100,6 +101,7 @@ export const SaleForm: FC = () => {
     const now = new Date();
     const newEntry: SaleEntry = { 
       ...data,
+      dcno: nextDcNo,
       id: now.getTime(),
       date: now.toLocaleDateString(),
       time: now.toLocaleTimeString(),
@@ -115,8 +117,8 @@ export const SaleForm: FC = () => {
       setEntries(updatedEntries);
       setEntryToPrint(newEntry);
 
-      const maxDcNo = Math.max(...updatedEntries.map(e => parseInt(e.dcno, 10)).filter(n => !isNaN(n)));
-      const newDcNo = isFinite(maxDcNo) ? (maxDcNo + 1).toString() : '1';
+      const newDcNum = parseInt(nextDcNo.split('-')[1]) + 1;
+      const newDcNo = `DC-${newDcNum}`;
       setNextDcNo(newDcNo);
       
       form.reset({
@@ -329,9 +331,13 @@ export const SaleForm: FC = () => {
                   <TableRow>
                     <TableHead>DC No.</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Net Weight</TableHead>
+                    <TableHead>Supplier</TableHead>
+                    <TableHead>Gross Wt.</TableHead>
+                    <TableHead>Tare Wt.</TableHead>
+                    <TableHead>Net Wt.</TableHead>
                     <TableHead>Driver</TableHead>
                     <TableHead>Site</TableHead>
+                    <TableHead>Remarks</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -340,9 +346,13 @@ export const SaleForm: FC = () => {
                     <TableRow key={entry.id}>
                       <TableCell>{entry.dcno}</TableCell>
                       <TableCell>{entry.name}</TableCell>
+                      <TableCell>{entry.supplier}</TableCell>
+                      <TableCell>{entry.grosswt} KG</TableCell>
+                      <TableCell>{entry.tarewt} KG</TableCell>
                       <TableCell>{entry.netwt} KG</TableCell>
                       <TableCell>{entry.driver}</TableCell>
                       <TableCell>{entry.site}</TableCell>
+                      <TableCell>{entry.remarks}</TableCell>
                       <TableCell className="text-right">
                         <DialogTrigger asChild>
                           <Button
@@ -381,5 +391,3 @@ export const SaleForm: FC = () => {
     </>
   );
 };
-
-    
