@@ -40,7 +40,7 @@ const saleSchema = z.object({
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
   tarewt: z.coerce.number().positive('Tare weight must be a positive number'),
   netwt: z.coerce.number().positive('Net weight must be positive'),
-  rent: z.coerce.number().positive('Rent must be a positive number'),
+  rent: z.coerce.number().min(0, 'Rent must be a positive number'),
   driver: z.string().min(1, 'Driver is required'),
   site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
@@ -461,4 +461,5 @@ export const SaleForm: FC = () => {
   );
 };
 
+    
     
