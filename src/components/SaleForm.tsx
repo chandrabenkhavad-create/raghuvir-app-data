@@ -33,6 +33,7 @@ import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-f
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
+  name: z.string().min(1, 'Name is required'),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   transporter: z.string().min(1, 'Transporter is required'),
@@ -63,6 +64,7 @@ export const SaleForm: FC = () => {
     resolver: zodResolver(saleSchema),
     defaultValues: {
       dcno: nextDcNo,
+      name: '',
       material: '',
       supplier: '',
       transporter: '',
@@ -143,6 +145,7 @@ export const SaleForm: FC = () => {
       
       form.reset({
         dcno: newDcNo,
+        name: '',
         material: '',
         supplier: '',
         transporter: '',
@@ -215,6 +218,19 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
                             <Input type="text" value={String(field.value).padStart(3, '0')} disabled />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><User /> Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., John Doe" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -401,6 +417,7 @@ export const SaleForm: FC = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>DC No.</TableHead>
+                    <TableHead>Name</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead>Supplier</TableHead>
                     <TableHead>Gross Wt.</TableHead>
@@ -415,6 +432,7 @@ export const SaleForm: FC = () => {
                   {entries.map((entry) => (
                     <TableRow key={entry.id}>
                       <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
+                      <TableCell>{entry.name}</TableCell>
                       <TableCell>{entry.material}</TableCell>
                       <TableCell>{entry.supplier}</TableCell>
                       <TableCell>{entry.grosswt} KG</TableCell>
@@ -462,4 +480,6 @@ export const SaleForm: FC = () => {
 };
 
     
+    
+
     

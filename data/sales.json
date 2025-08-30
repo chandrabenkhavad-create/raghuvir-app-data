@@ -2,6 +2,7 @@
 [
   {
     "dcno": 1756577651402,
+    "name": "Default Name",
     "material": "'kprqw[rpwkr[pp[ikp[k",
     "supplier": "[k[p",
     "transporter": "N/A",
@@ -14,10 +15,12 @@
     "remarks": "",
     "id": 1756578786118,
     "date": "31/08/2025",
-    "time": "12:03:06 AM"
+    "time": "12:03:06 AM",
+    "vehicleNumber": "GJ-01-AB-1234"
   },
   {
     "material": "aoiawiorjwoinoino",
+    "name": "Default Name",
     "supplier": "inionionoinion",
     "transporter": "N/A",
     "grosswt": 25800,
@@ -30,6 +33,9 @@
     "id": 1756577651401,
     "dcno": 1756577651401,
     "date": "30/08/2025",
-    "time": "11:44:11 PM"
+    "time": "11:44:11 PM",
+    "vehicleNumber": "GJ-01-AB-1234"
   }
 ]
+
+    

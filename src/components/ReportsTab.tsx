@@ -27,6 +27,7 @@ interface SaleEntry {
   dcno: number;
   date: string;
   time: string;
+  name: string;
   material: string;
   supplier: string;
   grosswt: string;
@@ -151,6 +152,7 @@ export function ReportsTab() {
               <TableHeader>
                 <TableRow>
                   <TableHead>DC No.</TableHead>
+                  <TableHead>Name</TableHead>
                   <TableHead>Material</TableHead>
                   <TableHead>Net Weight</TableHead>
                   <TableHead>Driver</TableHead>
@@ -162,6 +164,7 @@ export function ReportsTab() {
                 {sales.map((entry, index) => (
                   <TableRow key={index}>
                     <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
+                    <TableCell>{entry.name}</TableCell>
                     <TableCell>{entry.material}</TableCell>
                     <TableCell>{entry.netwt} KG</TableCell>
                     <TableCell>{entry.driver}</TableCell>
@@ -225,3 +228,5 @@ export function ReportsTab() {
     </div>
   );
 }
+
+    
