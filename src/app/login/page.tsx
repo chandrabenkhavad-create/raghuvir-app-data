@@ -41,7 +41,7 @@ export default function LoginPage() {
             Raghuvir Infrastructure
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Sayla-Sidamda Road,Sudamda.
+            Sayla-Sudamda Road,Sudamda.
           </p>
         </div>
       <Card className="w-full max-w-sm">
