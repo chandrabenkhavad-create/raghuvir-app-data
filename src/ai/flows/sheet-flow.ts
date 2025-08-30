@@ -27,7 +27,7 @@ const appendToSheetFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async ({range, values}) => {
-    if (!process.env.GOOGLE_SHEETS_CREDENTIALS) {
+    if (!process.env.GOOGLE_SHEETS_CREDENTIALS || process.env.GOOGLE_SHEETS_CREDENTIALS.startsWith('PASTE_YOUR')) {
         throw new Error('GOOGLE_SHEETS_CREDENTIALS environment variable not set. Please refer to the documentation to set it up.');
     }
     if (!process.env.GOOGLE_SHEET_ID) {

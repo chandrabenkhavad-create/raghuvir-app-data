@@ -30,7 +30,7 @@ const readSheetFlow = ai.defineFlow(
     outputSchema: z.any(),
   },
   async ({ range }) => {
-    if (!process.env.GOOGLE_SHEETS_CREDENTIALS) {
+    if (!process.env.GOOGLE_SHEETS_CREDENTIALS || process.env.GOOGLE_SHEETS_CREDENTIALS.startsWith('PASTE_YOUR')) {
       throw new Error(
         "GOOGLE_SHEETS_CREDENTIALS environment variable not set. Please refer to the documentation to set it up."
       );
