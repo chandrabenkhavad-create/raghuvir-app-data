@@ -275,7 +275,7 @@ export const DieselForm: FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vehicle No.</TableHead>
+                  <TableHead className="font-bold">Vehicle No.</TableHead>
                   <TableHead>Liters</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Driver</TableHead>

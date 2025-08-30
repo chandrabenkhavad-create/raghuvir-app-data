@@ -197,7 +197,7 @@ export function ReportsTab() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vehicle No.</TableHead>
+                  <TableHead className="font-bold">Vehicle No.</TableHead>
                   <TableHead>Liters</TableHead>
                   <TableHead>Amount</TableHead>
                   <TableHead>Driver</TableHead>
