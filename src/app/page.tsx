@@ -1,21 +1,50 @@
-import { FileSpreadsheet, Fuel, Package } from 'lucide-react';
 
+"use client";
+
+import { useAuth } from '@/components/AuthProvider';
+import { FileSpreadsheet, Fuel, LogOut, Package } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
 
 export default function Home() {
+  const { isAuthenticated, logout } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login');
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <p>Loading...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 relative">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary-dark font-headline">
             Raghuvir Infrastructure
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
             Sayla-Sidamda Road,Sudamda.
           </p>
+          <div className="absolute top-0 right-0">
+             <Button variant="outline" onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
+          </div>
         </header>
 
         <Tabs defaultValue="sale" className="w-full">
