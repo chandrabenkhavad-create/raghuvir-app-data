@@ -95,7 +95,7 @@ export const DieselForm: FC = () => {
     const newEntry = { 
       ...data, 
       id: now.getTime(),
-      date: now.toLocaleDateString(),
+      date: now.toLocaleDateString('en-GB'),
       time: now.toLocaleTimeString(),
     };
     
