@@ -84,8 +84,8 @@ export const SaleForm: FC = () => {
         setEntries(data);
         if (data.length > 0) {
           setEntryToPrint(data[0]);
-          const lastEntry = data[0];
           // DC numbers are now numeric
+          const lastEntry = data[0];
           const lastDcNum = lastEntry.dcno;
           const newDcNo = lastDcNum + 1;
           setNextDcNo(newDcNo);
@@ -222,12 +222,12 @@ export const SaleForm: FC = () => {
                     />
                      <FormField
                       control={form.control}
-                      name="material"
+                      name="supplier"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Cement Bags" {...field} />
+                            <Input placeholder="e.g., ABC Suppliers" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -235,12 +235,12 @@ export const SaleForm: FC = () => {
                     />
                     <FormField
                       control={form.control}
-                      name="supplier"
+                      name="material"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., ABC Suppliers" {...field} />
+                            <Input placeholder="e.g., Cement Bags" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -355,9 +355,7 @@ export const SaleForm: FC = () => {
                         )}
                       />
                     </div>
-                  </div>
-
-                  <FormField
+                     <FormField
                     control={form.control}
                     name="remarks"
                     render={({ field }) => (
@@ -370,6 +368,9 @@ export const SaleForm: FC = () => {
                       </FormItem>
                     )}
                   />
+                  </div>
+
+                 
                 </div>
                 <div className="flex gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
@@ -459,3 +460,5 @@ export const SaleForm: FC = () => {
     </>
   );
 };
+
+    
