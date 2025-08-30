@@ -185,7 +185,7 @@ export const SaleForm: FC = () => {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                   <FormField
                     control={form.control}
                     name="dcno"
@@ -253,48 +253,9 @@ export const SaleForm: FC = () => {
                   />
                   <FormField
                     control={form.control}
-                    name="grosswt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Gross Weight</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 1000" {...field} step="0.01" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="tarewt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tare Weight</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 50" {...field} step="0.01" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="netwt"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Net Weight</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} disabled />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
                     name="site"
                     render={({ field }) => (
-                      <FormItem className="md:col-span-3">
+                      <FormItem>
                         <FormLabel>Site</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., Main Construction Site" {...field} />
@@ -303,11 +264,54 @@ export const SaleForm: FC = () => {
                       </FormItem>
                     )}
                   />
+                  
+                  <div className="space-y-4 rounded-lg border p-4">
+                     <FormField
+                      control={form.control}
+                      name="grosswt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Gross Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 1000" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="tarewt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tare Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 50" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="netwt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Net Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} disabled />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
                   <FormField
                     control={form.control}
                     name="remarks"
                     render={({ field }) => (
-                      <FormItem className="md:col-span-3">
+                      <FormItem className="md:col-span-2">
                         <FormLabel>Remarks</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Any additional notes..." {...field} />
