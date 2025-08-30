@@ -14,7 +14,7 @@ export default function Home() {
             Raghuvir Infrastructure
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Your simple solution for data entry and management.
+            Sayla Sudamda Road ,Sudamda
           </p>
         </header>
 
