@@ -12,7 +12,7 @@ export default function Home() {
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
         <header className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary-dark font-headline">
-            DataLogger
+            Raghuvir Infrastructure
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
             Your simple solution for data entry and management.

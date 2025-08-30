@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'DataLogger',
+  title: 'Raghuvir Infrastructure',
   description: 'A simple application for data entry and reporting.',
 };
 

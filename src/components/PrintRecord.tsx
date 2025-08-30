@@ -31,7 +31,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
       <div>
         <header className="flex justify-between items-start pb-4 border-b-2 border-gray-400 mb-4">
           <div>
-            <h1 className="text-3xl font-bold">DataLogger</h1>
+            <h1 className="text-3xl font-bold">Raghuvir Infrastructure</h1>
             <p className="text-base">Purchase Record</p>
           </div>
           <div className="text-right">
