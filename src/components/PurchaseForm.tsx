@@ -74,7 +74,16 @@ export const PurchaseForm: FC = () => {
     };
     setEntries((prev) => [newEntry, ...prev]);
     setEntryToPrint(newEntry);
-    form.reset();
+    form.reset({
+      name: '',
+      supplier: '',
+      driver: '',
+      site: '',
+      remarks: '',
+      grosswt: 0,
+      tarewt: 0,
+      netwt: 0,
+    });
     toast({
       title: 'Success!',
       description: 'Purchase entry has been saved.',
@@ -242,6 +251,51 @@ export const PurchaseForm: FC = () => {
           </CardContent>
         </Card>
 
+        {entries.length > 0 && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle>Recent Purchase Entries</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>DC No.</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Net Weight</TableHead>
+                    <TableHead>Driver</TableHead>
+                    <TableHead>Site</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {entries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell>{entry.dcno}</TableCell>
+                      <TableCell>{entry.name}</TableCell>
+                      <TableCell>{entry.netwt} KG</TableCell>
+                      <TableCell>{entry.driver}</TableCell>
+                      <TableCell>{entry.site}</TableCell>
+                      <TableCell className="text-right">
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openPrintDialog(entry)}
+                          >
+                            <Printer className="h-4 w-4" />
+                            <span className="sr-only">Print</span>
+                          </Button>
+                        </DialogTrigger>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Print Preview</DialogTitle>
@@ -257,51 +311,6 @@ export const PurchaseForm: FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {entries.length > 0 && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Recent Purchase Entries</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>DC No.</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Net Weight</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Site</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{entry.dcno}</TableCell>
-                    <TableCell>{entry.name}</TableCell>
-                    <TableCell>{entry.netwt} KG</TableCell>
-                    <TableCell>{entry.driver}</TableCell>
-                    <TableCell>{entry.site}</TableCell>
-                    <TableCell className="text-right">
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openPrintDialog(entry)}
-                        >
-                          <Printer className="h-4 w-4" />
-                          <span className="sr-only">Print</span>
-                        </Button>
-                      </DialogTrigger>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
     </>
   );
 };
