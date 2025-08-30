@@ -27,10 +27,10 @@ const appendToSheetFlow = ai.defineFlow(
     outputSchema: z.void(),
   },
   async ({range, values}) => {
-    if (!process.env.GOOGLE_SHEETS_CREDENTIALS || process.env.GOOGLE_SHEETS_CREDENTIALS.startsWith('PASTE_YOUR')) {
+    if (!process.env.GOOGLE_SHEETS_CREDENTIALS || process.env.GOOGLE_SHEETS_CREDENTIALS.startsWith('https://docs.google.com/spreadsheets/d/1UGSsiHRXE3_46a6f_BgjfXXRfI2wTYfEkyIGILIK5ao/edit?gid=0#gid=0')) {
         throw new Error('GOOGLE_SHEETS_CREDENTIALS environment variable not set. Please refer to the documentation to set it up.');
     }
-    if (!process.env.GOOGLE_SHEET_ID) {
+    if (!process.env.GOOGLE_SHEET_ID) {https://docs.google.com/spreadsheets/d/1UGSsiHRXE3_46a6f_BgjfXXRfI2wTYfEkyIGILIK5ao/edit?gid=0#gid=0
         throw new Error('GOOGLE_SHEET_ID environment variable not set. Please provide the ID of your Google Sheet.');
     }
     
