@@ -20,6 +20,8 @@ import { readSheet } from "@/ai/flows/read-sheet-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { Download } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { Terminal } from "lucide-react";
 
 interface SaleEntry {
   dcno: string;
@@ -51,10 +53,12 @@ export function ReportsTab() {
   const [sales, setSales] = useState<SaleEntry[]>([]);
   const [diesel, setDiesel] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   async function fetchSheetData() {
     setLoading(true);
+    setError(null);
     try {
       const [salesData, dieselData] = await Promise.all([
         readSheet({ range: "Sales!A2:K" }),
@@ -94,15 +98,17 @@ export function ReportsTab() {
           }))
         );
       }
-    } catch (error) {
+    } catch (e) {
+      const error = e as Error;
       console.error("Failed to fetch sheet data:", error);
-      toast({
-        variant: "destructive",
-        title: "Error!",
-        description:
-          (error as Error).message ||
-          "Failed to fetch data from Google Sheets.",
-      });
+      setError(error.message);
+      if (!error.message.includes("GOOGLE_SHEETS_CREDENTIALS")) {
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description: error.message || "Failed to fetch data from Google Sheets.",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -131,6 +137,18 @@ export function ReportsTab() {
     link.click();
     document.body.removeChild(link);
   };
+  
+  if (error && error.includes("GOOGLE_SHEETS_CREDENTIALS")) {
+    return (
+      <Alert variant="destructive">
+        <Terminal className="h-4 w-4" />
+        <AlertTitle>Configuration Error</AlertTitle>
+        <AlertDescription>
+         {error} Please ask the AI assistant to help you set up your Google Sheets credentials.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">
