@@ -272,6 +272,47 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
+                    <div className="space-y-4 rounded-lg border p-4">
+                       <FormField
+                        control={form.control}
+                        name="grosswt"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2"><Weight /> Gross Weight</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="e.g., 1000" {...field} step="0.01" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="tarewt"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2"><Scale /> Tare Weight</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="e.g., 50" {...field} step="0.01" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={form.control}
+                        name="netwt"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2"><Weight /> Net Weight</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} disabled />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
                   
                   <div className="space-y-4">
@@ -315,47 +356,6 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
-                     <div className="space-y-4 rounded-lg border p-4">
-                       <FormField
-                        control={form.control}
-                        name="grosswt"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2"><Weight /> Gross Weight</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="e.g., 1000" {...field} step="0.01" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="tarewt"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2"><Scale /> Tare Weight</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="e.g., 50" {...field} step="0.01" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={form.control}
-                        name="netwt"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center gap-2"><Weight /> Net Weight</FormLabel>
-                            <FormControl>
-                              <Input type="number" {...field} disabled />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
                   </div>
 
                   <FormField
