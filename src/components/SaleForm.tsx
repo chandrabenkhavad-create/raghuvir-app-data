@@ -259,6 +259,19 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
+                    <FormField
+                      control={form.control}
+                      name="site"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Warehouse /> Site</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Main Construction Site" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                      <FormField
                       control={form.control}
                       name="vehicleNumber"
@@ -272,6 +285,37 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
+                     <FormField
+                      control={form.control}
+                      name="driver"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                     
+                     <FormField
+                      control={form.control}
+                      name="rent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <div className="space-y-4 rounded-lg border p-4">
                        <FormField
                         control={form.control}
@@ -313,49 +357,6 @@ export const SaleForm: FC = () => {
                         )}
                       />
                     </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                     
-                     <FormField
-                      control={form.control}
-                      name="rent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="driver"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="site"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Warehouse /> Site</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Main Construction Site" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
 
                   <FormField
