@@ -14,7 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { appendToSheet } from '@/ai/flows/sheet-flow';
+import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -55,6 +55,26 @@ export const DieselForm: FC = () => {
   const rate = form.watch('rate');
 
   useEffect(() => {
+    async function fetchEntries() {
+      try {
+        const data = await readFromLocalStore('diesel');
+        setEntries(data);
+        if (data.length > 0) {
+          setEntryToPrint(data[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load diesel entries:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error!',
+          description: 'Failed to load recent diesel entries.',
+        });
+      }
+    }
+    fetchEntries();
+  }, [toast]);
+
+  useEffect(() => {
     const calculatedAmount = (liters || 0) * (rate || 0);
     form.setValue('amount', parseFloat(calculatedAmount.toFixed(2)));
   }, [liters, rate, form]);
@@ -69,21 +89,9 @@ export const DieselForm: FC = () => {
     };
     
     try {
-      await appendToSheet({
-        range: 'Diesel!A1', 
-        values: [
-          [
-            newEntry.date,
-            newEntry.time,
-            newEntry.vehicleNumber,
-            newEntry.liters,
-            newEntry.rate,
-            newEntry.amount,
-            newEntry.driverName,
-            newEntry.pump,
-            newEntry.odo,
-          ],
-        ],
+      await appendToLocalStore({
+        storeName: 'diesel',
+        data: newEntry,
       });
 
       setEntries((prev) => [newEntry, ...prev]);
@@ -99,14 +107,14 @@ export const DieselForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Diesel entry has been saved to Google Sheets.',
+        description: 'Diesel entry has been saved locally.',
       });
     } catch (error) {
-      console.error('Failed to save to Google Sheet:', error);
+      console.error('Failed to save to local file:', error);
       toast({
         variant: 'destructive',
         title: 'Error!',
-        description: (error as Error).message || 'Failed to save entry to Google Sheets. Please check credentials and configuration.',
+        description: (error as Error).message || 'Failed to save entry to local file.',
       });
     }
   };
@@ -245,7 +253,7 @@ export const DieselForm: FC = () => {
                   <Button
                     type="button"
                     variant="outline"
-                    disabled={!entries.some(e => e.id === entryToPrint?.id)}
+                    disabled={!entryToPrint}
                     onClick={() => openPrintDialog(entries[0])}
                   >
                     <Printer className="mr-2 h-4 w-4" />

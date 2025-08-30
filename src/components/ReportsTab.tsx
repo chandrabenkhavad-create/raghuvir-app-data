@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { readSheet } from "@/ai/flows/read-sheet-flow";
+import { readFromLocalStore } from "@/ai/flows/local-store-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { Download } from "lucide-react";
@@ -56,66 +56,38 @@ export function ReportsTab() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  async function fetchSheetData() {
+  async function fetchData() {
     setLoading(true);
     setError(null);
     try {
       const [salesData, dieselData] = await Promise.all([
-        readSheet({ range: "Sales!A2:K" }),
-        readSheet({ range: "Diesel!A2:I" }),
+        readFromLocalStore("sales"),
+        readFromLocalStore("diesel"),
       ]);
 
       if (salesData) {
-        setSales(
-          salesData.map((row) => ({
-            dcno: row[0] || '',
-            date: row[1] || '',
-            time: row[2] || '',
-            name: row[3] || '',
-            supplier: row[4] || '',
-            grosswt: row[5] || '',
-            tarewt: row[6] || '',
-            netwt: row[7] || '',
-            driver: row[8] || '',
-            site: row[9] || '',
-            remarks: row[10] || '',
-          }))
-        );
+        setSales(salesData);
       }
 
       if (dieselData) {
-        setDiesel(
-          dieselData.map((row) => ({
-            date: row[0] || '',
-            time: row[1] || '',
-            vehicleNumber: row[2] || '',
-            liters: row[3] || '',
-            rate: row[4] || '',
-            amount: row[5] || '',
-            driverName: row[6] || '',
-            pump: row[7] || '',
-            odo: row[8] || '',
-          }))
-        );
+        setDiesel(dieselData);
       }
     } catch (e) {
       const error = e as Error;
-      console.error("Failed to fetch sheet data:", error);
+      console.error("Failed to fetch local data:", error);
       setError(error.message);
-      if (!error.message.includes("GOOGLE_SHEETS_CREDENTIALS")) {
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description: error.message || "Failed to fetch data from Google Sheets.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Error!",
+        description: error.message || "Failed to fetch data from local storage.",
+      });
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchSheetData();
+    fetchData();
   }, []);
 
   const downloadCSV = (data: (SaleEntry | DieselEntry)[], filename: string) => {
@@ -138,13 +110,13 @@ export function ReportsTab() {
     document.body.removeChild(link);
   };
   
-  if (error && error.includes("GOOGLE_SHEETS_CREDENTIALS")) {
+  if (error) {
     return (
       <Alert variant="destructive">
         <Terminal className="h-4 w-4" />
-        <AlertTitle>Configuration Error</AlertTitle>
+        <AlertTitle>Error</AlertTitle>
         <AlertDescription>
-         {error} Please ask the AI assistant to help you set up your Google Sheets credentials.
+         {error}
         </AlertDescription>
       </Alert>
     );
@@ -157,7 +129,7 @@ export function ReportsTab() {
           <div>
             <CardTitle>Sales Report</CardTitle>
             <CardDescription>
-              All sale entries from the Google Sheet.
+              All sale entries from the local file.
             </CardDescription>
           </div>
           <Button
@@ -205,7 +177,7 @@ export function ReportsTab() {
           <div>
             <CardTitle>Diesel Report</CardTitle>
             <CardDescription>
-              All diesel entries from the Google Sheet.
+              All diesel entries from the local file.
             </CardDescription>
           </div>
           <Button

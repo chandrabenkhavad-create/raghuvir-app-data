@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { appendToSheet } from '@/ai/flows/sheet-flow';
+import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
 
 const saleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -55,6 +55,26 @@ export const SaleForm: FC = () => {
     },
   });
 
+  useEffect(() => {
+    async function fetchEntries() {
+      try {
+        const data = await readFromLocalStore('sales');
+        setEntries(data);
+        if (data.length > 0) {
+          setEntryToPrint(data[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load sales entries:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error!',
+          description: 'Failed to load recent sales entries.',
+        });
+      }
+    }
+    fetchEntries();
+  }, [toast]);
+
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
 
@@ -74,23 +94,9 @@ export const SaleForm: FC = () => {
     };
 
     try {
-      await appendToSheet({
-        range: 'Sales!A1', 
-        values: [
-          [
-            newEntry.dcno,
-            newEntry.date,
-            newEntry.time,
-            newEntry.name,
-            newEntry.supplier,
-            newEntry.grosswt,
-            newEntry.tarewt,
-            newEntry.netwt,
-            newEntry.driver,
-            newEntry.site,
-            newEntry.remarks ?? '',
-          ],
-        ],
+      await appendToLocalStore({
+        storeName: 'sales',
+        data: newEntry,
       });
       
       setEntries((prev) => [newEntry, ...prev]);
@@ -107,14 +113,14 @@ export const SaleForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Sale entry has been saved to Google Sheets.',
+        description: 'Sale entry has been saved locally.',
       });
     } catch (error) {
-       console.error('Failed to save to Google Sheet:', error);
+       console.error('Failed to save to local file:', error);
        toast({
          variant: 'destructive',
          title: 'Error!',
-         description: (error as Error).message || 'Failed to save entry to Google Sheets. Please check credentials and configuration.',
+         description: (error as Error).message || 'Failed to save entry to local file.',
        });
     }
   };
@@ -267,7 +273,7 @@ export const SaleForm: FC = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={!entries.some(e => e.id === entryToPrint?.id)}
+                      disabled={!entryToPrint}
                       onClick={() => openPrintDialog(entries[0])}
                     >
                       <Printer className="mr-2 h-4 w-4" />
