@@ -16,7 +16,8 @@ import {
   Weight, 
   Scale, 
   FileText,
-  Car
+  Car,
+  IndianRupee
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ const saleSchema = z.object({
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
   tarewt: z.coerce.number().positive('Tare weight must be a positive number'),
   netwt: z.coerce.number().positive('Net weight must be positive'),
+  rent: z.coerce.number().positive('Rent must be a positive number'),
   driver: z.string().min(1, 'Driver is required'),
   site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
@@ -71,6 +73,7 @@ export const SaleForm: FC = () => {
       grosswt: 0,
       tarewt: 0,
       netwt: 0,
+      rent: 0,
     },
   });
 
@@ -150,6 +153,7 @@ export const SaleForm: FC = () => {
         grosswt: 0,
         tarewt: 0,
         netwt: 0,
+        rent: 0,
       });
       toast({
         title: 'Success!',
@@ -314,6 +318,19 @@ export const SaleForm: FC = () => {
                     </div>
                      <FormField
                       control={form.control}
+                      name="rent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
                       name="driver"
                       render={({ field }) => (
                         <FormItem>
@@ -390,6 +407,7 @@ export const SaleForm: FC = () => {
                     <TableHead>Gross Wt.</TableHead>
                     <TableHead>Tare Wt.</TableHead>
                     <TableHead>Net Wt.</TableHead>
+                    <TableHead>Rent</TableHead>
                     <TableHead>Driver</TableHead>
                     <TableHead>Site</TableHead>
                     <TableHead>Remarks</TableHead>
@@ -407,6 +425,7 @@ export const SaleForm: FC = () => {
                       <TableCell>{entry.grosswt} KG</TableCell>
                       <TableCell>{entry.tarewt} KG</TableCell>
                       <TableCell>{entry.netwt} KG</TableCell>
+                      <TableCell>₹{entry.rent.toFixed(2)}</TableCell>
                       <TableCell>{entry.driver}</TableCell>
                       <TableCell>{entry.site}</TableCell>
                       <TableCell>{entry.remarks}</TableCell>
