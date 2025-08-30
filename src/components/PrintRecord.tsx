@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from 'react';
+import QRCode from 'react-qr-code';
 
 interface SaleEntry {
   id: number;
@@ -27,6 +28,8 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
     return null;
   }
 
+  const qrCodeValue = JSON.stringify(data);
+
   return (
     <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
       <div>
@@ -42,8 +45,8 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
           </div>
         </header>
 
-        <main>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+        <main className="flex justify-between items-start">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 flex-grow">
             <div className="col-span-2">
               <strong className="block text-gray-600">Supplier:</strong>
               <span>{data.supplier}</span>
@@ -82,6 +85,9 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
                 <p className="mt-1 border p-2 rounded-md">{data.remarks}</p>
               </div>
             )}
+          </div>
+          <div className="ml-8 flex-shrink-0">
+             <QRCode value={qrCodeValue} size={128} />
           </div>
         </main>
       </div>

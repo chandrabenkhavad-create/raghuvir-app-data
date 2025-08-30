@@ -1,6 +1,7 @@
 "use client";
 
 import type { FC } from 'react';
+import QRCode from "react-qr-code";
 
 interface DieselEntry {
   id: number;
@@ -24,6 +25,8 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
     return null;
   }
 
+  const qrCodeValue = JSON.stringify(data);
+
   return (
     <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
       <div>
@@ -39,8 +42,8 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
           </div>
         </header>
 
-        <main>
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3">
+        <main className="flex justify-between items-start">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 flex-grow">
             <div className="col-span-2">
                 <strong className="block text-gray-600">Vehicle Number:</strong>
                 <span>{data.vehicleNumber}</span>
@@ -69,6 +72,9 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Total Amount:</strong>
               <span>₹{data.amount.toFixed(2)}</span>
             </div>
+          </div>
+           <div className="ml-8 flex-shrink-0">
+             <QRCode value={qrCodeValue} size={128} />
           </div>
         </main>
       </div>
