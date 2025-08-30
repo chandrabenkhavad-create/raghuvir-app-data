@@ -1,10 +1,9 @@
 import { FileSpreadsheet, Fuel, Package } from 'lucide-react';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
+import { ReportsTab } from '@/components/ReportsTab';
 
 export default function Home() {
   return (
@@ -44,24 +43,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="reports" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Generate Reports</CardTitle>
-                <CardDescription>
-                  Download your data entries as Excel files. This feature is currently in development.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col sm:flex-row gap-4">
-                <Button disabled>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Download Sale Report
-                </Button>
-                <Button disabled>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Download Diesel Report
-                </Button>
-              </CardContent>
-            </Card>
+            <ReportsTab />
           </TabsContent>
         </Tabs>
       </div>
