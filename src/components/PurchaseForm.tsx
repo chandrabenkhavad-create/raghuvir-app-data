@@ -5,6 +5,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Package, Printer } from 'lucide-react';
+import ReactDOMServer from 'react-dom/server';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +54,44 @@ export const PurchaseForm: FC = () => {
       title: 'Success!',
       description: 'Purchase entry has been saved.',
     });
+  };
+
+  const handlePrint = () => {
+    if (!lastEntry) return;
+  
+    const printWindow = window.open('', '_blank', 'height=600,width=800');
+    if (printWindow) {
+      const printContent = ReactDOMServer.renderToString(
+        <PrintRecord data={lastEntry} />
+      );
+      
+      const tailwindStyles = Array.from(document.styleSheets)
+        .filter(sheet => sheet.href?.includes('tailwind'))
+        .map(sheet => `<link rel="stylesheet" href="${sheet.href}">`)
+        .join('');
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print</title>
+            <link rel="preconnect" href="https://fonts.googleapis.com" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+            <script src="https://cdn.tailwindcss.com"></script>
+          </head>
+          <body class="font-sans">
+            ${printContent}
+            <script>
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 500);
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
   };
 
   return (
@@ -152,7 +191,7 @@ export const PurchaseForm: FC = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => window.print()}
+                  onClick={handlePrint}
                   disabled={!lastEntry}
                 >
                   <Printer className="mr-2 h-4 w-4" />
@@ -195,7 +234,7 @@ export const PurchaseForm: FC = () => {
           </CardContent>
         </Card>
       )}
-      <div className="print-area">
+      <div className="print-area hidden">
         <PrintRecord data={lastEntry} />
       </div>
     </>
