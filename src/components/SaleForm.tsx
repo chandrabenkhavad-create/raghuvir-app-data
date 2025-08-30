@@ -4,7 +4,7 @@ import { useState, useEffect, type FC } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Package, Printer } from 'lucide-react';
+import { Package, Printer, Save } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -338,7 +338,7 @@ export const SaleForm: FC = () => {
                   />
                 </div>
                 <div className="flex gap-4">
-                  <Button type="submit">Submit Entry</Button>
+                  <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
                   <DialogTrigger asChild>
                     <Button
                       type="button"
