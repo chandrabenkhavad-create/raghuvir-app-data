@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
 
 const saleSchema = z.object({
-  dcno: z.string().optional(),
+  dcno: z.string(),
   name: z.string().min(1, 'Name is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -32,7 +32,6 @@ const saleSchema = z.object({
 type SaleFormValues = z.infer<typeof saleSchema>;
 type SaleEntry = SaleFormValues & { 
   id: number;
-  dcno: string;
   date: string;
   time: string;
 };
@@ -41,11 +40,12 @@ export const SaleForm: FC = () => {
   const [entries, setEntries] = useState<SaleEntry[]>([]);
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
+  const [nextDcNo, setNextDcNo] = useState('1');
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
-      dcno: '',
+      dcno: nextDcNo,
       name: '',
       supplier: '',
       driver: '',
@@ -60,10 +60,17 @@ export const SaleForm: FC = () => {
   useEffect(() => {
     async function fetchEntries() {
       try {
-        const data = await readFromLocalStore('sales');
+        const data: SaleEntry[] = await readFromLocalStore('sales');
         setEntries(data);
         if (data.length > 0) {
           setEntryToPrint(data[0]);
+          const maxDcNo = Math.max(...data.map(e => parseInt(e.dcno, 10)).filter(n => !isNaN(n)));
+          const newDcNo = isFinite(maxDcNo) ? (maxDcNo + 1).toString() : '1';
+          setNextDcNo(newDcNo);
+          form.setValue('dcno', newDcNo);
+        } else {
+          setNextDcNo('1');
+          form.setValue('dcno', '1');
         }
       } catch (error) {
         console.error('Failed to load sales entries:', error);
@@ -75,7 +82,7 @@ export const SaleForm: FC = () => {
       }
     }
     fetchEntries();
-  }, [toast]);
+  }, [toast, form]);
 
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
@@ -85,12 +92,15 @@ export const SaleForm: FC = () => {
     form.setValue('netwt', parseFloat(net.toFixed(2)));
   }, [grosswt, tarewt, form]);
 
+  useEffect(() => {
+    form.setValue('dcno', nextDcNo);
+  }, [nextDcNo, form]);
+
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     const now = new Date();
     const newEntry: SaleEntry = { 
-      ...data, 
+      ...data,
       id: now.getTime(),
-      dcno: data.dcno || `DC-${now.getTime()}`,
       date: now.toLocaleDateString(),
       time: now.toLocaleTimeString(),
     };
@@ -101,10 +111,16 @@ export const SaleForm: FC = () => {
         data: newEntry,
       });
       
-      setEntries((prev) => [newEntry, ...prev]);
+      const updatedEntries = [newEntry, ...entries];
+      setEntries(updatedEntries);
       setEntryToPrint(newEntry);
+
+      const maxDcNo = Math.max(...updatedEntries.map(e => parseInt(e.dcno, 10)).filter(n => !isNaN(n)));
+      const newDcNo = isFinite(maxDcNo) ? (maxDcNo + 1).toString() : '1';
+      setNextDcNo(newDcNo);
+      
       form.reset({
-        dcno: '',
+        dcno: newDcNo,
         name: '',
         supplier: '',
         driver: '',
@@ -172,7 +188,7 @@ export const SaleForm: FC = () => {
                       <FormItem>
                         <FormLabel>DC No.</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., DC-123" {...field} />
+                          <Input {...field} disabled />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -365,3 +381,5 @@ export const SaleForm: FC = () => {
     </>
   );
 };
+
+    
