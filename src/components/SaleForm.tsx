@@ -4,7 +4,20 @@ import { useState, useEffect, type FC } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Package, Printer, Save } from 'lucide-react';
+import { 
+  Package, 
+  Printer, 
+  Save, 
+  Hash, 
+  User, 
+  Building, 
+  Truck, 
+  Warehouse, 
+  Weight, 
+  Scale, 
+  FileText,
+  Car
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -194,7 +207,7 @@ export const SaleForm: FC = () => {
                     name="dcno"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>DC No.</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} disabled />
                         </FormControl>
@@ -207,7 +220,7 @@ export const SaleForm: FC = () => {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Name</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><Package /> Name</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., Cement Bags" {...field} />
                         </FormControl>
@@ -220,7 +233,7 @@ export const SaleForm: FC = () => {
                     name="supplier"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Supplier</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., ABC Suppliers" {...field} />
                         </FormControl>
@@ -233,7 +246,7 @@ export const SaleForm: FC = () => {
                     name="transporter"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Transporter</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., XYZ Logistics" {...field} />
                         </FormControl>
@@ -246,7 +259,7 @@ export const SaleForm: FC = () => {
                     name="vehicleNumber"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Vehicle Number</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., MH12AB1234" {...field} />
                         </FormControl>
@@ -259,7 +272,7 @@ export const SaleForm: FC = () => {
                     name="driver"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Driver</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., John Doe" {...field} />
                         </FormControl>
@@ -272,7 +285,7 @@ export const SaleForm: FC = () => {
                     name="site"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Site</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><Warehouse /> Site</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., Main Construction Site" {...field} />
                         </FormControl>
@@ -287,7 +300,7 @@ export const SaleForm: FC = () => {
                       name="grosswt"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Gross Weight</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Weight /> Gross Weight</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="e.g., 1000" {...field} step="0.01" />
                           </FormControl>
@@ -300,7 +313,7 @@ export const SaleForm: FC = () => {
                       name="tarewt"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Tare Weight</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Scale /> Tare Weight</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="e.g., 50" {...field} step="0.01" />
                           </FormControl>
@@ -313,7 +326,7 @@ export const SaleForm: FC = () => {
                       name="netwt"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Net Weight</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Weight /> Net Weight</FormLabel>
                           <FormControl>
                             <Input type="number" {...field} disabled />
                           </FormControl>
@@ -328,7 +341,7 @@ export const SaleForm: FC = () => {
                     name="remarks"
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
-                        <FormLabel>Remarks</FormLabel>
+                        <FormLabel className="flex items-center gap-2"><FileText /> Remarks</FormLabel>
                         <FormControl>
                           <Textarea placeholder="Any additional notes..." {...field} />
                         </FormControl>

@@ -4,7 +4,18 @@ import { useState, useEffect, type FC } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Fuel, Printer, Save } from 'lucide-react';
+import { 
+  Fuel, 
+  Printer, 
+  Save, 
+  Car, 
+  Droplets, 
+  Tag, 
+  IndianRupee, 
+  User, 
+  Building, 
+  Gauge
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -160,7 +171,7 @@ export const DieselForm: FC = () => {
                   name="vehicleNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vehicle Number</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., MH12-AB1234" {...field} />
                       </FormControl>
@@ -173,7 +184,7 @@ export const DieselForm: FC = () => {
                   name="liters"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Liters</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Droplets /> Liters</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="e.g., 20.5" {...field} step="0.01" />
                       </FormControl>
@@ -186,7 +197,7 @@ export const DieselForm: FC = () => {
                   name="rate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rate</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Tag /> Rate</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="e.g., 95.50" {...field} step="0.01" />
                       </FormControl>
@@ -199,7 +210,7 @@ export const DieselForm: FC = () => {
                   name="amount"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Amount</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><IndianRupee /> Amount</FormLabel>
                       <FormControl>
                         <Input type="number" {...field} disabled />
                       </FormControl>
@@ -212,7 +223,7 @@ export const DieselForm: FC = () => {
                   name="driverName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Driver Name</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., Jane Smith" {...field} />
                       </FormControl>
@@ -225,7 +236,7 @@ export const DieselForm: FC = () => {
                   name="pump"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Pump</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
                       <FormControl>
                         <Input placeholder="e.g., City Fuel Station" {...field} />
                       </FormControl>
@@ -238,7 +249,7 @@ export const DieselForm: FC = () => {
                   name="odo"
                   render={({ field }) => (
                     <FormItem className="md:col-span-2 lg:col-span-1">
-                      <FormLabel>ODO Meter Reading</FormLabel>
+                      <FormLabel className="flex items-center gap-2"><Gauge /> ODO Meter Reading</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="e.g., 125000" {...field} />
                       </FormControl>
