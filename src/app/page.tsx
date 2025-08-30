@@ -38,7 +38,7 @@ export default function Home() {
             Raghuvir Infrastructure
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Sayla-Sidamda Road,Sudamda.
+            Sayla-Sudamda Road,Sudamda.
           </p>
           <div className="absolute top-0 right-0">
              <Button variant="outline" onClick={logout}>
