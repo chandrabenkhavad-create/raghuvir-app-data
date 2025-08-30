@@ -49,6 +49,9 @@ export const PurchaseForm: FC = () => {
       driver: '',
       site: '',
       remarks: '',
+      grosswt: 0,
+      tarewt: 0,
+      netwt: 0,
     },
   });
 
