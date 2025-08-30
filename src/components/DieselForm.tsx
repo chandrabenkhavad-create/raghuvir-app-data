@@ -280,6 +280,7 @@ export const DieselForm: FC = () => {
                   <TableHead>Amount</TableHead>
                   <TableHead>Driver</TableHead>
                   <TableHead>Pump</TableHead>
+                  <TableHead>ODO Meter</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -291,6 +292,7 @@ export const DieselForm: FC = () => {
                     <TableCell>₹{entry.amount.toFixed(2)}</TableCell>
                     <TableCell>{entry.driverName}</TableCell>
                     <TableCell>{entry.pump}</TableCell>
+                    <TableCell>{entry.odo}</TableCell>
                     <TableCell className="text-right">
                       <DialogTrigger asChild>
                         <Button
