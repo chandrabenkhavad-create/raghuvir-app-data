@@ -5,7 +5,6 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Package, Printer } from 'lucide-react';
-import ReactDOMServer from 'react-dom/server';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { appendToSheet } from '@/ai/flows/sheet-flow';
 
 const saleSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -63,7 +63,7 @@ export const SaleForm: FC = () => {
     form.setValue('netwt', parseFloat(net.toFixed(2)));
   }, [grosswt, tarewt, form]);
 
-  const onSubmit: SubmitHandler<SaleFormValues> = (data) => {
+  const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     const now = new Date();
     const newEntry: SaleEntry = { 
       ...data, 
@@ -72,22 +72,51 @@ export const SaleForm: FC = () => {
       date: now.toLocaleDateString(),
       time: now.toLocaleTimeString(),
     };
-    setEntries((prev) => [newEntry, ...prev]);
-    setEntryToPrint(newEntry);
-    form.reset({
-      name: '',
-      supplier: '',
-      driver: '',
-      site: '',
-      remarks: '',
-      grosswt: 0,
-      tarewt: 0,
-      netwt: 0,
-    });
-    toast({
-      title: 'Success!',
-      description: 'Sale entry has been saved.',
-    });
+
+    try {
+      await appendToSheet({
+        range: 'Sales!A1', 
+        values: [
+          [
+            newEntry.dcno,
+            newEntry.date,
+            newEntry.time,
+            newEntry.name,
+            newEntry.supplier,
+            newEntry.grosswt,
+            newEntry.tarewt,
+            newEntry.netwt,
+            newEntry.driver,
+            newEntry.site,
+            newEntry.remarks ?? '',
+          ],
+        ],
+      });
+      
+      setEntries((prev) => [newEntry, ...prev]);
+      setEntryToPrint(newEntry);
+      form.reset({
+        name: '',
+        supplier: '',
+        driver: '',
+        site: '',
+        remarks: '',
+        grosswt: 0,
+        tarewt: 0,
+        netwt: 0,
+      });
+      toast({
+        title: 'Success!',
+        description: 'Sale entry has been saved to Google Sheets.',
+      });
+    } catch (error) {
+       console.error('Failed to save to Google Sheet:', error);
+       toast({
+         variant: 'destructive',
+         title: 'Error!',
+         description: (error as Error).message || 'Failed to save entry to Google Sheets. Please check credentials and configuration.',
+       });
+    }
   };
 
   const handlePrint = () => {

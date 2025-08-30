@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { appendToSheet } from '@/ai/flows/sheet-flow';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -58,7 +59,7 @@ export const DieselForm: FC = () => {
     form.setValue('amount', parseFloat(calculatedAmount.toFixed(2)));
   }, [liters, rate, form]);
 
-  const onSubmit: SubmitHandler<DieselFormValues> = (data) => {
+  const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     const now = new Date();
     const newEntry = { 
       ...data, 
@@ -66,21 +67,48 @@ export const DieselForm: FC = () => {
       date: now.toLocaleDateString(),
       time: now.toLocaleTimeString(),
     };
-    setEntries((prev) => [newEntry, ...prev]);
-    setEntryToPrint(newEntry);
-    form.reset({
-      vehicleNumber: '',
-      liters: 0,
-      rate: 0,
-      amount: 0,
-      driverName: '',
-      pump: '',
-      odo: 0,
-    });
-    toast({
-      title: 'Success!',
-      description: 'Diesel entry has been saved.',
-    });
+    
+    try {
+      await appendToSheet({
+        range: 'Diesel!A1', 
+        values: [
+          [
+            newEntry.date,
+            newEntry.time,
+            newEntry.vehicleNumber,
+            newEntry.liters,
+            newEntry.rate,
+            newEntry.amount,
+            newEntry.driverName,
+            newEntry.pump,
+            newEntry.odo,
+          ],
+        ],
+      });
+
+      setEntries((prev) => [newEntry, ...prev]);
+      setEntryToPrint(newEntry);
+      form.reset({
+        vehicleNumber: '',
+        liters: 0,
+        rate: 0,
+        amount: 0,
+        driverName: '',
+        pump: '',
+        odo: 0,
+      });
+      toast({
+        title: 'Success!',
+        description: 'Diesel entry has been saved to Google Sheets.',
+      });
+    } catch (error) {
+      console.error('Failed to save to Google Sheet:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error!',
+        description: (error as Error).message || 'Failed to save entry to Google Sheets. Please check credentials and configuration.',
+      });
+    }
   };
 
   const handlePrint = () => {
