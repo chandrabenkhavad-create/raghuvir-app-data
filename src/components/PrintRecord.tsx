@@ -9,6 +9,7 @@ interface SaleEntry {
   time: string;
   name: string;
   supplier: string;
+  transporter: string;
   grosswt: number;
   tarewt: number;
   netwt: number;
@@ -46,6 +47,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             <div className="col-span-2">
               <strong className="block text-gray-600">Supplier:</strong>
               <span>{data.supplier}</span>
+            </div>
+             <div className="col-span-2">
+              <strong className="block text-gray-600">Transporter:</strong>
+              <span>{data.transporter}</span>
             </div>
              <div className="col-span-2">
               <strong className="block text-gray-600">Site:</strong>

@@ -21,6 +21,7 @@ const saleSchema = z.object({
   dcno: z.coerce.number(),
   name: z.string().min(1, 'Name is required'),
   supplier: z.string().min(1, 'Supplier is required'),
+  transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
   tarewt: z.coerce.number().positive('Tare weight must be a positive number'),
@@ -49,6 +50,7 @@ export const SaleForm: FC = () => {
       dcno: nextDcNo,
       name: '',
       supplier: '',
+      transporter: '',
       vehicleNumber: '',
       driver: '',
       site: '',
@@ -127,6 +129,7 @@ export const SaleForm: FC = () => {
         dcno: newDcNo,
         name: '',
         supplier: '',
+        transporter: '',
         vehicleNumber: '',
         driver: '',
         site: '',
@@ -220,6 +223,19 @@ export const SaleForm: FC = () => {
                         <FormLabel>Supplier</FormLabel>
                         <FormControl>
                           <Input placeholder="e.g., ABC Suppliers" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="transporter"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Transporter</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., XYZ Logistics" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -352,6 +368,7 @@ export const SaleForm: FC = () => {
                     <TableHead>DC No.</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Supplier</TableHead>
+                    <TableHead>Transporter</TableHead>
                     <TableHead>Vehicle No.</TableHead>
                     <TableHead>Gross Wt.</TableHead>
                     <TableHead>Tare Wt.</TableHead>
@@ -368,6 +385,7 @@ export const SaleForm: FC = () => {
                       <TableCell>{entry.dcno}</TableCell>
                       <TableCell>{entry.name}</TableCell>
                       <TableCell>{entry.supplier}</TableCell>
+                      <TableCell>{entry.transporter}</TableCell>
                       <TableCell>{entry.vehicleNumber}</TableCell>
                       <TableCell>{entry.grosswt} KG</TableCell>
                       <TableCell>{entry.tarewt} KG</TableCell>
