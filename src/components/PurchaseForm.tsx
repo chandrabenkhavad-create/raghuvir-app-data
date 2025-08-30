@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
 const purchaseSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -78,32 +79,21 @@ export const PurchaseForm: FC = () => {
   };
 
   const handlePrint = () => {
-    if (!lastEntry) return;
-  
+    const printableContent = document.getElementById('printable-content');
+    if (!printableContent) return;
+
     const printWindow = window.open('', '_blank', 'height=800,width=800');
     if (printWindow) {
-      const printContent = ReactDOMServer.renderToString(
-        <PrintRecord data={lastEntry} />
-      );
-      
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print</title>
-            <script src="https://cdn.tailwindcss.com"></script>
-          </head>
-          <body>
-            ${printContent}
-            <script>
-              setTimeout(() => {
-                window.print();
-                window.close();
-              }, 500);
-            </script>
-          </body>
-        </html>
-      `);
+      printWindow.document.write('<html><head><title>Print</title>');
+      printWindow.document.write('<script src="https://cdn.tailwindcss.com"></script>');
+      printWindow.document.write('</head><body>');
+      printWindow.document.write(printableContent.innerHTML);
+      printWindow.document.write('</body></html>');
       printWindow.document.close();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
     }
   };
 
@@ -227,15 +217,32 @@ export const PurchaseForm: FC = () => {
               </div>
               <div className="flex gap-4">
                 <Button type="submit">Submit Entry</Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handlePrint}
-                  disabled={!lastEntry}
-                >
-                  <Printer className="mr-2 h-4 w-4" />
-                  Print Last Entry
-                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={!lastEntry}
+                    >
+                      <Printer className="mr-2 h-4 w-4" />
+                      Print Last Entry
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl">
+                    <DialogHeader>
+                      <DialogTitle>Print Preview</DialogTitle>
+                      <DialogDescription>
+                        This is a preview of the record to be printed.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div id="printable-content">
+                       <PrintRecord data={lastEntry} />
+                    </div>
+                    <DialogFooter>
+                      <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </div>
             </form>
           </Form>
@@ -273,9 +280,6 @@ export const PurchaseForm: FC = () => {
           </CardContent>
         </Card>
       )}
-      <div className="print-area hidden">
-        <PrintRecord data={lastEntry} />
-      </div>
     </>
   );
 };
