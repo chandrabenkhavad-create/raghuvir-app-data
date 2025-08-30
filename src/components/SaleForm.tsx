@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
 
 const saleSchema = z.object({
+  dcno: z.string().optional(),
   name: z.string().min(1, 'Name is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -44,6 +45,7 @@ export const SaleForm: FC = () => {
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
+      dcno: '',
       name: '',
       supplier: '',
       driver: '',
@@ -88,7 +90,7 @@ export const SaleForm: FC = () => {
     const newEntry: SaleEntry = { 
       ...data, 
       id: now.getTime(),
-      dcno: `DC-${now.getTime()}`,
+      dcno: data.dcno || `DC-${now.getTime()}`,
       date: now.toLocaleDateString(),
       time: now.toLocaleTimeString(),
     };
@@ -102,6 +104,7 @@ export const SaleForm: FC = () => {
       setEntries((prev) => [newEntry, ...prev]);
       setEntryToPrint(newEntry);
       form.reset({
+        dcno: '',
         name: '',
         supplier: '',
         driver: '',
@@ -162,6 +165,19 @@ export const SaleForm: FC = () => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="dcno"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>DC No.</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., DC-123" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="name"
