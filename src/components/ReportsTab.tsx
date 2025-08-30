@@ -68,17 +68,17 @@ export function ReportsTab() {
       if (salesData) {
         setSales(
           salesData.map((row) => ({
-            dcno: row[0],
-            date: row[1],
-            time: row[2],
-            name: row[3],
-            supplier: row[4],
-            grosswt: row[5],
-            tarewt: row[6],
-            netwt: row[7],
-            driver: row[8],
-            site: row[9],
-            remarks: row[10],
+            dcno: row[0] || '',
+            date: row[1] || '',
+            time: row[2] || '',
+            name: row[3] || '',
+            supplier: row[4] || '',
+            grosswt: row[5] || '',
+            tarewt: row[6] || '',
+            netwt: row[7] || '',
+            driver: row[8] || '',
+            site: row[9] || '',
+            remarks: row[10] || '',
           }))
         );
       }
@@ -86,15 +86,15 @@ export function ReportsTab() {
       if (dieselData) {
         setDiesel(
           dieselData.map((row) => ({
-            date: row[0],
-            time: row[1],
-            vehicleNumber: row[2],
-            liters: row[3],
-            rate: row[4],
-            amount: row[5],
-            driverName: row[6],
-            pump: row[7],
-            odo: row[8],
+            date: row[0] || '',
+            time: row[1] || '',
+            vehicleNumber: row[2] || '',
+            liters: row[3] || '',
+            rate: row[4] || '',
+            amount: row[5] || '',
+            driverName: row[6] || '',
+            pump: row[7] || '',
+            odo: row[8] || '',
           }))
         );
       }
@@ -171,6 +171,8 @@ export function ReportsTab() {
         <CardContent>
           {loading ? (
             <p>Loading sales data...</p>
+          ) : sales.length === 0 ? (
+             <p>No sales data found.</p>
           ) : (
             <Table>
               <TableHeader>
@@ -217,7 +219,9 @@ export function ReportsTab() {
         <CardContent>
           {loading ? (
             <p>Loading diesel data...</p>
-          ) : (
+          ) : diesel.length === 0 ? (
+            <p>No diesel data found.</p>
+          ): (
             <Table>
               <TableHeader>
                 <TableRow>
