@@ -18,6 +18,7 @@ interface SaleEntry {
   driver: string;
   site: string;
   remarks?: string;
+  vehicleNumber: string;
 }
 
 interface PrintRecordProps {
@@ -40,7 +41,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             <p className="text-base">Sale Record</p>
           </div>
           <div className="text-right">
-            <p><strong>DC No:</strong> {data.dcno}</p>
+            <p><strong>DC No:</strong> {String(data.dcno).padStart(3, '0')}</p>
             <p><strong>Date:</strong> {data.date}</p>
             <p><strong>Time:</strong> {data.time}</p>
           </div>
@@ -67,6 +68,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             <div>
               <strong className="block text-gray-600">Driver:</strong>
               <span>{data.driver}</span>
+            </div>
+            <div>
+                <strong className="block text-gray-600">Vehicle Number:</strong>
+                <span>{data.vehicleNumber}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Gross Weight:</strong>

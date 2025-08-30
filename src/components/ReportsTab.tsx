@@ -35,6 +35,7 @@ interface SaleEntry {
   driver: string;
   site: string;
   remarks?: string;
+  vehicleNumber: string;
 }
 
 interface DieselEntry {
@@ -153,16 +154,18 @@ export function ReportsTab() {
                   <TableHead>Name</TableHead>
                   <TableHead>Net Weight</TableHead>
                   <TableHead>Driver</TableHead>
+                  <TableHead>Vehicle No.</TableHead>
                   <TableHead>Site</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sales.map((entry, index) => (
                   <TableRow key={index}>
-                    <TableCell>{entry.dcno}</TableCell>
+                    <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
                     <TableCell>{entry.name}</TableCell>
                     <TableCell>{entry.netwt} KG</TableCell>
                     <TableCell>{entry.driver}</TableCell>
+                    <TableCell>{entry.vehicleNumber}</TableCell>
                     <TableCell>{entry.site}</TableCell>
                   </TableRow>
                 ))}

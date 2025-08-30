@@ -214,7 +214,7 @@ export const SaleForm: FC = () => {
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} disabled />
+                            <Input type="text" value={String(field.value).padStart(3, '0')} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -259,7 +259,7 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
-                    <FormField
+                     <FormField
                       control={form.control}
                       name="site"
                       render={({ field }) => (
@@ -301,8 +301,7 @@ export const SaleForm: FC = () => {
                   </div>
                   
                   <div className="space-y-4">
-                     
-                     <FormField
+                    <FormField
                       control={form.control}
                       name="rent"
                       render={({ field }) => (
@@ -315,7 +314,6 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
-
                     <div className="space-y-4 rounded-lg border p-4">
                        <FormField
                         control={form.control}
@@ -404,14 +402,10 @@ export const SaleForm: FC = () => {
                     <TableHead>DC No.</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Supplier</TableHead>
-                    <TableHead>Transporter</TableHead>
-                    <TableHead>Vehicle No.</TableHead>
                     <TableHead>Gross Wt.</TableHead>
                     <TableHead>Tare Wt.</TableHead>
                     <TableHead>Net Wt.</TableHead>
-                    <TableHead>Rent</TableHead>
-                    <TableHead>Driver</TableHead>
-                    <TableHead>Site</TableHead>
+                    <TableHead>Vehicle No.</TableHead>
                     <TableHead>Remarks</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -419,17 +413,13 @@ export const SaleForm: FC = () => {
                 <TableBody>
                   {entries.map((entry) => (
                     <TableRow key={entry.id}>
-                      <TableCell>{entry.dcno}</TableCell>
+                      <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
                       <TableCell>{entry.name}</TableCell>
                       <TableCell>{entry.supplier}</TableCell>
-                      <TableCell>{entry.transporter}</TableCell>
-                      <TableCell>{entry.vehicleNumber}</TableCell>
                       <TableCell>{entry.grosswt} KG</TableCell>
                       <TableCell>{entry.tarewt} KG</TableCell>
                       <TableCell>{entry.netwt} KG</TableCell>
-                      <TableCell>₹{entry.rent.toFixed(2)}</TableCell>
-                      <TableCell>{entry.driver}</TableCell>
-                      <TableCell>{entry.site}</TableCell>
+                      <TableCell>{entry.vehicleNumber}</TableCell>
                       <TableCell>{entry.remarks}</TableCell>
                       <TableCell className="text-right">
                         <DialogTrigger asChild>
