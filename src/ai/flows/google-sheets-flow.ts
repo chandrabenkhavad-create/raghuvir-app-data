@@ -3,18 +3,12 @@
  * @fileOverview A flow for appending data to a Google Sheet.
  *
  * - appendToGoogleSheet - A function that handles appending data to a Google Sheet.
- * - AppendToSheetInput - The input type for the appendToGoogleSheet function.
  */
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { google } from 'googleapis';
 import 'dotenv/config';
-
-export const AppendToSheetInputSchema = z.object({
-  sheetName: z.string().describe('The name of the sheet (e.g., Sales, Diesel).'),
-  data: z.array(z.any()).describe('The row data to append.'),
-});
-export type AppendToSheetInput = z.infer<typeof AppendToSheetInputSchema>;
+import { AppendToSheetInput, AppendToSheetInputSchema } from '../schemas/google-sheets-schema';
 
 async function getGoogleSheetsClient() {
   const credentials = {
@@ -35,9 +29,13 @@ async function getGoogleSheetsClient() {
   return google.sheets({ version: 'v4', auth: authClient });
 }
 
-export const appendToGoogleSheet = ai.defineFlow(
+export async function appendToGoogleSheet(input: AppendToSheetInput): Promise<void> {
+  return appendToGoogleSheetFlow(input);
+}
+
+const appendToGoogleSheetFlow = ai.defineFlow(
   {
-    name: 'appendToGoogleSheet',
+    name: 'appendToGoogleSheetFlow',
     inputSchema: AppendToSheetInputSchema,
     outputSchema: z.void(),
   },

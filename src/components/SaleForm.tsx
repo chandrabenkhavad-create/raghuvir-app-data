@@ -131,12 +131,7 @@ export const SaleForm: FC = () => {
     };
 
     try {
-      await appendToLocalStore({
-        storeName: 'sales',
-        data: newEntry,
-      });
-
-      // Non-blocking call to Google Sheets
+      // Non-blocking call to Google Sheets first
       appendToGoogleSheet({
         sheetName: 'Sales',
         data: [
@@ -156,6 +151,11 @@ export const SaleForm: FC = () => {
           newEntry.netwt,
           newEntry.remarks,
         ],
+      });
+      
+      await appendToLocalStore({
+        storeName: 'sales',
+        data: newEntry,
       });
       
       const updatedEntries = [newEntry, ...entries];
@@ -182,14 +182,14 @@ export const SaleForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Sale entry has been saved locally.',
+        description: 'Sale entry has been saved locally and sent to Google Sheets.',
       });
     } catch (error) {
-       console.error('Failed to save to local file:', error);
+       console.error('Failed to save entry:', error);
        toast({
          variant: 'destructive',
          title: 'Error!',
-         description: (error as Error).message || 'Failed to save entry to local file.',
+         description: (error as Error).message || 'Failed to save entry.',
        });
     }
   };

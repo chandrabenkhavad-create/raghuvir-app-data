@@ -101,12 +101,7 @@ export const DieselForm: FC = () => {
     };
     
     try {
-      await appendToLocalStore({
-        storeName: 'diesel',
-        data: newEntry,
-      });
-
-      // Non-blocking call to Google Sheets
+      // Non-blocking call to Google Sheets first
       appendToGoogleSheet({
         sheetName: 'Diesel',
         data: [
@@ -122,6 +117,11 @@ export const DieselForm: FC = () => {
         ],
       });
 
+      await appendToLocalStore({
+        storeName: 'diesel',
+        data: newEntry,
+      });
+
       setEntries((prev) => [newEntry, ...prev]);
       setEntryToPrint(newEntry);
       form.reset({
@@ -135,14 +135,14 @@ export const DieselForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Diesel entry has been saved locally.',
+        description: 'Diesel entry has been saved locally and sent to Google Sheets.',
       });
     } catch (error) {
-      console.error('Failed to save to local file:', error);
+      console.error('Failed to save entry:', error);
       toast({
         variant: 'destructive',
         title: 'Error!',
-        description: (error as Error).message || 'Failed to save entry to local file.',
+        description: (error as Error).message || 'Failed to save entry.',
       });
     }
   };

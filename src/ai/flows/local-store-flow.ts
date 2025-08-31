@@ -10,17 +10,10 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import fs from 'fs/promises';
 import path from 'path';
+import { AppendToStoreInput, AppendToStoreInputSchema, ReadFromStoreInput, ReadFromStoreInputSchema } from '../schemas/local-store-schema';
 
 const storeDirectory = path.join(process.cwd(), 'data');
 
-const AppendToStoreInputSchema = z.object({
-  storeName: z.string().describe('The name of the store (e.g., sales, diesel).'),
-  data: z.any().describe('The data to append.'),
-});
-export type AppendToStoreInput = z.infer<typeof AppendToStoreInputSchema>;
-
-const ReadFromStoreInputSchema = z.string();
-export type ReadFromStoreInput = z.infer<typeof ReadFromStoreInputSchema>;
 
 async function ensureStore(storeName: string): Promise<string> {
   const filePath = path.join(storeDirectory, `${storeName}.json`);
