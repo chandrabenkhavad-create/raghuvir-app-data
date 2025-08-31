@@ -34,7 +34,7 @@ export default function Home() {
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
         <header className="text-center mb-8 relative">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary-dark font-headline">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
             Raghuvir Infrastructure
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
