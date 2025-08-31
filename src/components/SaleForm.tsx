@@ -30,6 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
+import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -86,7 +87,6 @@ export const SaleForm: FC = () => {
         setEntries(data);
         if (data.length > 0) {
           setEntryToPrint(data[0]);
-          // DC numbers are now numeric
           const lastEntry = data[0];
           const lastDcNum = lastEntry.dcno;
           const newDcNo = lastDcNum + 1;
@@ -134,6 +134,28 @@ export const SaleForm: FC = () => {
       await appendToLocalStore({
         storeName: 'sales',
         data: newEntry,
+      });
+
+      // Non-blocking call to Google Sheets
+      appendToGoogleSheet({
+        sheetName: 'Sales',
+        data: [
+          newEntry.date,
+          newEntry.time,
+          String(newEntry.dcno).padStart(3, '0'),
+          newEntry.name,
+          newEntry.supplier,
+          newEntry.material,
+          newEntry.transporter,
+          newEntry.site,
+          newEntry.vehicleNumber,
+          newEntry.driver,
+          newEntry.rent,
+          newEntry.grosswt,
+          newEntry.tarewt,
+          newEntry.netwt,
+          newEntry.remarks,
+        ],
       });
       
       const updatedEntries = [newEntry, ...entries];
@@ -478,8 +500,3 @@ export const SaleForm: FC = () => {
     </>
   );
 };
-
-    
-    
-
-    

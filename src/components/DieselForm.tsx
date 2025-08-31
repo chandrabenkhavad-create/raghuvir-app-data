@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
+import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -103,6 +104,22 @@ export const DieselForm: FC = () => {
       await appendToLocalStore({
         storeName: 'diesel',
         data: newEntry,
+      });
+
+      // Non-blocking call to Google Sheets
+      appendToGoogleSheet({
+        sheetName: 'Diesel',
+        data: [
+          newEntry.date,
+          newEntry.time,
+          newEntry.vehicleNumber,
+          newEntry.liters,
+          newEntry.rate,
+          newEntry.amount,
+          newEntry.driverName,
+          newEntry.pump,
+          newEntry.odo,
+        ],
       });
 
       setEntries((prev) => [newEntry, ...prev]);
