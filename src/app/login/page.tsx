@@ -77,6 +77,15 @@ export default function LoginPage() {
             <LogIn className="mr-2 h-4 w-4" />
             Login
           </Button>
+          <div className="mt-4 text-center text-sm">
+            <a href="#" className="underline">
+              Forgot password?
+            </a>
+            <span className="mx-2">|</span>
+            <a href="#" className="underline">
+              Change password
+            </a>
+          </div>
         </CardContent>
       </Card>
     </main>
