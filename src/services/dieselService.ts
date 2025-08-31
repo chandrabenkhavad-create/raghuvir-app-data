@@ -22,7 +22,7 @@ export async function getRecentDieselEntries(limit = 10): Promise<DieselEntry[]>
     const { data, error } = await supabase
         .from('diesel')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(limit)
 
     if (error) {
@@ -36,7 +36,7 @@ export async function getAllDieselEntries(): Promise<DieselEntry[]> {
     const { data, error } = await supabase
         .from('diesel')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('id', { ascending: false });
 
     if (error) {
         console.error('Error fetching all diesel entries:', error);

@@ -22,7 +22,7 @@ export async function getRecentSaleEntries(limit = 10): Promise<SaleEntry[]> {
     const { data, error } = await supabase
         .from('sales')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(limit)
 
     if (error) {
@@ -38,7 +38,7 @@ export async function getAllSaleEntries(): Promise<SaleEntry[]> {
     const { data, error } = await supabase
         .from('sales')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('id', { ascending: false });
 
     if (error) {
         console.error('Error fetching all sale entries:', error);
