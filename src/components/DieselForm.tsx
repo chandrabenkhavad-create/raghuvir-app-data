@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, type FC } from 'react';
@@ -25,8 +26,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
-import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
+import { addDieselEntry, getRecentDieselEntries } from '@/services/dieselService';
+import type { DieselEntry } from '@/types';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -39,11 +40,6 @@ const dieselSchema = z.object({
 });
 
 type DieselFormValues = z.infer<typeof dieselSchema>;
-type DieselEntry = DieselFormValues & { 
-  id: number;
-  date: string;
-  time: string;
-};
 
 export const DieselForm: FC = () => {
   const [entries, setEntries] = useState<DieselEntry[]>([]);
@@ -69,7 +65,7 @@ export const DieselForm: FC = () => {
   useEffect(() => {
     async function fetchEntries() {
       try {
-        const data = await readFromLocalStore('diesel');
+        const data = await getRecentDieselEntries();
         setEntries(data);
         if (data.length > 0) {
           setEntryToPrint(data[0]);
@@ -93,37 +89,17 @@ export const DieselForm: FC = () => {
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     const now = new Date();
-    const newEntry = { 
+    const newEntryData = { 
       ...data, 
-      id: now.getTime(),
       date: now.toLocaleDateString('en-GB'),
       time: now.toLocaleTimeString(),
     };
     
     try {
-      // Non-blocking call to Google Sheets first
-      appendToGoogleSheet({
-        sheetName: 'Diesel',
-        data: [
-          newEntry.date,
-          newEntry.time,
-          newEntry.vehicleNumber,
-          newEntry.liters,
-          newEntry.rate,
-          newEntry.amount,
-          newEntry.driverName,
-          newEntry.pump,
-          newEntry.odo,
-        ],
-      });
+      const savedEntry = await addDieselEntry(newEntryData);
 
-      await appendToLocalStore({
-        storeName: 'diesel',
-        data: newEntry,
-      });
-
-      setEntries((prev) => [newEntry, ...prev]);
-      setEntryToPrint(newEntry);
+      setEntries((prev) => [savedEntry, ...prev]);
+      setEntryToPrint(savedEntry);
       form.reset({
         vehicleNumber: '',
         liters: 0,
@@ -135,7 +111,7 @@ export const DieselForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Diesel entry has been saved locally and sent to Google Sheets.',
+        description: 'Diesel entry has been saved to Supabase.',
       });
     } catch (error) {
       console.error('Failed to save entry:', error);

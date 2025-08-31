@@ -1,3 +1,2 @@
-// Flows will be imported for their side effects in this file.
-import './flows/local-store-flow';
-import './flows/google-sheets-flow';
+
+// All Genkit related files should be imported here for them to be picked up by the CLI

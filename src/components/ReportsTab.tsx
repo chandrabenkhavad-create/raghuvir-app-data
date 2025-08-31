@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,40 +17,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { readFromLocalStore } from "@/ai/flows/local-store-flow";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "./ui/button";
 import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Terminal } from "lucide-react";
+import { getAllSaleEntries } from "@/services/saleService";
+import { getAllDieselEntries } from "@/services/dieselService";
+import type { SaleEntry, DieselEntry } from "@/types";
 
-interface SaleEntry {
-  dcno: number;
-  date: string;
-  time: string;
-  name: string;
-  material: string;
-  supplier: string;
-  grosswt: string;
-  tarewt: string;
-  netwt: string;
-  driver: string;
-  site: string;
-  remarks?: string;
-  vehicleNumber: string;
-}
-
-interface DieselEntry {
-  date: string;
-  time: string;
-  vehicleNumber: string;
-  liters: string;
-  rate: string;
-  amount: string;
-  driverName: string;
-  pump: string;
-  odo: string;
-}
 
 export function ReportsTab() {
   const [sales, setSales] = useState<SaleEntry[]>([]);
@@ -58,39 +34,38 @@ export function ReportsTab() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  async function fetchData() {
-    setLoading(true);
-    setError(null);
-    try {
-      const [salesData, dieselData] = await Promise.all([
-        readFromLocalStore("sales"),
-        readFromLocalStore("diesel"),
-      ]);
-
-      if (salesData) {
-        setSales(salesData);
-      }
-
-      if (dieselData) {
-        setDiesel(dieselData);
-      }
-    } catch (e) {
-      const error = e as Error;
-      console.error("Failed to fetch local data:", error);
-      setError(error.message);
-      toast({
-        variant: "destructive",
-        title: "Error!",
-        description: error.message || "Failed to fetch data from local storage.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
   useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [salesData, dieselData] = await Promise.all([
+          getAllSaleEntries(),
+          getAllDieselEntries(),
+        ]);
+
+        if (salesData) {
+          setSales(salesData);
+        }
+
+        if (dieselData) {
+          setDiesel(dieselData);
+        }
+      } catch (e) {
+        const error = e as Error;
+        console.error("Failed to fetch data:", error);
+        setError(error.message);
+        toast({
+          variant: "destructive",
+          title: "Error!",
+          description: error.message || "Failed to fetch data from Supabase.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
     fetchData();
-  }, []);
+  }, [toast]);
 
   const downloadCSV = (data: (SaleEntry | DieselEntry)[], filename: string) => {
     if (data.length === 0) return;
@@ -131,7 +106,7 @@ export function ReportsTab() {
           <div>
             <CardTitle>Sales Report</CardTitle>
             <CardDescription>
-              All sale entries from the local file.
+              All sale entries from Supabase.
             </CardDescription>
           </div>
           <Button
@@ -161,8 +136,8 @@ export function ReportsTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sales.map((entry, index) => (
-                  <TableRow key={index}>
+                {sales.map((entry) => (
+                  <TableRow key={entry.id}>
                     <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
                     <TableCell>{entry.name}</TableCell>
                     <TableCell>{entry.material}</TableCell>
@@ -183,7 +158,7 @@ export function ReportsTab() {
           <div>
             <CardTitle>Diesel Report</CardTitle>
             <CardDescription>
-              All diesel entries from the local file.
+              All diesel entries from Supabase.
             </CardDescription>
           </div>
           <Button
@@ -211,8 +186,8 @@ export function ReportsTab() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {diesel.map((entry, index) => (
-                  <TableRow key={index}>
+                {diesel.map((entry) => (
+                  <TableRow key={entry.id}>
                     <TableCell>{entry.vehicleNumber}</TableCell>
                     <TableCell>{entry.liters}</TableCell>
                     <TableCell>₹{entry.amount}</TableCell>
@@ -228,5 +203,3 @@ export function ReportsTab() {
     </div>
   );
 }
-
-    

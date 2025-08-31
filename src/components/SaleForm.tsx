@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, type FC } from 'react';
@@ -29,8 +30,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { appendToLocalStore, readFromLocalStore } from '@/ai/flows/local-store-flow';
-import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
+import { addSaleEntry, getRecentSaleEntries } from '@/services/saleService';
+import type { SaleEntry } from '@/types';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -49,11 +50,6 @@ const saleSchema = z.object({
 });
 
 type SaleFormValues = z.infer<typeof saleSchema>;
-type SaleEntry = SaleFormValues & { 
-  id: number;
-  date: string;
-  time: string;
-};
 
 export const SaleForm: FC = () => {
   const [entries, setEntries] = useState<SaleEntry[]>([]);
@@ -83,7 +79,7 @@ export const SaleForm: FC = () => {
   useEffect(() => {
     async function fetchEntries() {
       try {
-        const data: SaleEntry[] = await readFromLocalStore('sales');
+        const data: SaleEntry[] = await getRecentSaleEntries();
         setEntries(data);
         if (data.length > 0) {
           setEntryToPrint(data[0]);
@@ -122,45 +118,19 @@ export const SaleForm: FC = () => {
 
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     const now = new Date();
-    const newEntry: SaleEntry = { 
+    const newEntryData = { 
       ...data,
       dcno: nextDcNo,
-      id: now.getTime(),
       date: now.toLocaleDateString('en-GB'),
       time: now.toLocaleTimeString(),
     };
 
     try {
-      // Non-blocking call to Google Sheets first
-      appendToGoogleSheet({
-        sheetName: 'Sales',
-        data: [
-          newEntry.date,
-          newEntry.time,
-          String(newEntry.dcno).padStart(3, '0'),
-          newEntry.name,
-          newEntry.supplier,
-          newEntry.material,
-          newEntry.transporter,
-          newEntry.site,
-          newEntry.vehicleNumber,
-          newEntry.driver,
-          newEntry.rent,
-          newEntry.grosswt,
-          newEntry.tarewt,
-          newEntry.netwt,
-          newEntry.remarks,
-        ],
-      });
+      const savedEntry = await addSaleEntry(newEntryData);
       
-      await appendToLocalStore({
-        storeName: 'sales',
-        data: newEntry,
-      });
-      
-      const updatedEntries = [newEntry, ...entries];
+      const updatedEntries = [savedEntry, ...entries];
       setEntries(updatedEntries);
-      setEntryToPrint(newEntry);
+      setEntryToPrint(savedEntry);
 
       const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
@@ -182,7 +152,7 @@ export const SaleForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Sale entry has been saved locally and sent to Google Sheets.',
+        description: 'Sale entry has been saved to Supabase.',
       });
     } catch (error) {
        console.error('Failed to save entry:', error);

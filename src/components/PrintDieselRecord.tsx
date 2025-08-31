@@ -1,20 +1,9 @@
+
 "use client";
 
 import type { FC } from 'react';
 import QRCode from "react-qr-code";
-
-interface DieselEntry {
-  id: number;
-  date: string;
-  time: string;
-  vehicleNumber: string;
-  liters: number;
-  rate: number;
-  amount: number;
-  driverName: string;
-  pump: string;
-  odo: number;
-}
+import type { DieselEntry } from '@/types';
 
 interface PrintDieselRecordProps {
   data: DieselEntry | null;

@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A flow for appending data to a Google Sheet.
@@ -30,35 +31,24 @@ async function getGoogleSheetsClient() {
 }
 
 export async function appendToGoogleSheet(input: AppendToSheetInput): Promise<void> {
-  return appendToGoogleSheetFlow(input);
-}
-
-const appendToGoogleSheetFlow = ai.defineFlow(
-  {
-    name: 'appendToGoogleSheetFlow',
-    inputSchema: AppendToSheetInputSchema,
-    outputSchema: z.void(),
-  },
-  async ({ sheetName, data }) => {
-    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
-    if (!spreadsheetId) {
-      throw new Error('Google Sheet ID is not set in environment variables.');
-    }
-
-    try {
-      const sheets = await getGoogleSheetsClient();
-      await sheets.spreadsheets.values.append({
-        spreadsheetId,
-        range: sheetName,
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-          values: [data],
-        },
-      });
-    } catch (error) {
-      console.error('Failed to append data to Google Sheet:', error);
-      // We will just log the error and not throw it to the client
-      // because the primary data store is the local file.
-    }
+  const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  if (!spreadsheetId) {
+    throw new Error('Google Sheet ID is not set in environment variables.');
   }
-);
+
+  try {
+    const sheets = await getGoogleSheetsClient();
+    await sheets.spreadsheets.values.append({
+      spreadsheetId,
+      range: input.sheetName,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [input.data],
+      },
+    });
+  } catch (error) {
+    console.error('Failed to append data to Google Sheet:', error);
+    // Re-throw the error to be caught by the calling form
+    throw new Error(`Failed to save to Google Sheet. Please check your credentials and Sheet ID. Details: ${(error as Error).message}`);
+  }
+}

@@ -1,26 +1,10 @@
+
 "use client";
 
 import type { FC } from 'react';
 import QRCode from 'react-qr-code';
+import type { SaleEntry } from '@/types';
 
-interface SaleEntry {
-  id: number;
-  dcno: number;
-  date: string;
-  time: string;
-  name: string;
-  material: string;
-  supplier: string;
-  transporter: string;
-  grosswt: number;
-  tarewt: number;
-  netwt: number;
-  rent: number;
-  driver: string;
-  site: string;
-  remarks?: string;
-  vehicleNumber: string;
-}
 
 interface PrintRecordProps {
   data: SaleEntry | null;
