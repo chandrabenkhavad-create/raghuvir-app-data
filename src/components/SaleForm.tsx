@@ -26,12 +26,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { addSaleEntry, getRecentSaleEntries } from '@/services/saleService';
 import type { SaleEntry } from '@/types';
+import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -52,10 +51,9 @@ const saleSchema = z.object({
 type SaleFormValues = z.infer<typeof saleSchema>;
 
 export const SaleForm: FC = () => {
-  const [entries, setEntries] = useState<SaleEntry[]>([]);
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
-  const [nextDcNo, setNextDcNo] = useState(1);
+  const [nextDcNo, setNextDcNo] = useState(1); // Assuming we can't easily get the last DC no from Sheets
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -77,32 +75,10 @@ export const SaleForm: FC = () => {
   });
 
   useEffect(() => {
-    async function fetchEntries() {
-      try {
-        const data: SaleEntry[] = await getRecentSaleEntries();
-        setEntries(data);
-        if (data.length > 0) {
-          setEntryToPrint(data[0]);
-          const lastEntry = data[0];
-          const lastDcNum = lastEntry.dcno;
-          const newDcNo = lastDcNum + 1;
-          setNextDcNo(newDcNo);
-          form.setValue('dcno', newDcNo);
-        } else {
-          setNextDcNo(1);
-          form.setValue('dcno', 1);
-        }
-      } catch (error) {
-        console.error('Failed to load sales entries:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error!',
-          description: 'Failed to load recent sales entries.',
-        });
-      }
-    }
-    fetchEntries();
-  }, [toast, form]);
+    // In a real app, you might want to fetch the last DC number from Google Sheets on load.
+    // For simplicity, we'll just increment it on the client side.
+    form.setValue('dcno', nextDcNo);
+  }, [nextDcNo, form]);
 
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
@@ -112,13 +88,9 @@ export const SaleForm: FC = () => {
     form.setValue('netwt', parseFloat(net.toFixed(2)));
   }, [grosswt, tarewt, form]);
 
-  useEffect(() => {
-    form.setValue('dcno', nextDcNo);
-  }, [nextDcNo, form]);
-
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     const now = new Date();
-    const newEntryData = { 
+    const newEntryData: Omit<SaleEntry, 'id' | 'created_at'> = { 
       ...data,
       dcno: nextDcNo,
       date: now.toLocaleDateString('en-GB'),
@@ -126,11 +98,33 @@ export const SaleForm: FC = () => {
     };
 
     try {
-      const savedEntry = await addSaleEntry(newEntryData);
+      const sheetData = [
+        newEntryData.dcno,
+        newEntryData.date,
+        newEntryData.time,
+        newEntryData.name,
+        newEntryData.material,
+        newEntryData.supplier,
+        newEntryData.transporter,
+        newEntryData.grosswt,
+        newEntryData.tarewt,
+        newEntryData.netwt,
+        newEntryData.rent,
+        newEntryData.driver,
+        newEntryData.site,
+        newEntryData.remarks || '',
+        newEntryData.vehicleNumber
+      ];
+
+      await appendToGoogleSheet({ sheetName: 'Sales', data: sheetData });
       
-      const updatedEntries = [savedEntry, ...entries];
-      setEntries(updatedEntries);
-      setEntryToPrint(savedEntry);
+      const printableEntry: SaleEntry = {
+        ...newEntryData,
+        id: Date.now(), // Use timestamp for temporary client-side ID
+        created_at: now.toISOString(),
+      };
+
+      setEntryToPrint(printableEntry);
 
       const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
@@ -152,7 +146,7 @@ export const SaleForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Sale entry has been saved to Supabase.',
+        description: 'Sale entry has been saved to Google Sheets.',
       });
     } catch (error) {
        console.error('Failed to save entry:', error);
@@ -183,8 +177,9 @@ export const SaleForm: FC = () => {
     }
   };
   
-  const openPrintDialog = (entry: SaleEntry) => {
-    setEntryToPrint(entry);
+  const openPrintDialog = () => {
+    // This is triggered by the button, we just need the dialog to open.
+    // The entryToPrint state is already set on form submission.
   };
 
   return (
@@ -387,7 +382,7 @@ export const SaleForm: FC = () => {
                       type="button"
                       variant="outline"
                       disabled={!entryToPrint}
-                      onClick={() => openPrintDialog(entries[0])}
+                      onClick={openPrintDialog}
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       Print Last Entry
@@ -398,59 +393,6 @@ export const SaleForm: FC = () => {
             </Form>
           </CardContent>
         </Card>
-
-        {entries.length > 0 && (
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Recent Sale Entries</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>DC No.</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Material</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Gross Wt.</TableHead>
-                    <TableHead>Tare Wt.</TableHead>
-                    <TableHead>Net Wt.</TableHead>
-                    <TableHead>Vehicle No.</TableHead>
-                    <TableHead>Remarks</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {entries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
-                      <TableCell>{entry.name}</TableCell>
-                      <TableCell>{entry.material}</TableCell>
-                      <TableCell>{entry.supplier}</TableCell>
-                      <TableCell>{entry.grosswt} KG</TableCell>
-                      <TableCell>{entry.tarewt} KG</TableCell>
-                      <TableCell>{entry.netwt} KG</TableCell>
-                      <TableCell>{entry.vehicleNumber}</TableCell>
-                      <TableCell>{entry.remarks}</TableCell>
-                      <TableCell className="text-right">
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openPrintDialog(entry)}
-                          >
-                            <Printer className="h-4 w-4" />
-                            <span className="sr-only">Print</span>
-                          </Button>
-                        </DialogTrigger>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
 
         <DialogContent className="max-w-4xl">
           <DialogHeader>

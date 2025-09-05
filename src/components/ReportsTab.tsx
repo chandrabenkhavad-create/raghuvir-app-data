@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,147 +8,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "./ui/button";
-import { Download } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Terminal } from "lucide-react";
-import { getAllSaleEntries } from "@/services/saleService";
-import { getAllDieselEntries } from "@/services/dieselService";
-import type { SaleEntry, DieselEntry } from "@/types";
 
 
 export function ReportsTab() {
-  const [sales, setSales] = useState<SaleEntry[]>([]);
-  const [diesel, setDiesel] = useState<DieselEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const [salesData, dieselData] = await Promise.all([
-          getAllSaleEntries(),
-          getAllDieselEntries(),
-        ]);
-
-        if (salesData) {
-          setSales(salesData);
-        }
-
-        if (dieselData) {
-          setDiesel(dieselData);
-        }
-      } catch (e) {
-        const error = e as Error;
-        console.error("Failed to fetch data:", error);
-        setError(error.message);
-        toast({
-          variant: "destructive",
-          title: "Error!",
-          description: error.message || "Failed to fetch data from Supabase.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, [toast]);
-
-  const downloadCSV = (data: (SaleEntry | DieselEntry)[], filename: string) => {
-    if (data.length === 0) return;
-    const headers = Object.keys(data[0]);
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [
-        headers.join(","),
-        ...data.map((row) =>
-          headers.map((header) => (row as any)[header]).join(",")
-        ),
-      ].join("\n");
-
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
   
-  if (error) {
-    return (
-      <Alert variant="destructive">
-        <Terminal className="h-4 w-4" />
-        <AlertTitle>Error</AlertTitle>
-        <AlertDescription>
-         {error}
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      <Alert>
+        <Terminal className="h-4 w-4" />
+        <AlertTitle>Reports Not Available</AlertTitle>
+        <AlertDescription>
+         The reporting feature is not available when using Google Sheets as the data source in this application. Data can be viewed directly in your Google Sheet.
+        </AlertDescription>
+      </Alert>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle>Sales Report</CardTitle>
             <CardDescription>
-              All sale entries from Supabase.
+              View your sales data in your Google Sheet.
             </CardDescription>
           </div>
-          <Button
-            onClick={() => downloadCSV(sales, "sales_report.csv")}
-            disabled={sales.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download CSV
-          </Button>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p>Loading sales data...</p>
-          ) : sales.length === 0 ? (
-             <p>No sales data found.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>DC No.</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Material</TableHead>
-                  <TableHead>Net Weight</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Vehicle No.</TableHead>
-                  <TableHead>Site</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sales.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
-                    <TableCell>{entry.name}</TableCell>
-                    <TableCell>{entry.material}</TableCell>
-                    <TableCell>{entry.netwt} KG</TableCell>
-                    <TableCell>{entry.driver}</TableCell>
-                    <TableCell>{entry.vehicleNumber}</TableCell>
-                    <TableCell>{entry.site}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+            <p>Data is saved directly to your specified Google Sheet.</p>
         </CardContent>
       </Card>
 
@@ -158,46 +42,12 @@ export function ReportsTab() {
           <div>
             <CardTitle>Diesel Report</CardTitle>
             <CardDescription>
-              All diesel entries from Supabase.
+              View your diesel data in your Google Sheet.
             </CardDescription>
           </div>
-          <Button
-            onClick={() => downloadCSV(diesel, "diesel_report.csv")}
-            disabled={diesel.length === 0}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download CSV
-          </Button>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <p>Loading diesel data...</p>
-          ) : diesel.length === 0 ? (
-            <p>No diesel data found.</p>
-          ): (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-bold">Vehicle No.</TableHead>
-                  <TableHead>Liters</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Pump</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {diesel.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{entry.vehicleNumber}</TableCell>
-                    <TableCell>{entry.liters}</TableCell>
-                    <TableCell>₹{entry.amount}</TableCell>
-                    <TableCell>{entry.driverName}</TableCell>
-                    <TableCell>{entry.pump}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+            <p>Data is saved directly to your specified Google Sheet.</p>
         </CardContent>
       </Card>
     </div>
