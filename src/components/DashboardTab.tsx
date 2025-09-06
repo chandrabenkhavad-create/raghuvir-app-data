@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel } from 'lucide-react';
+import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel, AlertTriangle } from 'lucide-react';
 
 export function DashboardTab() {
     const [salesData, setSalesData] = useState<SaleEntry[]>([]);
@@ -122,14 +122,14 @@ export function DashboardTab() {
 
     if (error) {
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-destructive">Error</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p>{error}</p>
-            </CardContent>
-          </Card>
+          <Alert variant="destructive" className="mt-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Dashboard Error</AlertTitle>
+            <AlertDescription>
+              <p>Could not fetch data. This is likely due to a Supabase connection issue.</p>
+              <pre className="mt-2 bg-muted/50 p-2 rounded-md font-mono text-xs text-destructive-foreground">{error}</pre>
+            </AlertDescription>
+          </Alert>
         );
     }
     

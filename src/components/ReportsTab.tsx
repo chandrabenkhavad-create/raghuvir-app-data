@@ -18,12 +18,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download } from "lucide-react";
+import { Download, AlertTriangle } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Skeleton } from "./ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+
 
 export function ReportsTab() {
   const [salesData, setSalesData] = useState<SaleEntry[]>([]);
@@ -83,14 +85,14 @@ export function ReportsTab() {
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-destructive">Error</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>{error}</p>
-        </CardContent>
-      </Card>
+      <Alert variant="destructive" className="mt-4">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Reports Error</AlertTitle>
+        <AlertDescription>
+          <p>Could not fetch report data. This is likely due to a Supabase connection issue.</p>
+          <pre className="mt-2 bg-muted/50 p-2 rounded-md font-mono text-xs text-destructive-foreground">{error}</pre>
+        </AlertDescription>
+      </Alert>
     );
   }
 
@@ -207,3 +209,5 @@ export function ReportsTab() {
     </Tabs>
   );
 }
+
+    
