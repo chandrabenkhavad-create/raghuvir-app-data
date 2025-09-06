@@ -164,7 +164,7 @@ export const SaleForm: FC = () => {
         });
       } else {
         const now = new Date();
-        const newEntryData: Omit<SaleEntry, 'id' | 'created_at' | 'customer' > = { 
+        const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
           ...data,
           dcno: dcNumber!,
           date: now.toLocaleDateString('en-GB'),
@@ -211,18 +211,12 @@ export const SaleForm: FC = () => {
     }
   };
   
-  const handleReprint = async (id: number) => {
-      try {
-          const entry = await getSaleEntryById(id);
-          if (entry) {
-              setEntryToPrint(entry);
-              setIsPrintDialogOpen(true);
-          } else {
-              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
-          }
-      } catch (error) {
-          console.error('Failed to fetch entry for printing:', error);
-          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+  const handleReprint = (entry: SaleEntry) => {
+      if (entry) {
+        setEntryToPrint(entry);
+        setIsPrintDialogOpen(true);
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
       }
   }
 
@@ -475,8 +469,7 @@ export const SaleForm: FC = () => {
                 <div className="flex gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />{editingEntryId ? 'Update Entry' : 'Submit Entry'}</Button>
                   {editingEntryId && (
-                     <Button type="button" variant="secondary" onClick={resetFormForNewEntry}><PlusCircle className="mr-2 h-4 w-4" />New Entry</Button>
-                  )}
+                     <Button type="button" variant="secondary" onClick={resetFormForNewEntry}><PlusCircle className="mr-2 h-4 w-4" />New Entry</Button>                  )}
                    <DialogTrigger asChild>
                     <Button
                       type="button"
