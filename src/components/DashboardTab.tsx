@@ -59,7 +59,8 @@ export function DashboardTab() {
     const customerTotalSales = useMemo(() => {
         if (!salesData.length) return {};
         return salesData.reduce((acc, sale) => {
-            acc[sale.customer] = (acc[sale.customer] || 0) + sale.netwt;
+            const customer = sale.site; // Assuming site is the customer
+            acc[customer] = (acc[customer] || 0) + sale.netwt;
             return acc;
         }, {} as Record<string, number>);
     }, [salesData]);
@@ -278,11 +279,11 @@ export function DashboardTab() {
                         </p>
                     </CardContent>
                  </Card>
-                 <Card className="lg:col-span-2">
+                 <Card className="lg:col-span-4">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
                     </CardHeader>
-                    <CardContent className="overflow-auto max-h-80">
+                    <CardContent className="overflow-auto max-h-96">
                         <div className="space-y-4">
                             {Object.entries(supplierMaterials).map(([supplier, materials]) => (
                                 <Card key={supplier} className="bg-muted/50">
@@ -304,12 +305,12 @@ export function DashboardTab() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Users /> Customer Material Sales</CardTitle>
-                        <CardDescription>Total net weight of material sold to each customer</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Users /> Site Material Sales</CardTitle>
+                        <CardDescription>Total net weight of material sold to each site</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Site</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {Object.entries(customerTotalSales).map(([customer, totalNetWt]) => (
                                     <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{totalNetWt.toFixed(2)}</TableCell></TableRow>

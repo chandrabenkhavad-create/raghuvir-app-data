@@ -2,10 +2,12 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { verifyUser } from '@/services/userService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  login: (user: string, pass: string) => boolean;
+  user: string | null;
+  login: (user: string, pass: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -15,13 +17,16 @@ const AUTH_KEY = 'raghuvir_infra_auth';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [user, setUser] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
       const storedAuth = localStorage.getItem(AUTH_KEY);
       if (storedAuth) {
-        setIsAuthenticated(JSON.parse(storedAuth));
+        const { authenticated, username } = JSON.parse(storedAuth);
+        setIsAuthenticated(authenticated);
+        setUser(username);
       }
     } catch (error) {
         console.error("Could not read from local storage", error)
@@ -30,12 +35,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const login = (user: string, pass: string): boolean => {
-    // In a real application, you'd have more robust authentication
-    if (user === 'admin' && pass === 'admin') {
+  const login = async (username: string, pass: string): Promise<boolean> => {
+    const isValid = await verifyUser(username, pass);
+    if (isValid) {
       setIsAuthenticated(true);
+      setUser(username);
       try {
-        localStorage.setItem(AUTH_KEY, JSON.stringify(true));
+        localStorage.setItem(AUTH_KEY, JSON.stringify({ authenticated: true, username }));
       } catch (error) {
         console.error("Could not write to local storage", error)
       }
@@ -46,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = () => {
     setIsAuthenticated(false);
+    setUser(null);
     try {
       localStorage.removeItem(AUTH_KEY);
     } catch (error) {
@@ -53,13 +60,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
   
-  // Prevent rendering children until we have checked auth status
   if (loading) {
       return null;
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

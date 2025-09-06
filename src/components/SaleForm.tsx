@@ -42,7 +42,6 @@ const saleSchema = z.object({
   dcno: z.coerce.number(),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
-  customer: z.string().min(1, 'Customer is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -72,7 +71,6 @@ export const SaleForm: FC = () => {
       dcno: 0,
       material: '',
       supplier: '',
-      customer: '',
       transporter: '',
       vehicleNumber: '',
       driver: '',
@@ -97,7 +95,6 @@ export const SaleForm: FC = () => {
         dcno: newDcNo,
         material: '',
         supplier: '',
-        customer: '',
         transporter: '',
         vehicleNumber: '',
         driver: '',
@@ -118,7 +115,22 @@ export const SaleForm: FC = () => {
           description: (error as Error).message || 'Could not get the last DC number.'
       })
       setDcNumber(1); 
-      form.reset({ dcno: 1 });
+      form.reset({ 
+        dcno: 1,
+        material: '',
+        supplier: '',
+        transporter: '',
+        vehicleNumber: '',
+        driver: '',
+        site: '',
+        remarks: '',
+        grosswt: 0,
+        tarewt: 0,
+        netwt: 0,
+        rent: 0,
+        royaltyPassNumber: '',
+        royaltyWeight: 0,
+      });
     }
   }
 
@@ -199,39 +211,26 @@ export const SaleForm: FC = () => {
     }
   };
   
-  const handleReprint = async (id: number) => {
-      try {
-          const entry = await getSaleEntryById(id);
-          if (entry) {
-              setEntryToPrint(entry);
-              setIsPrintDialogOpen(true);
-          } else {
-              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
-          }
-      } catch (error) {
-          console.error('Failed to fetch entry for printing:', error);
-          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+  const handleReprint = (entry: SaleEntry) => {
+      if (entry) {
+        setEntryToPrint(entry);
+        setIsPrintDialogOpen(true);
+      } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
       }
   }
 
-  const handleEdit = async (id: number) => {
-      try {
-          const entry = await getSaleEntryById(id);
-          if (entry) {
-              setEditingEntryId(entry.id);
-              setDcNumber(entry.dcno);
-              form.reset({
-                ...entry,
-                // Ensure optional numeric fields are handled if they are null/undefined
-                royaltyWeight: entry.royaltyWeight ?? 0,
-              });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
-          }
-      } catch (error) {
-          console.error('Failed to fetch entry for editing:', error);
-          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+  const handleEdit = (entry: SaleEntry) => {
+      if (entry) {
+          setEditingEntryId(entry.id);
+          setDcNumber(entry.dcno);
+          form.reset({
+            ...entry,
+            royaltyWeight: entry.royaltyWeight ?? 0,
+          });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
       }
   }
 
@@ -291,19 +290,6 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., ABC Suppliers" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="customer"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -477,8 +463,7 @@ export const SaleForm: FC = () => {
                 <div className="flex gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />{editingEntryId ? 'Update Entry' : 'Submit Entry'}</Button>
                   {editingEntryId && (
-                     <Button type="button" variant="secondary" onClick={resetFormForNewEntry}><PlusCircle className="mr-2 h-4 w-4" />New Entry</Button>
-                  )}
+                     <Button type="button" variant="secondary" onClick={resetFormForNewEntry}><PlusCircle className="mr-2 h-4 w-4" />New Entry</Button>                  )}
                    <DialogTrigger asChild>
                     <Button
                       type="button"
@@ -520,5 +505,3 @@ export const SaleForm: FC = () => {
     </>
   );
 };
-
-    

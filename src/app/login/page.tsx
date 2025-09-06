@@ -9,17 +9,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LogIn } from 'lucide-react';
+import { LogIn, Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    if (login(username, password)) {
+  const handleLogin = async () => {
+    setLoading(true);
+    const success = await login(username, password);
+    if (success) {
       toast({
         title: 'Success!',
         description: 'You have successfully logged in.',
@@ -32,6 +35,7 @@ export default function LoginPage() {
         description: 'Invalid username or password.',
       });
     }
+    setLoading(false);
   };
 
   return (
@@ -60,6 +64,7 @@ export default function LoginPage() {
               placeholder="admin"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
             />
           </div>
           <div className="space-y-2">
@@ -67,28 +72,23 @@ export default function LoginPage() {
             <Input
               id="password"
               type="password"
-              placeholder="admin"
+              placeholder="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+              disabled={loading}
             />
           </div>
-          <Button onClick={handleLogin} className="w-full">
-            <LogIn className="mr-2 h-4 w-4" />
+          <Button onClick={handleLogin} className="w-full" disabled={loading}>
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <LogIn className="mr-2 h-4 w-4" />
+            )}
             Login
           </Button>
-          <div className="mt-4 text-center text-sm">
-            <a href="#" className="underline">
-              Forgot password?
-            </a>
-            <span className="mx-2">|</span>
-            <a href="#" className="underline">
-              Change password
-            </a>
-          </div>
         </CardContent>
       </Card>
     </main>
   );
 }
-

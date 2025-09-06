@@ -144,42 +144,30 @@ export const DieselForm: FC = () => {
     }
   };
 
-  const handleReprint = async (id: number) => {
-    try {
-        const entry = await getDieselEntryById(id);
-        if (entry) {
-            setEntryToPrint(entry);
-            setIsPrintDialogOpen(true);
-        } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
-        }
-    } catch (error) {
-        console.error('Failed to fetch entry for printing:', error);
-        toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+  const handleReprint = (entry: DieselEntry) => {
+    if (entry) {
+        setEntryToPrint(entry);
+        setIsPrintDialogOpen(true);
+    } else {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
     }
   };
 
-  const handleEdit = async (id: number) => {
-      try {
-          const entry = await getDieselEntryById(id);
-          if (entry) {
-              setEditingEntryId(entry.id);
-              form.reset({
-                  vehicleNumber: entry.vehicleNumber,
-                  liters: entry.liters,
-                  rate: entry.rate,
-                  amount: entry.amount,
-                  driverName: entry.driverName,
-                  pump: entry.pump,
-                  odo: entry.odo,
-              });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
-          }
-      } catch (error) {
-          console.error('Failed to fetch entry for editing:', error);
-          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+  const handleEdit = (entry: DieselEntry) => {
+      if (entry) {
+          setEditingEntryId(entry.id);
+          form.reset({
+              vehicleNumber: entry.vehicleNumber,
+              liters: entry.liters,
+              rate: entry.rate,
+              amount: entry.amount,
+              driverName: entry.driverName,
+              pump: entry.pump,
+              odo: entry.odo,
+          });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
       }
   };
 

@@ -1,4 +1,5 @@
 
+
 export interface SaleEntry {
   id: number;
   dcno: number;
@@ -6,7 +7,6 @@ export interface SaleEntry {
   time: string;
   material: string;
   supplier: string;
-  customer: string;
   transporter: string;
   grosswt: number;
   tarewt: number;
@@ -32,5 +32,12 @@ export interface DieselEntry {
   driverName: string;
   pump: string;
   odo: number;
+  created_at: string;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  password?: string;
   created_at: string;
 }

@@ -26,8 +26,8 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface RecentDieselProps {
     refreshKey: boolean;
-    onPrint: (id: number) => void;
-    onEdit: (id: number) => void;
+    onPrint: (entry: DieselEntry) => void;
+    onEdit: (entry: DieselEntry) => void;
 }
 
 export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps) {
@@ -98,11 +98,11 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                   <TableCell>₹{diesel.amount.toFixed(2)}</TableCell>
                   <TableCell>{diesel.pump}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => onPrint(diesel.id)} className="mr-2">
+                    <Button variant="outline" size="sm" onClick={() => onPrint(diesel)} className="mr-2">
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onEdit(diesel.id)}>
+                    <Button variant="outline" size="sm" onClick={() => onEdit(diesel)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                     </Button>
