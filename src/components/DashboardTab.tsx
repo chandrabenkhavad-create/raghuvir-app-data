@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal, Droplets } from 'lucide-react';
+import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel } from 'lucide-react';
 
 export function DashboardTab() {
     const [salesData, setSalesData] = useState<SaleEntry[]>([]);
@@ -148,7 +148,7 @@ export function DashboardTab() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                  <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Vehicle Trips</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Truck /> Vehicle Trips</CardTitle>
                         <CardDescription>From sales entries</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -164,7 +164,7 @@ export function DashboardTab() {
                 </Card>
                  <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Transporter Trips</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Users /> Transporter Trips</CardTitle>
                          <CardDescription>From sales entries</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -180,7 +180,7 @@ export function DashboardTab() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Vehicle Sale Revenue</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Package /> Vehicle Sale Revenue</CardTitle>
                         <CardDescription>Net Weight * Rent</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -196,7 +196,7 @@ export function DashboardTab() {
                 </Card>
                  <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Vehicle Diesel Cost</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><IndianRupee /> Vehicle Diesel Cost</CardTitle>
                         <CardDescription>Total amount spent</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -212,7 +212,7 @@ export function DashboardTab() {
                 </Card>
                  <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Vehicle Diesel Liters</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Droplets /> Vehicle Diesel Liters</CardTitle>
                         <CardDescription>Total liters consumed</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -228,7 +228,7 @@ export function DashboardTab() {
                 </Card>
                  <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Pump-wise Diesel Liters</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Building /> Pump-wise Diesel Liters</CardTitle>
                         <CardDescription>Total liters from each pump</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -244,7 +244,7 @@ export function DashboardTab() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle>Vehicle Net Revenue</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><HandCoins /> Vehicle Net Revenue</CardTitle>
                         <CardDescription>Sale Revenue - Diesel Cost</CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -260,7 +260,7 @@ export function DashboardTab() {
                 </Card>
                  <Card className="lg:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Diesel</CardTitle>
+                        <CardTitle className="text-sm font-medium flex items-center gap-2"><Fuel />Total Diesel</CardTitle>
                         <Droplets className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
@@ -273,7 +273,7 @@ export function DashboardTab() {
             </div>
              <Card>
                 <CardHeader>
-                    <CardTitle>Material Supply by Supplier</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
@@ -304,6 +304,8 @@ export function DashboardTab() {
             </Alert>
         </div>
     );
+
+    
 
     
 
