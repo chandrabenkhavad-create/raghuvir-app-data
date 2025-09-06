@@ -37,28 +37,30 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
-              Raghuvir Infrastructure
-            </h1>
-            <p className="text-muted-foreground mt-2 text-lg">
-              Sayla-Sudamda Road,Sudamda.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-             <SupabaseStatus />
-             <ThemeToggle />
-             {user === 'admin' && (
-                <Link href="/users" passHref>
-                  <Button variant="outline">
-                    <UserCog className="mr-2 h-4 w-4" /> Manage Users
-                  </Button>
-                </Link>
-              )}
-             <Button variant="outline" onClick={logout}>
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button>
+        <header className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start mb-4">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
+                Raghuvir Infrastructure
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                Sayla-Sudamda Road,Sudamda.
+              </p>
+            </div>
+            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+               <SupabaseStatus />
+               <ThemeToggle />
+               {user === 'admin' && (
+                  <Link href="/users" passHref>
+                    <Button variant="outline">
+                      <UserCog className="mr-2 h-4 w-4" /> Manage Users
+                    </Button>
+                  </Link>
+                )}
+               <Button variant="outline" onClick={logout}>
+                  <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
+            </div>
           </div>
         </header>
 
