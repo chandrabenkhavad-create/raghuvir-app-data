@@ -42,7 +42,7 @@ export default function Home() {
           <div className="absolute top-0 right-0 flex items-center gap-4">
               <SupabaseStatus />
                <Button variant="ghost" onClick={logout}>
-                  <LogOut className="mr-2 h-5 w-5" />
+                  <LogOut className="mr-2 h-4 w-4" />
                   Logout
                </Button>
           </div>
