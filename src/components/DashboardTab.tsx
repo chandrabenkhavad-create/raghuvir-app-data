@@ -279,11 +279,11 @@ export function DashboardTab() {
                         </p>
                     </CardContent>
                  </Card>
-                 <Card className="lg:col-span-2">
+                 <Card className="lg:col-span-4">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
                     </CardHeader>
-                    <CardContent className="overflow-auto max-h-80">
+                    <CardContent className="overflow-auto max-h-96">
                         <div className="space-y-4">
                             {Object.entries(supplierMaterials).map(([supplier, materials]) => (
                                 <Card key={supplier} className="bg-muted/50">
