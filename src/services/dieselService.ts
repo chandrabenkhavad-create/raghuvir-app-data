@@ -45,7 +45,25 @@ export async function addDieselEntry(entry: NewDieselEntry): Promise<DieselEntry
     }
 }
 
-export async function getRecentDieselEntries(limit = 5): Promise<DieselEntry[]> {
+export async function updateDieselEntry(id: number, entry: Partial<NewDieselEntry>): Promise<DieselEntry> {
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+            .from('diesel')
+            .update(entry)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (error: any) {
+        console.error('Failed to update diesel entry:', error);
+        throw new Error(`Failed to update diesel entry: ${error.message}`);
+    }
+}
+
+
+export async function getRecentDieselEntries(limit = 10): Promise<DieselEntry[]> {
      return runQuery(supabase => 
         supabase
             .from('diesel')
@@ -53,6 +71,16 @@ export async function getRecentDieselEntries(limit = 5): Promise<DieselEntry[]> 
             .order('id', { ascending: false })
             .limit(limit)
     , []);
+}
+
+export async function getDieselEntryById(id: number): Promise<DieselEntry | null> {
+    return runQuery(supabase => 
+        supabase
+            .from('diesel')
+            .select('*')
+            .eq('id', id)
+            .single()
+    , null);
 }
 
 export async function getAllDieselEntries(): Promise<DieselEntry[]> {

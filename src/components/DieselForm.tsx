@@ -15,7 +15,8 @@ import {
   IndianRupee, 
   User, 
   Building, 
-  Gauge
+  Gauge,
+  PlusCircle
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { DieselEntry } from '@/types';
-import { addDieselEntry } from '@/services/dieselService';
+import { addDieselEntry, getDieselEntryById, updateDieselEntry } from '@/services/dieselService';
+import { RecentDiesel } from './RecentDiesel';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -42,6 +44,9 @@ type DieselFormValues = z.infer<typeof dieselSchema>;
 
 export const DieselForm: FC = () => {
   const [entryToPrint, setEntryToPrint] = useState<DieselEntry | null>(null);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+  const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
+  const [refreshRecent, setRefreshRecent] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<DieselFormValues>({
@@ -56,6 +61,19 @@ export const DieselForm: FC = () => {
       odo: 0,
     },
   });
+  
+  const resetForm = () => {
+    setEditingEntryId(null);
+    form.reset({
+        vehicleNumber: '',
+        liters: 0,
+        rate: 0,
+        amount: 0,
+        driverName: '',
+        pump: '',
+        odo: 0,
+    });
+  }
 
   const liters = form.watch('liters');
   const rate = form.watch('rate');
@@ -66,29 +84,37 @@ export const DieselForm: FC = () => {
   }, [liters, rate, form]);
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
-    const now = new Date();
-    const newEntryData: Omit<DieselEntry, 'id' | 'created_at'> = { 
-      ...data, 
-      date: now.toLocaleDateString('en-GB'),
-      time: now.toLocaleTimeString(),
-    };
-    
     try {
-      const savedEntry = await addDieselEntry(newEntryData);
+      let savedEntry: DieselEntry;
+
+      if (editingEntryId) {
+        // Update existing entry
+        const updatedData: Partial<DieselEntry> = { ...data };
+        savedEntry = await updateDieselEntry(editingEntryId, updatedData);
+        toast({
+            title: 'Success!',
+            description: 'Diesel entry has been updated.',
+        });
+      } else {
+        // Add new entry
+        const now = new Date();
+        const newEntryData: Omit<DieselEntry, 'id' | 'created_at'> = { 
+          ...data, 
+          date: now.toLocaleDateString('en-GB'),
+          time: now.toLocaleTimeString(),
+        };
+        savedEntry = await addDieselEntry(newEntryData);
+        toast({
+          title: 'Success!',
+          description: 'Diesel entry has been saved.',
+        });
+      }
+      
       setEntryToPrint(savedEntry);
-      form.reset({
-        vehicleNumber: '',
-        liters: 0,
-        rate: 0,
-        amount: 0,
-        driverName: '',
-        pump: '',
-        odo: 0,
-      });
-      toast({
-        title: 'Success!',
-        description: 'Diesel entry has been saved.',
-      });
+      setIsPrintDialogOpen(true);
+      resetForm();
+      setRefreshRecent(prev => !prev);
+
     } catch (error) {
       console.error('Failed to save entry:', error);
       toast({
@@ -117,137 +143,177 @@ export const DieselForm: FC = () => {
       }, 500);
     }
   };
-  
-  const openPrintDialog = () => {
-    // This is triggered by the button, we just need the dialog to open.
-    // The entryToPrint state is already set on form submission.
+
+  const handleReprint = async (id: number) => {
+    try {
+        const entry = await getDieselEntryById(id);
+        if (entry) {
+            setEntryToPrint(entry);
+            setIsPrintDialogOpen(true);
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
+        }
+    } catch (error) {
+        console.error('Failed to fetch entry for printing:', error);
+        toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+    }
   };
 
-  return (
-    <Dialog>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Fuel /> Diesel Entry
-          </CardTitle>
-          <CardDescription>Enter the details of the diesel purchase.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <FormField
-                  control={form.control}
-                  name="vehicleNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., MH12-AB1234" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="liters"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><Droplets /> Liters</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 20.5" {...field} step="0.01" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="rate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><Tag /> Rate</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 95.50" {...field} step="0.01" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="amount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><IndianRupee /> Amount</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} disabled />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="driverName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Jane Smith" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="pump"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., City Fuel Station" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="odo"
-                  render={({ field }) => (
-                    <FormItem className="md:col-span-2 lg:col-span-1">
-                      <FormLabel className="flex items-center gap-2"><Gauge /> ODO Meter Reading</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 125000" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex gap-4">
-                <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
-                <DialogTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={!entryToPrint}
-                    onClick={openPrintDialog}
-                  >
-                    <Printer className="mr-2 h-4 w-4" />
-                    Print Last Entry
-                  </Button>
-                </DialogTrigger>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+  const handleEdit = async (id: number) => {
+      try {
+          const entry = await getDieselEntryById(id);
+          if (entry) {
+              setEditingEntryId(entry.id);
+              form.reset({
+                  vehicleNumber: entry.vehicleNumber,
+                  liters: entry.liters,
+                  rate: entry.rate,
+                  amount: entry.amount,
+                  driverName: entry.driverName,
+                  pump: entry.pump,
+                  odo: entry.odo,
+              });
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
+          }
+      } catch (error) {
+          console.error('Failed to fetch entry for editing:', error);
+          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+      }
+  };
 
-       <DialogContent className="max-w-4xl">
+
+  return (
+    <>
+      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Fuel /> {editingEntryId ? 'Edit Diesel Entry' : 'New Diesel Entry'}
+            </CardTitle>
+            <CardDescription>
+              {editingEntryId ? 'Update the details of the diesel purchase.' : 'Enter the details of the diesel purchase.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="vehicleNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., MH12-AB1234" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="liters"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Droplets /> Liters</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g., 20.5" {...field} step="0.01" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="rate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Tag /> Rate</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g., 95.50" {...field} step="0.01" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="amount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><IndianRupee /> Amount</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} disabled />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="driverName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Jane Smith" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="pump"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., City Fuel Station" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="odo"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2 lg:col-span-1">
+                        <FormLabel className="flex items-center gap-2"><Gauge /> ODO Meter Reading</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g., 125000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <Button type="submit"><Save className="mr-2 h-4 w-4" />{editingEntryId ? 'Update Entry' : 'Submit Entry'}</Button>
+                  {editingEntryId && (
+                     <Button type="button" variant="secondary" onClick={resetForm}><PlusCircle className="mr-2 h-4 w-4" />New Entry</Button>
+                  )}
+                  <DialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={!entryToPrint}
+                    >
+                      <Printer className="mr-2 h-4 w-4" />
+                      Print Last Entry
+                    </Button>
+                  </DialogTrigger>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Print Preview</DialogTitle>
             <DialogDescription>
@@ -261,6 +327,14 @@ export const DieselForm: FC = () => {
             <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
           </DialogFooter>
         </DialogContent>
-    </Dialog>
+      </Dialog>
+      <div className="mt-8">
+        <RecentDiesel 
+            refreshKey={refreshRecent} 
+            onPrint={handleReprint}
+            onEdit={handleEdit}
+        />
+      </div>
+    </>
   );
 };
