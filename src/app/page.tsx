@@ -16,6 +16,7 @@ import { DashboardTab } from '@/components/DashboardTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -38,7 +39,22 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="mb-8">
+        <header className="mb-8 relative">
+          <div className="absolute top-0 right-0 flex items-center gap-4">
+              <SupabaseStatus />
+              <TooltipProvider>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                           <Button variant="ghost" size="icon" onClick={logout}>
+                              <LogOut className="h-5 w-5" />
+                           </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Logout</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </TooltipProvider>
+          </div>
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
               Raghuvir Infrastructure
@@ -96,10 +112,6 @@ export default function Home() {
                     <CardDescription>Manage application-wide settings and user actions.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                       <span className="font-medium">Database Status</span>
-                       <SupabaseStatus />
-                    </div>
                      <div className="flex items-center justify-between p-3 border rounded-lg">
                        <span className="font-medium">Theme</span>
                        <ThemeToggle />
@@ -112,10 +124,6 @@ export default function Home() {
                           </Button>
                         </Link>
                       )}
-                     <Button variant="destructive" className="w-full justify-between p-6" onClick={logout}>
-                       Logout
-                        <LogOut className="h-5 w-5" />
-                    </Button>
                 </CardContent>
              </Card>
           </TabsContent>
