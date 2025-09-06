@@ -21,7 +21,9 @@ import {
   IndianRupee,
   Loader2,
   Ticket,
-  ScrollText
+  ScrollText,
+  Edit,
+  PlusCircle
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -33,7 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { addSaleEntry, getLastSaleEntry, getSaleEntryById } from '@/services/saleService';
+import { addSaleEntry, getLastSaleEntry, getSaleEntryById, updateSaleEntry } from '@/services/saleService';
 import { RecentSales } from './RecentSales';
 
 const saleSchema = z.object({
@@ -60,57 +62,70 @@ export const SaleForm: FC = () => {
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
-  const [nextDcNo, setNextDcNo] = useState<number | null>(null);
+  const [dcNumber, setDcNumber] = useState<number | null>(null);
+  const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
   const [refreshRecentSales, setRefreshRecentSales] = useState(false);
-
-  useEffect(() => {
-    const fetchLastDcNo = async () => {
-      try {
-        const lastEntry = await getLastSaleEntry();
-        if (lastEntry && lastEntry.dcno) {
-          setNextDcNo(lastEntry.dcno + 1);
-        } else {
-          setNextDcNo(1);
-        }
-      } catch (error) {
-        console.error("Failed to fetch last DC number", error);
-        toast({
-            variant: 'destructive',
-            title: 'Error fetching DC Number',
-            description: (error as Error).message || 'Could not connect to the database to get the last DC number.'
-        })
-        setNextDcNo(1); // Start from 1 if fetch fails
-      }
-    };
-    fetchLastDcNo();
-  }, []);
-
+  
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
-    // Default values will be set in useEffect once nextDcNo is fetched
+    defaultValues: {
+      dcno: 0,
+      material: '',
+      supplier: '',
+      customer: '',
+      transporter: '',
+      vehicleNumber: '',
+      driver: '',
+      site: '',
+      remarks: '',
+      grosswt: 0,
+      tarewt: 0,
+      netwt: 0,
+      rent: 0,
+      royaltyPassNumber: '',
+      royaltyWeight: 0,
+    },
   });
   
+  const resetFormForNewEntry = async () => {
+    try {
+      const lastEntry = await getLastSaleEntry();
+      const newDcNo = (lastEntry?.dcno ?? 0) + 1;
+      setDcNumber(newDcNo);
+      setEditingEntryId(null);
+      form.reset({
+        dcno: newDcNo,
+        material: '',
+        supplier: '',
+        customer: '',
+        transporter: '',
+        vehicleNumber: '',
+        driver: '',
+        site: '',
+        remarks: '',
+        grosswt: 0,
+        tarewt: 0,
+        netwt: 0,
+        rent: 0,
+        royaltyPassNumber: '',
+        royaltyWeight: 0,
+      });
+    } catch (error) {
+      console.error("Failed to fetch last DC number for new entry", error);
+      toast({
+          variant: 'destructive',
+          title: 'Error fetching DC Number',
+          description: (error as Error).message || 'Could not get the last DC number.'
+      })
+      setDcNumber(1); 
+      form.reset({ dcno: 1 });
+    }
+  }
+
   useEffect(() => {
-      if (nextDcNo !== null) {
-          form.reset({
-            dcno: nextDcNo,
-            material: '',
-            supplier: '',
-            customer: '',
-            transporter: '',
-            vehicleNumber: '',
-            driver: '',
-            site: '',
-            remarks: '',
-            grosswt: 0,
-            tarewt: 0,
-            netwt: 0,
-            rent: 0,
-            royaltyPassNumber: '',
-            royaltyWeight: 0,
-          });
-      }
-  }, [nextDcNo, form]);
+    resetFormForNewEntry();
+  }, []);
+
 
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
@@ -121,33 +136,40 @@ export const SaleForm: FC = () => {
   }, [grosswt, tarewt, form]);
 
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
-    if (nextDcNo === null) {
+    if (editingEntryId === null && dcNumber === null) {
         toast({ variant: 'destructive', title: 'Error', description: 'DC Number not initialized.' });
         return;
     }
     
-    const now = new Date();
-    const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
-      ...data,
-      dcno: nextDcNo,
-      date: now.toLocaleDateString('en-GB'),
-      time: now.toLocaleTimeString(),
-    };
-
     try {
-      const savedEntry = await addSaleEntry(newEntryData);
+      let savedEntry: SaleEntry;
+
+      if (editingEntryId) {
+        savedEntry = await updateSaleEntry(editingEntryId, data);
+        toast({
+            title: 'Success!',
+            description: 'Sale entry has been updated.',
+        });
+      } else {
+        const now = new Date();
+        const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
+          ...data,
+          dcno: dcNumber!,
+          date: now.toLocaleDateString('en-GB'),
+          time: now.toLocaleTimeString(),
+        };
+        savedEntry = await addSaleEntry(newEntryData);
+        toast({
+            title: 'Success!',
+            description: 'Sale entry has been saved.',
+        });
+      }
       
       setEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
-
-      const newDcNo = nextDcNo + 1;
-      setNextDcNo(newDcNo);
+      await resetFormForNewEntry();
       setRefreshRecentSales(prev => !prev);
       
-      toast({
-        title: 'Success!',
-        description: 'Sale entry has been saved.',
-      });
     } catch (error) {
        console.error('Failed to save entry:', error);
        toast({
@@ -192,8 +214,29 @@ export const SaleForm: FC = () => {
       }
   }
 
+  const handleEdit = async (id: number) => {
+      try {
+          const entry = await getSaleEntryById(id);
+          if (entry) {
+              setEditingEntryId(entry.id);
+              setDcNumber(entry.dcno);
+              form.reset({
+                ...entry,
+                // Ensure optional numeric fields are handled if they are null/undefined
+                royaltyWeight: entry.royaltyWeight ?? 0,
+              });
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
+          }
+      } catch (error) {
+          console.error('Failed to fetch entry for editing:', error);
+          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+      }
+  }
 
-  if (nextDcNo === null) {
+
+  if (dcNumber === null) {
       return (
           <Card>
               <CardHeader>
@@ -218,9 +261,9 @@ export const SaleForm: FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package /> Sale Entry
+              <Package /> {editingEntryId ? 'Edit Sale Entry' : 'New Sale Entry'}
             </CardTitle>
-            <CardDescription>Enter the details of the new sale.</CardDescription>
+            <CardDescription>{editingEntryId ? 'Update the details of the sale.' : 'Enter the details of the new sale.'}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -432,7 +475,10 @@ export const SaleForm: FC = () => {
                  
                 </div>
                 <div className="flex gap-4">
-                  <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
+                  <Button type="submit"><Save className="mr-2 h-4 w-4" />{editingEntryId ? 'Update Entry' : 'Submit Entry'}</Button>
+                  {editingEntryId && (
+                     <Button type="button" variant="secondary" onClick={resetFormForNewEntry}><PlusCircle className="mr-2 h-4 w-4" />New Entry</Button>
+                  )}
                    <DialogTrigger asChild>
                     <Button
                       type="button"
@@ -468,6 +514,7 @@ export const SaleForm: FC = () => {
         <RecentSales 
             refreshKey={refreshRecentSales} 
             onPrint={handleReprint}
+            onEdit={handleEdit}
         />
       </div>
     </>

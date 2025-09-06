@@ -9,6 +9,9 @@ type NewDieselEntry = Omit<DieselEntry, 'id' | 'created_at'>;
 async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>, emptyState: T): Promise<T> {
     try {
         const supabase = getSupabase();
+        if (!supabase) {
+             throw new Error("Supabase is not connected. Please check your environment variables.");
+        }
         const { data, error } = await query(supabase);
 
         if (error) {
@@ -32,6 +35,7 @@ export async function addDieselEntry(entry: NewDieselEntry): Promise<DieselEntry
     // addDieselEntry should fail if the table doesn't exist.
      try {
         const supabase = getSupabase();
+        if (!supabase) throw new Error("Supabase not connected");
         const { data, error } = await supabase
             .from('diesel')
             .insert([entry])
@@ -48,6 +52,7 @@ export async function addDieselEntry(entry: NewDieselEntry): Promise<DieselEntry
 export async function updateDieselEntry(id: number, entry: Partial<NewDieselEntry>): Promise<DieselEntry> {
     try {
         const supabase = getSupabase();
+        if (!supabase) throw new Error("Supabase not connected");
         const { data, error } = await supabase
             .from('diesel')
             .update(entry)
@@ -74,6 +79,10 @@ export async function getRecentDieselEntries(limit = 10): Promise<DieselEntry[]>
 }
 
 export async function getDieselEntryById(id: number): Promise<DieselEntry | null> {
+    if (typeof id !== 'number' || !id) {
+        console.error("getDieselEntryById: Invalid ID provided", id);
+        return null;
+    }
     return runQuery(supabase => 
         supabase
             .from('diesel')

@@ -27,9 +27,10 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 interface RecentSalesProps {
     refreshKey: boolean;
     onPrint: (id: number) => void;
+    onEdit: (id: number) => void;
 }
 
-export function RecentSales({ refreshKey, onPrint }: RecentSalesProps) {
+export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
   const [recentSales, setRecentSales] = useState<SaleEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +102,7 @@ export function RecentSales({ refreshKey, onPrint }: RecentSalesProps) {
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
-                    <Button variant="outline" size="sm" disabled>
+                    <Button variant="outline" size="sm" onClick={() => onEdit(sale.id)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                     </Button>

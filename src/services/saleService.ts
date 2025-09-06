@@ -9,6 +9,9 @@ type NewSaleEntry = Omit<SaleEntry, 'id' | 'created_at'>;
 async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>, emptyState: T): Promise<T> {
     try {
         const supabase = getSupabase();
+        if (!supabase) {
+             throw new Error("Supabase is not connected. Please check your environment variables.");
+        }
         const { data, error } = await query(supabase);
 
         if (error) {
@@ -22,7 +25,7 @@ async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => 
         }
         return data;
     } catch (e: any) {
-        // This catches errors from getSupabase() if not connected
+         // This catches errors from getSupabase() if not connected
         console.error("Service-level error:", e.message)
         throw e;
     }
@@ -33,6 +36,7 @@ export async function addSaleEntry(entry: NewSaleEntry): Promise<SaleEntry> {
     // addSaleEntry should fail if the table doesn't exist.
     try {
         const supabase = getSupabase();
+        if (!supabase) throw new Error("Supabase not connected");
         const { data, error } = await supabase
             .from('sales')
             .insert([entry])
@@ -46,7 +50,26 @@ export async function addSaleEntry(entry: NewSaleEntry): Promise<SaleEntry> {
     }
 }
 
-export async function getRecentSaleEntries(limit = 5): Promise<SaleEntry[]> {
+export async function updateSaleEntry(id: number, entry: Partial<NewSaleEntry>): Promise<SaleEntry> {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) throw new Error("Supabase not connected");
+        const { data, error } = await supabase
+            .from('sales')
+            .update(entry)
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (error: any) {
+        console.error('Failed to update sale entry:', error);
+        throw new Error(`Failed to update sale entry: ${error.message}`);
+    }
+}
+
+
+export async function getRecentSaleEntries(limit = 10): Promise<SaleEntry[]> {
      return runQuery(supabase => 
         supabase
             .from('sales')
@@ -59,6 +82,8 @@ export async function getRecentSaleEntries(limit = 5): Promise<SaleEntry[]> {
 export async function getLastSaleEntry(): Promise<SaleEntry | null> {
     try {
         const supabase = getSupabase();
+        if (!supabase) return null; // Gracefully handle no connection
+        
         const { data, error } = await supabase
             .from('sales')
             .select('dcno')
@@ -66,8 +91,6 @@ export async function getLastSaleEntry(): Promise<SaleEntry | null> {
             .limit(1)
             .single();
 
-        // 'PGRST116': No rows found, which is fine, return null.
-        // '42P01': Table not found, which is also fine for the initial setup, return null.
         if (error && error.code !== 'PGRST116' && error.code !== '42P01') { 
             console.error('Error fetching last sale entry:', error);
             throw new Error('Failed to fetch last sale entry. ' + error.message);
@@ -75,7 +98,6 @@ export async function getLastSaleEntry(): Promise<SaleEntry | null> {
 
         return data;
     } catch(e: any) {
-        // This catches errors from getSupabase()
         console.error("Service-level error in getLastSaleEntry:", e.message);
         throw e;
     }
@@ -92,6 +114,10 @@ export async function getAllSaleEntries(): Promise<SaleEntry[]> {
 }
 
 export async function getSaleEntryById(id: number): Promise<SaleEntry | null> {
+    if (typeof id !== 'number' || !id) {
+        console.error("getSaleEntryById: Invalid ID provided", id);
+        return null;
+    }
     return runQuery(supabase => 
         supabase
             .from('sales')
