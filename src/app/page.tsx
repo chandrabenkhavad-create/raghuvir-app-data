@@ -12,6 +12,7 @@ import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
 import { DashboardTab } from '@/components/DashboardTab';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Home() {
   const { isAuthenticated, logout } = useAuth();
@@ -34,14 +35,17 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="text-center mb-8 relative">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
-            Raghuvir Infrastructure
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Sayla-Sudamda Road,Sudamda.
-          </p>
-          <div className="absolute top-0 right-0">
+        <header className="mb-8 relative">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
+              Raghuvir Infrastructure
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Sayla-Sudamda Road,Sudamda.
+            </p>
+          </div>
+          <div className="absolute top-0 right-0 flex items-center gap-2">
+             <ThemeToggle />
              <Button variant="outline" onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
