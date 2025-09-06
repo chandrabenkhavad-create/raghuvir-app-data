@@ -42,7 +42,6 @@ const saleSchema = z.object({
   dcno: z.coerce.number(),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
-  customer: z.string().min(1, 'Customer is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -72,7 +71,6 @@ export const SaleForm: FC = () => {
       dcno: 0,
       material: '',
       supplier: '',
-      customer: '',
       transporter: '',
       vehicleNumber: '',
       driver: '',
@@ -97,7 +95,6 @@ export const SaleForm: FC = () => {
         dcno: newDcNo,
         material: '',
         supplier: '',
-        customer: '',
         transporter: '',
         vehicleNumber: '',
         driver: '',
@@ -118,7 +115,22 @@ export const SaleForm: FC = () => {
           description: (error as Error).message || 'Could not get the last DC number.'
       })
       setDcNumber(1); 
-      form.reset({ dcno: 1 });
+      form.reset({ 
+        dcno: 1,
+        material: '',
+        supplier: '',
+        transporter: '',
+        vehicleNumber: '',
+        driver: '',
+        site: '',
+        remarks: '',
+        grosswt: 0,
+        tarewt: 0,
+        netwt: 0,
+        rent: 0,
+        royaltyPassNumber: '',
+        royaltyWeight: 0,
+      });
     }
   }
 
@@ -152,7 +164,7 @@ export const SaleForm: FC = () => {
         });
       } else {
         const now = new Date();
-        const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
+        const newEntryData: Omit<SaleEntry, 'id' | 'created_at' | 'customer' > = { 
           ...data,
           dcno: dcNumber!,
           date: now.toLocaleDateString('en-GB'),
@@ -222,7 +234,6 @@ export const SaleForm: FC = () => {
               setDcNumber(entry.dcno);
               form.reset({
                 ...entry,
-                // Ensure optional numeric fields are handled if they are null/undefined
                 royaltyWeight: entry.royaltyWeight ?? 0,
               });
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -291,19 +302,6 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., ABC Suppliers" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="customer"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -520,5 +518,3 @@ export const SaleForm: FC = () => {
     </>
   );
 };
-
-    
