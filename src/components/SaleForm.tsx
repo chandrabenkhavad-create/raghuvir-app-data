@@ -39,6 +39,7 @@ const saleSchema = z.object({
   dcno: z.coerce.number(),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
+  customer: z.string().min(1, 'Customer is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -92,6 +93,7 @@ export const SaleForm: FC = () => {
             dcno: nextDcNo,
             material: '',
             supplier: '',
+            customer: '',
             transporter: '',
             vehicleNumber: '',
             driver: '',
@@ -230,6 +232,19 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., ABC Suppliers" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="customer"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., John Doe" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

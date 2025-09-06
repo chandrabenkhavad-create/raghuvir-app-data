@@ -108,7 +108,7 @@ export function ReportsTab() {
   };
 
   const salesHeaders = [
-    "id", "dcno", "date", "time", "material", "supplier",
+    "id", "dcno", "date", "time", "material", "supplier", "customer",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
     "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
   ];

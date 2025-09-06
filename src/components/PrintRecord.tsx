@@ -38,6 +38,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Supplier:</strong>
               <span>{data.supplier}</span>
             </div>
+            <div className="col-span-2">
+              <strong className="block text-gray-600">Customer:</strong>
+              <span>{data.customer}</span>
+            </div>
              <div className="col-span-2">
               <strong className="block text-gray-600">Transporter:</strong>
               <span>{data.transporter}</span>
