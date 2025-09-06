@@ -3,7 +3,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { getAllSaleEntries } from '@/services/saleService';
-import type { SaleEntry } from '@/types';
+import { getAllDieselEntries } from '@/services/dieselService';
+import type { SaleEntry, DieselEntry } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -12,6 +13,7 @@ import { Terminal } from 'lucide-react';
 
 export function DashboardTab() {
     const [salesData, setSalesData] = useState<SaleEntry[]>([]);
+    const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -20,8 +22,12 @@ export function DashboardTab() {
             try {
                 setLoading(true);
                 setError(null);
-                const sales = await getAllSaleEntries();
+                const [sales, diesel] = await Promise.all([
+                    getAllSaleEntries(),
+                    getAllDieselEntries(),
+                ]);
                 setSalesData(sales);
+                setDieselData(diesel);
             } catch (e: any) {
                 setError(e.message || "Failed to fetch dashboard data.");
             } finally {
@@ -58,7 +64,7 @@ export function DashboardTab() {
         }, {} as Record<string, number>);
     }, [salesData]);
 
-    const vehicleAmounts = useMemo(() => {
+    const vehicleSaleAmounts = useMemo(() => {
         if (!salesData.length) return {};
         return salesData.reduce((acc, sale) => {
             const amount = sale.netwt * sale.rent;
@@ -66,6 +72,23 @@ export function DashboardTab() {
             return acc;
         }, {} as Record<string, number>);
     }, [salesData]);
+
+    const vehicleDieselAmount = useMemo(() => {
+        if (!dieselData.length) return {};
+        return dieselData.reduce((acc, diesel) => {
+            acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.amount;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [dieselData]);
+
+    const vehicleDieselLiters = useMemo(() => {
+        if (!dieselData.length) return {};
+        return dieselData.reduce((acc, diesel) => {
+            acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.liters;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [dieselData]);
+
 
     if (error) {
         return (
@@ -82,12 +105,10 @@ export function DashboardTab() {
     
     if (loading) {
         return (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
-                <Card><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
-                <Card className="md:col-span-2"><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                    <Card key={i}><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
+                ))}
             </div>
         )
     }
@@ -98,6 +119,7 @@ export function DashboardTab() {
                  <Card>
                     <CardHeader>
                         <CardTitle>Vehicle Trips</CardTitle>
+                        <CardDescription>From sales entries</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -113,6 +135,7 @@ export function DashboardTab() {
                  <Card>
                     <CardHeader>
                         <CardTitle>Transporter Trips</CardTitle>
+                         <CardDescription>From sales entries</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -125,17 +148,49 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                <Card className="lg:col-span-2">
+                <Card>
                     <CardHeader>
-                        <CardTitle>Vehicle Revenue</CardTitle>
-                        <CardDescription>Based on Net Weight * Rent</CardDescription>
+                        <CardTitle>Vehicle Sale Revenue</CardTitle>
+                        <CardDescription>Net Weight * Rent</CardDescription>
                     </CardHeader>
                     <CardContent>
                          <Table>
-                            <TableHeader><TableRow><TableHead>Vehicle</TableHead><TableHead className="text-right">Total Amount (₹)</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Vehicle</TableHead><TableHead className="text-right">Amount (₹)</TableHead></TableRow></TableHeader>
                             <TableBody>
-                                {Object.entries(vehicleAmounts).map(([vehicle, amount]) => (
+                                {Object.entries(vehicleSaleAmounts).map(([vehicle, amount]) => (
                                     <TableRow key={vehicle}><TableCell>{vehicle}</TableCell><TableCell className="text-right">{amount.toFixed(2)}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Vehicle Diesel Cost</CardTitle>
+                        <CardDescription>Total amount spent</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader><TableRow><TableHead>Vehicle</TableHead><TableHead className="text-right">Amount (₹)</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {Object.entries(vehicleDieselAmount).map(([vehicle, amount]) => (
+                                    <TableRow key={vehicle}><TableCell>{vehicle}</TableCell><TableCell className="text-right">{amount.toFixed(2)}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Vehicle Diesel Liters</CardTitle>
+                        <CardDescription>Total liters consumed</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader><TableRow><TableHead>Vehicle</TableHead><TableHead className="text-right">Liters</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {Object.entries(vehicleDieselLiters).map(([vehicle, liters]) => (
+                                    <TableRow key={vehicle}><TableCell>{vehicle}</TableCell><TableCell className="text-right">{liters.toFixed(2)} L</TableCell></TableRow>
                                 ))}
                             </TableBody>
                         </Table>
@@ -176,3 +231,5 @@ export function DashboardTab() {
         </div>
     );
 }
+
+    
