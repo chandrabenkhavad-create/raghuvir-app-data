@@ -68,7 +68,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             </div>
              <div>
               <strong className="block text-gray-600">Royalty Weight:</strong>
-              <span>{data.royaltyWeight ? `${data.royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+              <span>{typeof data.royaltyWeight === 'number' ? `${data.royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Gross Weight:</strong>
