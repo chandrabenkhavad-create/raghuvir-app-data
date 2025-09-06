@@ -9,16 +9,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, ArrowLeft, Loader2, UserCog } from 'lucide-react';
+import { UserPlus, ArrowLeft, Loader2, UserCog, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { addUser, getAllUsers } from '@/services/userService';
+import { addUser, getAllUsers, deleteUser } from '@/services/userService';
 import type { User } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const userSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters long'),
@@ -33,6 +44,7 @@ export default function UsersPage() {
   const { toast } = useToast();
   const [users, setUsers] = useState<Omit<User, 'password'>[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userToDelete, setUserToDelete] = useState<Omit<User, 'password'> | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -91,6 +103,28 @@ export default function UsersPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+        await deleteUser(userToDelete.id);
+        toast({
+            title: "User Deleted",
+            description: `User '${userToDelete.username}' has been successfully deleted.`,
+        });
+        fetchUsers(); // Refresh user list
+    } catch (error: any) {
+        toast({
+            variant: "destructive",
+            title: "Error Deleting User",
+            description: error.message,
+        });
+    } finally {
+        setUserToDelete(null);
+    }
+  };
+
+
   if (user !== 'admin') {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -100,91 +134,119 @@ export default function UsersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background font-body text-foreground p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-            <Link href="/" passHref>
-                <Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Button>
-            </Link>
-        </div>
-        <div className="grid md:grid-cols-2 gap-8">
-            <Card>
-                <CardHeader>
-                <CardTitle className="text-2xl flex items-center gap-2"><UserPlus /> Add New User</CardTitle>
-                <CardDescription>
-                    Create a new user account with a username and password.
-                </CardDescription>
-                </CardHeader>
-                <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                        control={form.control}
-                        name="username"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                            <Input placeholder="e.g., john_doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                            <Input type="password" placeholder="******" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <Button type="submit" disabled={form.formState.isSubmitting}>
-                        {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
-                        Add User
-                    </Button>
-                    </form>
-                </Form>
-                </CardContent>
-            </Card>
+    <>
+    <AlertDialog>
+        <main className="min-h-screen bg-background font-body text-foreground p-8">
+        <div className="max-w-4xl mx-auto">
+            <div className="mb-8">
+                <Link href="/" passHref>
+                    <Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Button>
+                </Link>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                    <CardTitle className="text-2xl flex items-center gap-2"><UserPlus /> Add New User</CardTitle>
+                    <CardDescription>
+                        Create a new user account with a username and password.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                        <FormField
+                            control={form.control}
+                            name="username"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Username</FormLabel>
+                                <FormControl>
+                                <Input placeholder="e.g., john_doe" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                <Input type="password" placeholder="******" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <Button type="submit" disabled={form.formState.isSubmitting}>
+                            {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
+                            Add User
+                        </Button>
+                        </form>
+                    </Form>
+                    </CardContent>
+                </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-2xl flex items-center gap-2"><UserCog/> Existing Users</CardTitle>
-                    <CardDescription>List of all users in the system.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {loading ? (
-                         <div className="space-y-2">
-                            {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-                        </div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                <TableHead>Username</TableHead>
-                                <TableHead>Created At</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {users.map((u) => (
-                                <TableRow key={u.id}>
-                                    <TableCell>{u.username}</TableCell>
-                                    <TableCell>{new Date(u.created_at).toLocaleDateString()}</TableCell>
-                                </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </CardContent>
-            </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-2xl flex items-center gap-2"><UserCog/> Existing Users</CardTitle>
+                        <CardDescription>List of all users in the system.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {loading ? (
+                            <div className="space-y-2">
+                                {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead>Username</TableHead>
+                                    <TableHead>Created At</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {users.map((u) => (
+                                    <TableRow key={u.id}>
+                                        <TableCell>{u.username}</TableCell>
+                                        <TableCell>{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                                        <TableCell className="text-right">
+                                            {u.username !== 'admin' && (
+                                                 <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="icon" onClick={() => setUserToDelete(u)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                        <span className="sr-only">Delete User</span>
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
         </div>
-      </div>
-    </main>
+        </main>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the user account
+                for <span className="font-bold">{userToDelete?.username}</span>.
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteUser}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }

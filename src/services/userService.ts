@@ -96,3 +96,24 @@ export async function getAllUsers(): Promise<Omit<User, 'password'>[]> {
         .order('id', { ascending: false })
   , []);
 }
+
+export async function deleteUser(id: number): Promise<void> {
+    if (id === undefined) {
+        throw new Error("User ID is required for deletion.");
+    }
+    try {
+        const supabase = getSupabase();
+        if (!supabase) throw new Error("Supabase not connected");
+
+        const { error } = await supabase
+            .from('users')
+            .delete()
+            .eq('id', id);
+        
+        if (error) throw error;
+
+    } catch (error: any) {
+        console.error('Failed to delete user:', error);
+        throw new Error(`Failed to delete user: ${error.message}`);
+    }
+}
