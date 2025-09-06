@@ -270,42 +270,32 @@ export function DashboardTab() {
                         </p>
                     </CardContent>
                  </Card>
+                 <Card className="lg:col-span-4">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
+                    </CardHeader>
+                    <CardContent className="overflow-auto max-h-80">
+                        <div className="space-y-4">
+                            {Object.entries(supplierMaterials).map(([supplier, materials]) => (
+                                <Card key={supplier} className="bg-muted/50">
+                                    <CardHeader><CardTitle className="text-lg">{supplier}</CardTitle></CardHeader>
+                                    <CardContent>
+                                        <Table>
+                                            <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                                            <TableBody>
+                                                {Object.entries(materials).map(([material, netwt]) => (
+                                                    <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {Object.entries(supplierMaterials).map(([supplier, materials]) => (
-                             <Card key={supplier} className="bg-muted/50">
-                                 <CardHeader><CardTitle className="text-lg">{supplier}</CardTitle></CardHeader>
-                                 <CardContent>
-                                     <Table>
-                                        <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
-                                        <TableBody>
-                                            {Object.entries(materials).map(([material, netwt]) => (
-                                                <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                 </CardContent>
-                             </Card>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
         </div>
     );
-
-    
-
-    
-
-    
-
-    
-
-    
 
     
