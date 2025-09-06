@@ -47,7 +47,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <span>{data.site}</span>
             </div>
             <div>
-              <strong className="block text-gray-600">Name:</strong>
+              <strong className="block text-gray-600">Customer:</strong>
               <span>{data.name}</span>
             </div>
             <div>

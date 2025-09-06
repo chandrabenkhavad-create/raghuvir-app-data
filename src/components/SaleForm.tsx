@@ -35,7 +35,7 @@ import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'Customer name is required'),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   transporter: z.string().min(1, 'Transporter is required'),
@@ -213,9 +213,9 @@ export const SaleForm: FC = () => {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Name</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
+                            <Input placeholder="e.g., Customer Name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
