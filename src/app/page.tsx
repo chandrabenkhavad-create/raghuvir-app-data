@@ -37,8 +37,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="mb-8 relative">
-          <div className="text-center">
+        <header className="mb-8 flex items-center justify-between">
+          <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
               Raghuvir Infrastructure
             </h1>
@@ -46,7 +46,7 @@ export default function Home() {
               Sayla-Sudamda Road,Sudamda.
             </p>
           </div>
-          <div className="absolute top-0 right-0 flex items-center gap-2">
+          <div className="flex items-center gap-2">
              <SupabaseStatus />
              <ThemeToggle />
              {user === 'admin' && (
