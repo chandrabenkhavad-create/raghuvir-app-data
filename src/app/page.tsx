@@ -13,6 +13,7 @@ import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
 import { DashboardTab } from '@/components/DashboardTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { SupabaseStatus } from '@/components/SupabaseStatus';
 
 export default function Home() {
   const { isAuthenticated, logout } = useAuth();
@@ -45,6 +46,7 @@ export default function Home() {
             </p>
           </div>
           <div className="absolute top-0 right-0 flex items-center gap-2">
+             <SupabaseStatus />
              <ThemeToggle />
              <Button variant="outline" onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout

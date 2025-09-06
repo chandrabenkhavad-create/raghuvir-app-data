@@ -1,68 +1,80 @@
 
 'use server';
 
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseClient';
 import type { SaleEntry } from '@/types';
 
 type NewSaleEntry = Omit<SaleEntry, 'id' | 'created_at'>;
 
-export async function addSaleEntry(entry: NewSaleEntry): Promise<SaleEntry> {
-    const { data, error } = await supabase
-        .from('sales')
-        .insert([entry])
-        .select()
-        .single();
+async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>): Promise<T> {
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await query(supabase);
 
-    if (error) {
-        console.error('Error adding sale entry:', error);
-        throw new Error('Failed to add sale entry. ' + error.message);
+        if (error) {
+            console.error('Supabase query failed:', error);
+            throw new Error(`Supabase query failed: ${error.message}`);
+        }
+        return data;
+    } catch (e: any) {
+        console.error("Service-level error:", e.message)
+        // Re-throw the error to be caught by the calling component
+        throw e;
     }
+}
 
-    return data;
+
+export async function addSaleEntry(entry: NewSaleEntry): Promise<SaleEntry> {
+    return runQuery(supabase => 
+        supabase
+            .from('sales')
+            .insert([entry])
+            .select()
+            .single()
+    );
 }
 
 export async function getRecentSaleEntries(limit = 5): Promise<SaleEntry[]> {
-    const { data, error } = await supabase
-        .from('sales')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(limit);
-    
-    if (error) {
-        console.error('Error fetching recent sale entries:', error);
-        throw new Error('Failed to fetch recent sale entries. ' + error.message);
-    }
-
-    return data;
+     return runQuery(supabase => 
+        supabase
+            .from('sales')
+            .select('*')
+            .order('id', { ascending: false })
+            .limit(limit)
+    );
 }
 
 export async function getLastSaleEntry(): Promise<SaleEntry | null> {
-    const { data, error } = await supabase
-        .from('sales')
-        .select('dcno')
-        .order('id', { ascending: false })
-        .limit(1)
-        .single();
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await supabase
+            .from('sales')
+            .select('dcno')
+            .order('id', { ascending: false })
+            .limit(1)
+            .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
-        console.error('Error fetching last sale entry:', error);
-        throw new Error('Failed to fetch last sale entry. ' + error.message);
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+            console.error('Error fetching last sale entry:', error);
+            throw new Error('Failed to fetch last sale entry. ' + error.message);
+        }
+
+        return data;
+    } catch(e: any) {
+        if (e.message.includes("undefined_table")) {
+             console.warn("`sales` table not found, returning null for last entry.");
+             return null;
+        }
+        throw e;
     }
-
-    return data;
 }
 
 
 export async function getAllSaleEntries(): Promise<SaleEntry[]> {
-  const { data, error } = await supabase
-    .from('sales')
-    .select('*')
-    .order('id', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching all sale entries:', error);
-    throw new Error('Failed to fetch all sale entries. ' + error.message);
-  }
-
-  return data;
+  return runQuery(supabase =>
+    supabase
+        .from('sales')
+        .select('*')
+        .order('id', { ascending: false })
+  );
 }

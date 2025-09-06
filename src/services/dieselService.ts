@@ -1,51 +1,53 @@
 
 'use server';
 
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabase } from '@/lib/supabaseClient';
 import type { DieselEntry } from '@/types';
 
 type NewDieselEntry = Omit<DieselEntry, 'id' | 'created_at'>;
 
-export async function addDieselEntry(entry: NewDieselEntry): Promise<DieselEntry> {
-    const { data, error } = await supabase
-        .from('diesel')
-        .insert([entry])
-        .select()
-        .single();
+async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>): Promise<T> {
+    try {
+        const supabase = getSupabase();
+        const { data, error } = await query(supabase);
 
-    if (error) {
-        console.error('Error adding diesel entry:', error);
-        throw new Error('Failed to add diesel entry. ' + error.message);
+        if (error) {
+            console.error('Supabase query failed:', error);
+            throw new Error(`Supabase query failed: ${error.message}`);
+        }
+        return data;
+    } catch (e: any) {
+        console.error("Service-level error:", e.message)
+        // Re-throw the error to be caught by the calling component
+        throw e;
     }
+}
 
-    return data;
+export async function addDieselEntry(entry: NewDieselEntry): Promise<DieselEntry> {
+    return runQuery(supabase => 
+        supabase
+            .from('diesel')
+            .insert([entry])
+            .select()
+            .single()
+    );
 }
 
 export async function getRecentDieselEntries(limit = 5): Promise<DieselEntry[]> {
-    const { data, error } = await supabase
-        .from('diesel')
-        .select('*')
-        .order('id', { ascending: false })
-        .limit(limit);
-    
-    if (error) {
-        console.error('Error fetching recent diesel entries:', error);
-        throw new Error('Failed to fetch recent diesel entries. ' + error.message);
-    }
-
-    return data;
+     return runQuery(supabase => 
+        supabase
+            .from('diesel')
+            .select('*')
+            .order('id', { ascending: false })
+            .limit(limit)
+    );
 }
 
 export async function getAllDieselEntries(): Promise<DieselEntry[]> {
-  const { data, error } = await supabase
-    .from('diesel')
-    .select('*')
-    .order('id', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching all diesel entries:', error);
-    throw new Error('Failed to fetch all diesel entries. ' + error.message);
-  }
-
-  return data;
+  return runQuery(supabase => 
+    supabase
+        .from('diesel')
+        .select('*')
+        .order('id', { ascending: false })
+  );
 }
