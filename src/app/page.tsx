@@ -16,7 +16,6 @@ import { DashboardTab } from '@/components/DashboardTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -42,18 +41,10 @@ export default function Home() {
         <header className="mb-8 relative">
           <div className="absolute top-0 right-0 flex items-center gap-4">
               <SupabaseStatus />
-              <TooltipProvider>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                           <Button variant="ghost" size="icon" onClick={logout}>
-                              <LogOut className="h-5 w-5" />
-                           </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Logout</p>
-                      </TooltipContent>
-                  </Tooltip>
-              </TooltipProvider>
+               <Button variant="ghost" onClick={logout}>
+                  <LogOut className="mr-2 h-5 w-5" />
+                  Logout
+               </Button>
           </div>
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
