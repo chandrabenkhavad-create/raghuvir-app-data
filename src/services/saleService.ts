@@ -90,3 +90,15 @@ export async function getAllSaleEntries(): Promise<SaleEntry[]> {
         .order('id', { ascending: false })
   , []);
 }
+
+export async function getSaleEntryById(id: number): Promise<SaleEntry | null> {
+    return runQuery(supabase => 
+        supabase
+            .from('sales')
+            .select('*')
+            .eq('id', id)
+            .single()
+    , null);
+}
+
+    

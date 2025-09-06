@@ -33,7 +33,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
+import { addSaleEntry, getLastSaleEntry, getSaleEntryById } from '@/services/saleService';
+import { RecentSales } from './RecentSales';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -57,8 +58,10 @@ type SaleFormValues = z.infer<typeof saleSchema>;
 
 export const SaleForm: FC = () => {
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
   const [nextDcNo, setNextDcNo] = useState<number | null>(null);
+  const [refreshRecentSales, setRefreshRecentSales] = useState(false);
 
   useEffect(() => {
     const fetchLastDcNo = async () => {
@@ -135,9 +138,11 @@ export const SaleForm: FC = () => {
       const savedEntry = await addSaleEntry(newEntryData);
       
       setEntryToPrint(savedEntry);
+      setIsPrintDialogOpen(true);
 
       const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
+      setRefreshRecentSales(prev => !prev);
       
       toast({
         title: 'Success!',
@@ -172,10 +177,21 @@ export const SaleForm: FC = () => {
     }
   };
   
-  const openPrintDialog = () => {
-    // This is triggered by the button, we just need the dialog to open.
-    // The entryToPrint state is already set on form submission.
-  };
+  const handleReprint = async (id: number) => {
+      try {
+          const entry = await getSaleEntryById(id);
+          if (entry) {
+              setEntryToPrint(entry);
+              setIsPrintDialogOpen(true);
+          } else {
+              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
+          }
+      } catch (error) {
+          console.error('Failed to fetch entry for printing:', error);
+          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+      }
+  }
+
 
   if (nextDcNo === null) {
       return (
@@ -198,7 +214,7 @@ export const SaleForm: FC = () => {
 
   return (
     <>
-      <Dialog>
+      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -417,12 +433,11 @@ export const SaleForm: FC = () => {
                 </div>
                 <div className="flex gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
-                  <DialogTrigger asChild>
+                   <DialogTrigger asChild>
                     <Button
                       type="button"
                       variant="outline"
                       disabled={!entryToPrint}
-                      onClick={openPrintDialog}
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       Print Last Entry
@@ -449,6 +464,14 @@ export const SaleForm: FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <div className="mt-8">
+        <RecentSales 
+            refreshKey={refreshRecentSales} 
+            onPrint={handleReprint}
+        />
+      </div>
     </>
   );
 };
+
+    
