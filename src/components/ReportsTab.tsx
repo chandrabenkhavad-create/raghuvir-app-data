@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -18,20 +19,27 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Calendar } from "./ui/calendar";
+import { cn } from "@/lib/utils";
 
 export function ReportsTab() {
   const [salesData, setSalesData] = useState<SaleEntry[]>([]);
   const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [salesFromDate, setSalesFromDate] = useState<Date | undefined>();
+  const [salesToDate, setSalesToDate] = useState<Date | undefined>();
+  const [dieselFromDate, setDieselFromDate] = useState<Date | undefined>();
+  const [dieselToDate, setDieselToDate] = useState<Date | undefined>();
 
   useEffect(() => {
     async function fetchData() {
@@ -52,15 +60,34 @@ export function ReportsTab() {
     }
     fetchData();
   }, []);
+  
+  // Helper to parse DD/MM/YYYY into a Date object
+  const parseDate = (dateString: string): Date => {
+      const [day, month, year] = dateString.split('/').map(Number);
+      return new Date(year, month - 1, day);
+  }
 
-  const downloadCSV = (data: any[], filename: string, headers: string[]) => {
-    const csvRows = data.map(row => 
+  const downloadCSV = (data: any[], filename: string, headers: string[], fromDate?: Date, toDate?: Date) => {
+    let filteredData = data;
+    
+    if (fromDate || toDate) {
+        filteredData = data.filter(row => {
+            const rowDate = parseDate(row.date);
+            const start = fromDate ? new Date(fromDate.setHours(0, 0, 0, 0)) : null;
+            const end = toDate ? new Date(toDate.setHours(23, 59, 59, 999)) : null;
+            
+            if (start && rowDate < start) return false;
+            if (end && rowDate > end) return false;
+            return true;
+        });
+    }
+
+    const csvRows = filteredData.map(row => 
         headers.map(header => {
             let value = row[header];
             if (value === null || value === undefined) {
                 return "";
             }
-            // Stringify and escape quotes
             let stringValue = String(value);
             if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
                 stringValue = `"${stringValue.replace(/"/g, '""')}"`;
@@ -112,19 +139,66 @@ export function ReportsTab() {
       </TabsList>
       <TabsContent value="sales">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <CardTitle>Sales Report</CardTitle>
               <CardDescription>
                 A complete log of all sales entries.
               </CardDescription>
             </div>
-            <Button
-              onClick={() => downloadCSV(salesData, "sales_report", salesHeaders)}
-              disabled={loading || salesData.length === 0}
-            >
-              <Download className="mr-2" /> Download CSV
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !salesFromDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {salesFromDate ? format(salesFromDate, "PPP") : <span>From date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={salesFromDate}
+                        onSelect={setSalesFromDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                </Popover>
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !salesToDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {salesToDate ? format(salesToDate, "PPP") : <span>To date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={salesToDate}
+                        onSelect={setSalesToDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                </Popover>
+                <Button
+                    onClick={() => downloadCSV(salesData, "sales_report", salesHeaders, salesFromDate, salesToDate)}
+                    disabled={loading || salesData.length === 0}
+                    className="w-full sm:w-auto"
+                >
+                    <Download className="mr-2" /> Download CSV
+                </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -164,19 +238,66 @@ export function ReportsTab() {
       </TabsContent>
       <TabsContent value="diesel">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <CardTitle>Diesel Report</CardTitle>
               <CardDescription>
                 A complete log of all diesel entries.
               </CardDescription>
             </div>
-            <Button
-              onClick={() => downloadCSV(dieselData, "diesel_report", dieselHeaders)}
-              disabled={loading || dieselData.length === 0}
-            >
-              <Download className="mr-2" /> Download CSV
-            </Button>
+             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dieselFromDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dieselFromDate ? format(dieselFromDate, "PPP") : <span>From date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={dieselFromDate}
+                        onSelect={setDieselFromDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                </Popover>
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !dieselToDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dieselToDate ? format(dieselToDate, "PPP") : <span>To date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={dieselToDate}
+                        onSelect={setDieselToDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                </Popover>
+                <Button
+                  onClick={() => downloadCSV(dieselData, "diesel_report", dieselHeaders, dieselFromDate, dieselToDate)}
+                  disabled={loading || dieselData.length === 0}
+                  className="w-full sm:w-auto"
+                >
+                  <Download className="mr-2" /> Download CSV
+                </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {loading ? (
