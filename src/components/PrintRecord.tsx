@@ -38,6 +38,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Supplier:</strong>
               <span>{data.supplier}</span>
             </div>
+            <div className="col-span-2">
+              <strong className="block text-gray-600">Customer:</strong>
+              <span>{data.customer}</span>
+            </div>
              <div className="col-span-2">
               <strong className="block text-gray-600">Transporter:</strong>
               <span>{data.transporter}</span>
@@ -45,10 +49,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
              <div className="col-span-2">
               <strong className="block text-gray-600">Site:</strong>
               <span>{data.site}</span>
-            </div>
-            <div>
-              <strong className="block text-gray-600">Customer:</strong>
-              <span>{data.name}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Material:</strong>
@@ -63,6 +63,14 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
                 <span>{data.vehicleNumber}</span>
             </div>
             <div>
+              <strong className="block text-gray-600">Royalty Pass Number:</strong>
+              <span>{data.royaltyPassNumber || 'N/A'}</span>
+            </div>
+             <div>
+              <strong className="block text-gray-600">Royalty Weight:</strong>
+              <span>{typeof data.royaltyWeight === 'number' ? `${data.royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+            </div>
+            <div>
               <strong className="block text-gray-600">Gross Weight:</strong>
               <span>{data.grosswt.toFixed(2)} KG</span>
             </div>
@@ -74,18 +82,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Net Weight:</strong>
               <span>{data.netwt.toFixed(2)} KG</span>
             </div>
-            {data.royaltyPassNumber && (
-              <div>
-                <strong className="block text-gray-600">Royalty Pass Number:</strong>
-                <span>{data.royaltyPassNumber}</span>
-              </div>
-            )}
-            {data.royaltyWeight && data.royaltyWeight > 0 && (
-              <div>
-                <strong className="block text-gray-600">Royalty Weight:</strong>
-                <span>{data.royaltyWeight.toFixed(2)} KG</span>
-              </div>
-            )}
             {data.remarks && (
               <div className="col-span-2 mt-2">
                 <strong className="block text-gray-600">Remarks:</strong>

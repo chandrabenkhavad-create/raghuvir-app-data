@@ -4,9 +4,9 @@ export interface SaleEntry {
   dcno: number;
   date: string;
   time: string;
-  name: string;
   material: string;
   supplier: string;
+  customer: string;
   transporter: string;
   grosswt: number;
   tarewt: number;

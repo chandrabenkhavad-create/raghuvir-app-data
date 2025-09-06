@@ -19,8 +19,9 @@ import {
   FileText,
   Car,
   IndianRupee,
+  Loader2,
   Ticket,
-  Loader2
+  ScrollText
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,13 +33,14 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
+import { addSaleEntry, getLastSaleEntry, getSaleEntryById } from '@/services/saleService';
+import { RecentSales } from './RecentSales';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
-  name: z.string().min(1, 'Customer name is required'),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
+  customer: z.string().min(1, 'Customer is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -47,7 +49,7 @@ const saleSchema = z.object({
   rent: z.coerce.number().min(0, 'Rent must be a positive number'),
   driver: z.string().min(1, 'Driver is required'),
   royaltyPassNumber: z.string().optional(),
-  royaltyWeight: z.coerce.number().min(0).optional(),
+  royaltyWeight: z.coerce.number().optional(),
   site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
 });
@@ -56,8 +58,10 @@ type SaleFormValues = z.infer<typeof saleSchema>;
 
 export const SaleForm: FC = () => {
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
+  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
   const [nextDcNo, setNextDcNo] = useState<number | null>(null);
+  const [refreshRecentSales, setRefreshRecentSales] = useState(false);
 
   useEffect(() => {
     const fetchLastDcNo = async () => {
@@ -90,20 +94,20 @@ export const SaleForm: FC = () => {
       if (nextDcNo !== null) {
           form.reset({
             dcno: nextDcNo,
-            name: '',
             material: '',
             supplier: '',
+            customer: '',
             transporter: '',
             vehicleNumber: '',
             driver: '',
-            royaltyPassNumber: '',
-            royaltyWeight: 0,
             site: '',
             remarks: '',
             grosswt: 0,
             tarewt: 0,
             netwt: 0,
             rent: 0,
+            royaltyPassNumber: '',
+            royaltyWeight: 0,
           });
       }
   }, [nextDcNo, form]);
@@ -123,7 +127,7 @@ export const SaleForm: FC = () => {
     }
     
     const now = new Date();
-    const newEntryData: Omit<SaleEntry, 'id' | 'created_at'> = { 
+    const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
       ...data,
       dcno: nextDcNo,
       date: now.toLocaleDateString('en-GB'),
@@ -134,9 +138,11 @@ export const SaleForm: FC = () => {
       const savedEntry = await addSaleEntry(newEntryData);
       
       setEntryToPrint(savedEntry);
+      setIsPrintDialogOpen(true);
 
       const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
+      setRefreshRecentSales(prev => !prev);
       
       toast({
         title: 'Success!',
@@ -171,10 +177,21 @@ export const SaleForm: FC = () => {
     }
   };
   
-  const openPrintDialog = () => {
-    // This is triggered by the button, we just need the dialog to open.
-    // The entryToPrint state is already set on form submission.
-  };
+  const handleReprint = async (id: number) => {
+      try {
+          const entry = await getSaleEntryById(id);
+          if (entry) {
+              setEntryToPrint(entry);
+              setIsPrintDialogOpen(true);
+          } else {
+              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
+          }
+      } catch (error) {
+          console.error('Failed to fetch entry for printing:', error);
+          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+      }
+  }
+
 
   if (nextDcNo === null) {
       return (
@@ -197,7 +214,7 @@ export const SaleForm: FC = () => {
 
   return (
     <>
-      <Dialog>
+      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -225,25 +242,25 @@ export const SaleForm: FC = () => {
                     />
                      <FormField
                       control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Customer Name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
                       name="supplier"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., ABC Suppliers" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="customer"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., John Doe" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -327,20 +344,20 @@ export const SaleForm: FC = () => {
                         </FormItem>
                       )}
                     />
-                     <FormField
+                    <FormField
                       control={form.control}
                       name="royaltyWeight"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Weight /> Royalty Weight</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><ScrollText /> Royalty Weight</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="e.g., 2500" {...field} step="0.01" />
+                            <Input type="number" placeholder="e.g., 1000" {...field} step="0.01"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                      <FormField
+                    <FormField
                       control={form.control}
                       name="rent"
                       render={({ field }) => (
@@ -416,12 +433,11 @@ export const SaleForm: FC = () => {
                 </div>
                 <div className="flex gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
-                  <DialogTrigger asChild>
+                   <DialogTrigger asChild>
                     <Button
                       type="button"
                       variant="outline"
                       disabled={!entryToPrint}
-                      onClick={openPrintDialog}
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       Print Last Entry
@@ -448,6 +464,14 @@ export const SaleForm: FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <div className="mt-8">
+        <RecentSales 
+            refreshKey={refreshRecentSales} 
+            onPrint={handleReprint}
+        />
+      </div>
     </>
   );
 };
+
+    
