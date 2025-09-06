@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal } from 'lucide-react';
+import { Terminal, Droplets } from 'lucide-react';
 
 export function DashboardTab() {
     const [salesData, setSalesData] = useState<SaleEntry[]>([]);
@@ -87,6 +87,11 @@ export function DashboardTab() {
             acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.liters;
             return acc;
         }, {} as Record<string, number>);
+    }, [dieselData]);
+    
+    const totalDieselLiters = useMemo(() => {
+        if (!dieselData.length) return 0;
+        return dieselData.reduce((total, entry) => total + entry.liters, 0);
     }, [dieselData]);
 
 
@@ -196,6 +201,18 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Total Diesel</CardTitle>
+                        <Droplets className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{totalDieselLiters.toFixed(2)} L</div>
+                        <p className="text-xs text-muted-foreground">
+                            Total diesel consumed across all vehicles
+                        </p>
+                    </CardContent>
+                 </Card>
             </div>
              <Card>
                 <CardHeader>
