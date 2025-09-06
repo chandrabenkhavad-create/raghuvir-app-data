@@ -94,6 +94,14 @@ export function DashboardTab() {
         return dieselData.reduce((total, entry) => total + entry.liters, 0);
     }, [dieselData]);
 
+    const pumpDieselLiters = useMemo(() => {
+        if (!dieselData.length) return {};
+        return dieselData.reduce((acc, diesel) => {
+            acc[diesel.pump] = (acc[diesel.pump] || 0) + diesel.liters;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [dieselData]);
+
 
     if (error) {
         return (
@@ -202,6 +210,22 @@ export function DashboardTab() {
                     </CardContent>
                 </Card>
                  <Card>
+                    <CardHeader>
+                        <CardTitle>Pump-wise Diesel Liters</CardTitle>
+                        <CardDescription>Total liters from each pump</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader><TableRow><TableHead>Pump</TableHead><TableHead className="text-right">Liters</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {Object.entries(pumpDieselLiters).map(([pump, liters]) => (
+                                    <TableRow key={pump}><TableCell>{pump}</TableCell><TableCell className="text-right">{liters.toFixed(2)} L</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
+                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Diesel</CardTitle>
                         <Droplets className="h-4 w-4 text-muted-foreground" />
@@ -247,6 +271,5 @@ export function DashboardTab() {
             </Alert>
         </div>
     );
-}
 
     
