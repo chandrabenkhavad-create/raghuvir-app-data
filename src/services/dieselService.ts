@@ -80,6 +80,7 @@ export async function getRecentDieselEntries(limit = 10): Promise<DieselEntry[]>
 
 export async function getDieselEntryById(id: number): Promise<DieselEntry | null> {
     if (typeof id !== 'number' || !id) {
+        console.error("getDieselEntryById: Invalid ID provided", id);
         return null;
     }
     return runQuery(supabase => 

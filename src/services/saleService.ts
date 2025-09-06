@@ -93,6 +93,7 @@ export async function getAllSaleEntries(): Promise<SaleEntry[]> {
 
 export async function getSaleEntryById(id: number): Promise<SaleEntry | null> {
     if (typeof id !== 'number' || !id) {
+        console.error("getSaleEntryById: Invalid ID provided", id);
         return null;
     }
     return runQuery(supabase => 
