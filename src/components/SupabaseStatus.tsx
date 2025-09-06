@@ -39,8 +39,8 @@ export function SupabaseStatus() {
         <Tooltip>
           <TooltipTrigger>
             <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${isChecking ? 'animate-pulse bg-yellow-500' : statusColor}`} />
-              <span className="text-sm text-muted-foreground hidden md:inline">
+              <div className={`w-4 h-4 rounded-full ${isChecking ? 'animate-pulse bg-yellow-500' : statusColor}`} />
+              <span className="text-base text-muted-foreground hidden md:inline">
                  {isChecking ? "Checking..." : (status.connected ? "Connected" : "Error")}
               </span>
             </div>
