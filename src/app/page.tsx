@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ import { ReportsTab } from '@/components/ReportsTab';
 import { DashboardTab } from '@/components/DashboardTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -37,22 +38,8 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="mb-8 relative">
-          <div className="absolute top-0 right-0 flex items-center gap-2">
-             <SupabaseStatus />
-             <ThemeToggle />
-             {user === 'admin' && (
-                <Link href="/users" passHref>
-                  <Button variant="outline">
-                    <UserCog className="mr-2 h-4 w-4" /> Manage Users
-                  </Button>
-                </Link>
-              )}
-             <Button variant="outline" onClick={logout}>
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button>
-          </div>
-          <div className="text-center pt-16 sm:pt-0">
+        <header className="mb-8">
+          <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
               Raghuvir Infrastructure
             </h1>
@@ -63,7 +50,7 @@ export default function Home() {
         </header>
 
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
+          <TabsList className="grid w-full grid-cols-5 max-w-4xl mx-auto">
             <TabsTrigger value="dashboard">
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 Dashboard
@@ -79,6 +66,10 @@ export default function Home() {
             <TabsTrigger value="reports">
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               Reports
+            </TabsTrigger>
+            <TabsTrigger value="settings">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
             </TabsTrigger>
           </TabsList>
           
@@ -96,6 +87,37 @@ export default function Home() {
 
           <TabsContent value="reports" className="mt-6">
             <ReportsTab />
+          </TabsContent>
+
+          <TabsContent value="settings" className="mt-6">
+             <Card className="max-w-md mx-auto">
+                <CardHeader>
+                    <CardTitle>Application Settings</CardTitle>
+                    <CardDescription>Manage application-wide settings and user actions.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between p-3 border rounded-lg">
+                       <span className="font-medium">Database Status</span>
+                       <SupabaseStatus />
+                    </div>
+                     <div className="flex items-center justify-between p-3 border rounded-lg">
+                       <span className="font-medium">Theme</span>
+                       <ThemeToggle />
+                    </div>
+                     {user === 'admin' && (
+                        <Link href="/users" passHref>
+                          <Button variant="outline" className="w-full justify-between p-6">
+                             Manage Users
+                            <UserCog className="h-5 w-5" />
+                          </Button>
+                        </Link>
+                      )}
+                     <Button variant="destructive" className="w-full justify-between p-6" onClick={logout}>
+                       Logout
+                        <LogOut className="h-5 w-5" />
+                    </Button>
+                </CardContent>
+             </Card>
           </TabsContent>
         </Tabs>
       </div>
