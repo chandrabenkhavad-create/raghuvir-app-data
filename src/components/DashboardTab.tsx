@@ -56,6 +56,14 @@ export function DashboardTab() {
         }, {} as Record<string, Record<string, number>>);
     }, [salesData]);
 
+    const customerTotalSales = useMemo(() => {
+        if (!salesData.length) return {};
+        return salesData.reduce((acc, sale) => {
+            acc[sale.customer] = (acc[sale.customer] || 0) + sale.netwt;
+            return acc;
+        }, {} as Record<string, number>);
+    }, [salesData]);
+
     const transporterTrips = useMemo(() => {
         if (!salesData.length) return {};
         return salesData.reduce((acc, sale) => {
@@ -292,6 +300,22 @@ export function DashboardTab() {
                                 </Card>
                             ))}
                         </div>
+                    </CardContent>
+                </Card>
+                <Card className="lg:col-span-2">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><Users /> Customer Material Sales</CardTitle>
+                        <CardDescription>Total net weight of material sold to each customer</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Table>
+                            <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {Object.entries(customerTotalSales).map(([customer, totalNetWt]) => (
+                                    <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{totalNetWt.toFixed(2)}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
                     </CardContent>
                 </Card>
             </div>
