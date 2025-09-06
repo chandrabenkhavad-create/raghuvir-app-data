@@ -110,7 +110,7 @@ export function ReportsTab() {
   const salesHeaders = [
     "id", "dcno", "date", "time", "name", "material", "supplier",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
-    "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
+    "site", "remarks", "vehicleNumber", "created_at"
   ];
   
   const dieselHeaders = [
