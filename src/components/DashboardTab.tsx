@@ -67,7 +67,7 @@ export function DashboardTab() {
     const vehicleSaleAmounts = useMemo(() => {
         if (!salesData.length) return {};
         return salesData.reduce((acc, sale) => {
-            const amount = sale.netwt * sale.rent;
+            const amount = (sale.netwt / 1000) * sale.rent;
             acc[sale.vehicleNumber] = (acc[sale.vehicleNumber] || 0) + amount;
             return acc;
         }, {} as Record<string, number>);
@@ -181,7 +181,7 @@ export function DashboardTab() {
                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Package /> Vehicle Sale Revenue</CardTitle>
-                        <CardDescription>Net Weight * Rent</CardDescription>
+                        <CardDescription>(Net Weight / 1000) * Rent</CardDescription>
                     </CardHeader>
                     <CardContent>
                          <Table>

@@ -18,7 +18,9 @@ import {
   Scale, 
   FileText,
   Car,
-  IndianRupee
+  IndianRupee,
+  Ticket,
+  Loader2
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -34,7 +36,7 @@ import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
-  name: z.string().min(1, 'Name is required'),
+  name: z.string().min(1, 'Customer name is required'),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   transporter: z.string().min(1, 'Transporter is required'),
@@ -44,6 +46,8 @@ const saleSchema = z.object({
   netwt: z.coerce.number().positive('Net weight must be positive'),
   rent: z.coerce.number().min(0, 'Rent must be a positive number'),
   driver: z.string().min(1, 'Driver is required'),
+  royaltyPassNumber: z.string().optional(),
+  royaltyWeight: z.coerce.number().min(0).optional(),
   site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
 });
@@ -53,19 +57,24 @@ type SaleFormValues = z.infer<typeof saleSchema>;
 export const SaleForm: FC = () => {
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
-  const [nextDcNo, setNextDcNo] = useState(1);
+  const [nextDcNo, setNextDcNo] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchLastDcNo = async () => {
       try {
         const lastEntry = await getLastSaleEntry();
-        if (lastEntry) {
+        if (lastEntry && lastEntry.dcno) {
           setNextDcNo(lastEntry.dcno + 1);
         } else {
           setNextDcNo(1);
         }
       } catch (error) {
         console.error("Failed to fetch last DC number", error);
+        toast({
+            variant: 'destructive',
+            title: 'Error fetching DC Number',
+            description: (error as Error).message || 'Could not connect to the database to get the last DC number.'
+        })
         setNextDcNo(1); // Start from 1 if fetch fails
       }
     };
@@ -74,25 +83,29 @@ export const SaleForm: FC = () => {
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
-    defaultValues: {
-      dcno: nextDcNo,
-      name: '',
-      material: '',
-      supplier: '',
-      transporter: '',
-      vehicleNumber: '',
-      driver: '',
-      site: '',
-      remarks: '',
-      grosswt: 0,
-      tarewt: 0,
-      netwt: 0,
-      rent: 0,
-    },
+    // Default values will be set in useEffect once nextDcNo is fetched
   });
-
+  
   useEffect(() => {
-    form.setValue('dcno', nextDcNo);
+      if (nextDcNo !== null) {
+          form.reset({
+            dcno: nextDcNo,
+            name: '',
+            material: '',
+            supplier: '',
+            transporter: '',
+            vehicleNumber: '',
+            driver: '',
+            royaltyPassNumber: '',
+            royaltyWeight: 0,
+            site: '',
+            remarks: '',
+            grosswt: 0,
+            tarewt: 0,
+            netwt: 0,
+            rent: 0,
+          });
+      }
   }, [nextDcNo, form]);
 
   const grosswt = form.watch('grosswt');
@@ -104,6 +117,11 @@ export const SaleForm: FC = () => {
   }, [grosswt, tarewt, form]);
 
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
+    if (nextDcNo === null) {
+        toast({ variant: 'destructive', title: 'Error', description: 'DC Number not initialized.' });
+        return;
+    }
+    
     const now = new Date();
     const newEntryData: Omit<SaleEntry, 'id' | 'created_at'> = { 
       ...data,
@@ -120,21 +138,6 @@ export const SaleForm: FC = () => {
       const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
       
-      form.reset({
-        dcno: newDcNo,
-        name: '',
-        material: '',
-        supplier: '',
-        transporter: '',
-        vehicleNumber: '',
-        driver: '',
-        site: '',
-        remarks: '',
-        grosswt: 0,
-        tarewt: 0,
-        netwt: 0,
-        rent: 0,
-      });
       toast({
         title: 'Success!',
         description: 'Sale entry has been saved.',
@@ -173,6 +176,25 @@ export const SaleForm: FC = () => {
     // The entryToPrint state is already set on form submission.
   };
 
+  if (nextDcNo === null) {
+      return (
+          <Card>
+              <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                      <Package /> Sale Entry
+                  </CardTitle>
+                  <CardDescription>Enter the details of the new sale.</CardDescription>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center h-96">
+                   <div className="flex flex-col items-center gap-4">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        <p className="text-muted-foreground">Loading DC Number...</p>
+                   </div>
+              </CardContent>
+          </Card>
+      )
+  }
+
   return (
     <>
       <Dialog>
@@ -206,9 +228,9 @@ export const SaleForm: FC = () => {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Name</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
+                            <Input placeholder="e.g., Customer Name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -287,6 +309,32 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="royaltyPassNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Ticket /> Royalty Pass Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., RP12345" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="royaltyWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Weight /> Royalty Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 2500" {...field} step="0.01" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
