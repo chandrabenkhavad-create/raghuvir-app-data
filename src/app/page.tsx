@@ -2,9 +2,10 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,7 +17,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 
 export default function Home() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -48,6 +49,13 @@ export default function Home() {
           <div className="absolute top-0 right-0 flex items-center gap-2">
              <SupabaseStatus />
              <ThemeToggle />
+             {user === 'admin' && (
+                <Link href="/users" passHref>
+                  <Button variant="outline">
+                    <UserCog className="mr-2 h-4 w-4" /> Manage Users
+                  </Button>
+                </Link>
+              )}
              <Button variant="outline" onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
