@@ -92,6 +92,9 @@ export async function getAllSaleEntries(): Promise<SaleEntry[]> {
 }
 
 export async function getSaleEntryById(id: number): Promise<SaleEntry | null> {
+    if (typeof id !== 'number' || !id) {
+        return null;
+    }
     return runQuery(supabase => 
         supabase
             .from('sales')
