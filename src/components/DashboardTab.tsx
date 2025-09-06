@@ -295,15 +295,10 @@ export function DashboardTab() {
                     </div>
                 </CardContent>
             </Card>
-             <Alert>
-                <Terminal className="h-4 w-4" />
-                <AlertTitle>Driver Attendance</AlertTitle>
-                <AlertDescription>
-                    This feature is coming soon. A data structure for driver attendance needs to be created first.
-                </AlertDescription>
-            </Alert>
         </div>
     );
+
+    
 
     
 
