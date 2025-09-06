@@ -37,7 +37,6 @@ import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
-  name: z.string().min(1, 'Customer name is required'),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
   transporter: z.string().min(1, 'Transporter is required'),
@@ -91,7 +90,6 @@ export const SaleForm: FC = () => {
       if (nextDcNo !== null) {
           form.reset({
             dcno: nextDcNo,
-            name: '',
             material: '',
             supplier: '',
             transporter: '',
@@ -124,7 +122,7 @@ export const SaleForm: FC = () => {
     }
     
     const now = new Date();
-    const newEntryData: Omit<SaleEntry, 'id' | 'created_at'> = { 
+    const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
       ...data,
       dcno: nextDcNo,
       date: now.toLocaleDateString('en-GB'),
@@ -219,19 +217,6 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
                             <Input type="text" value={String(field.value).padStart(3, '0')} disabled />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Customer</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Customer Name" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
