@@ -220,23 +220,17 @@ export const SaleForm: FC = () => {
       }
   }
 
-  const handleEdit = async (id: number) => {
-      try {
-          const entry = await getSaleEntryById(id);
-          if (entry) {
-              setEditingEntryId(entry.id);
-              setDcNumber(entry.dcno);
-              form.reset({
-                ...entry,
-                royaltyWeight: entry.royaltyWeight ?? 0,
-              });
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-          } else {
-              toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
-          }
-      } catch (error) {
-          console.error('Failed to fetch entry for editing:', error);
-          toast({ variant: 'destructive', title: 'Error', description: (error as Error).message || 'Could not fetch the entry.' });
+  const handleEdit = (entry: SaleEntry) => {
+      if (entry) {
+          setEditingEntryId(entry.id);
+          setDcNumber(entry.dcno);
+          form.reset({
+            ...entry,
+            royaltyWeight: entry.royaltyWeight ?? 0,
+          });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+          toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to edit.' });
       }
   }
 

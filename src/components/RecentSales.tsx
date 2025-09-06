@@ -27,7 +27,7 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 interface RecentSalesProps {
     refreshKey: boolean;
     onPrint: (entry: SaleEntry) => void;
-    onEdit: (id: number) => void;
+    onEdit: (entry: SaleEntry) => void;
 }
 
 export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
@@ -102,7 +102,7 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onEdit(sale.id)}>
+                    <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit
                     </Button>
