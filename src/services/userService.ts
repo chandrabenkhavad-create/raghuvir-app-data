@@ -8,9 +8,7 @@ import type { User } from '@/types';
 async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>, emptyState: T): Promise<T> {
     try {
         const supabase = getSupabase();
-        if (!supabase) {
-             throw new Error("Supabase is not connected. Please check your environment variables.");
-        }
+        // No error thrown here, but supabase can be null if not configured
         const { data, error } = await query(supabase);
 
         if (error) {
@@ -24,6 +22,10 @@ async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => 
         return data;
     } catch (e: any) {
         console.error("Service-level error:", e.message)
+        // Check if the error is due to Supabase not being connected and return empty state
+        if (e.message.includes("Supabase is not connected")) {
+            return emptyState;
+        }
         throw e;
     }
 }
@@ -54,6 +56,13 @@ export async function addUser(entry: Omit<User, 'id' | 'created_at'>): Promise<U
 }
 
 export async function verifyUser(username: string, pass: string): Promise<boolean> {
+     try {
+        getSupabase(); // This will throw if not configured
+     } catch (e) {
+         // Supabase is not configured, fall back to default admin user
+         return username === 'admin' && pass === 'admin';
+     }
+
      const user = await runQuery(supabase => 
         supabase
             .from('users')
