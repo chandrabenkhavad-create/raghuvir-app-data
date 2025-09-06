@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { DieselEntry } from '@/types';
-import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
+import { addDieselEntry } from '@/services/dieselService';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -67,34 +67,15 @@ export const DieselForm: FC = () => {
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     const now = new Date();
-    const newEntryData: Omit<DieselEntry, 'created_at' | 'id'> = { 
+    const newEntryData: Omit<DieselEntry, 'id' | 'created_at'> = { 
       ...data, 
       date: now.toLocaleDateString('en-GB'),
       time: now.toLocaleTimeString(),
     };
     
     try {
-      const sheetData = [
-        newEntryData.date,
-        newEntryData.time,
-        newEntryData.vehicleNumber,
-        newEntryData.liters,
-        newEntryData.rate,
-        newEntryData.amount,
-        newEntryData.driverName,
-        newEntryData.pump,
-        newEntryData.odo,
-      ];
-
-      await appendToGoogleSheet({ sheetName: 'Diesel', data: sheetData });
-
-      const printableEntry: DieselEntry = {
-        ...newEntryData,
-        id: Date.now(), // Use timestamp for temporary client-side ID
-        created_at: now.toISOString(),
-      }
-
-      setEntryToPrint(printableEntry);
+      const savedEntry = await addDieselEntry(newEntryData);
+      setEntryToPrint(savedEntry);
       form.reset({
         vehicleNumber: '',
         liters: 0,
@@ -106,7 +87,7 @@ export const DieselForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Diesel entry has been saved to Google Sheets.',
+        description: 'Diesel entry has been saved.',
       });
     } catch (error) {
       console.error('Failed to save entry:', error);

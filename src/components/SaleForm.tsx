@@ -30,7 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { appendToGoogleSheet } from '@/ai/flows/google-sheets-flow';
+import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -53,7 +53,24 @@ type SaleFormValues = z.infer<typeof saleSchema>;
 export const SaleForm: FC = () => {
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
-  const [nextDcNo, setNextDcNo] = useState(1); // Assuming we can't easily get the last DC no from Sheets
+  const [nextDcNo, setNextDcNo] = useState(1);
+
+  useEffect(() => {
+    const fetchLastDcNo = async () => {
+      try {
+        const lastEntry = await getLastSaleEntry();
+        if (lastEntry) {
+          setNextDcNo(lastEntry.dcno + 1);
+        } else {
+          setNextDcNo(1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch last DC number", error);
+        setNextDcNo(1); // Start from 1 if fetch fails
+      }
+    };
+    fetchLastDcNo();
+  }, []);
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -75,8 +92,6 @@ export const SaleForm: FC = () => {
   });
 
   useEffect(() => {
-    // In a real app, you might want to fetch the last DC number from Google Sheets on load.
-    // For simplicity, we'll just increment it on the client side.
     form.setValue('dcno', nextDcNo);
   }, [nextDcNo, form]);
 
@@ -98,33 +113,9 @@ export const SaleForm: FC = () => {
     };
 
     try {
-      const sheetData = [
-        newEntryData.dcno,
-        newEntryData.date,
-        newEntryData.time,
-        newEntryData.name,
-        newEntryData.material,
-        newEntryData.supplier,
-        newEntryData.transporter,
-        newEntryData.grosswt,
-        newEntryData.tarewt,
-        newEntryData.netwt,
-        newEntryData.rent,
-        newEntryData.driver,
-        newEntryData.site,
-        newEntryData.remarks || '',
-        newEntryData.vehicleNumber
-      ];
-
-      await appendToGoogleSheet({ sheetName: 'Sales', data: sheetData });
+      const savedEntry = await addSaleEntry(newEntryData);
       
-      const printableEntry: SaleEntry = {
-        ...newEntryData,
-        id: Date.now(), // Use timestamp for temporary client-side ID
-        created_at: now.toISOString(),
-      };
-
-      setEntryToPrint(printableEntry);
+      setEntryToPrint(savedEntry);
 
       const newDcNo = nextDcNo + 1;
       setNextDcNo(newDcNo);
@@ -146,7 +137,7 @@ export const SaleForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Sale entry has been saved to Google Sheets.',
+        description: 'Sale entry has been saved.',
       });
     } catch (error) {
        console.error('Failed to save entry:', error);
