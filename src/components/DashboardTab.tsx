@@ -135,9 +135,9 @@ export function DashboardTab() {
     
     if (loading) {
         return (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {[...Array(8)].map((_, i) => (
-                    <Card key={i}><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
+                    <Card key={i} className="lg:col-span-2"><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-20 w-full" /></CardContent></Card>
                 ))}
             </div>
         )
@@ -146,7 +146,7 @@ export function DashboardTab() {
     return (
         <div className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Vehicle Trips</CardTitle>
                         <CardDescription>From sales entries</CardDescription>
@@ -162,7 +162,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Transporter Trips</CardTitle>
                          <CardDescription>From sales entries</CardDescription>
@@ -178,7 +178,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Vehicle Sale Revenue</CardTitle>
                         <CardDescription>Net Weight * Rent</CardDescription>
@@ -194,7 +194,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Vehicle Diesel Cost</CardTitle>
                         <CardDescription>Total amount spent</CardDescription>
@@ -210,7 +210,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Vehicle Diesel Liters</CardTitle>
                         <CardDescription>Total liters consumed</CardDescription>
@@ -226,7 +226,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Pump-wise Diesel Liters</CardTitle>
                         <CardDescription>Total liters from each pump</CardDescription>
@@ -258,7 +258,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="lg:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Diesel</CardTitle>
                         <Droplets className="h-4 w-4 text-muted-foreground" />
@@ -304,6 +304,8 @@ export function DashboardTab() {
             </Alert>
         </div>
     );
+
+    
 
     
 
