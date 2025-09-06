@@ -102,6 +102,23 @@ export function DashboardTab() {
         }, {} as Record<string, number>);
     }, [dieselData]);
 
+    const vehicleNetRevenue = useMemo(() => {
+        const allVehicles = new Set([
+            ...Object.keys(vehicleSaleAmounts),
+            ...Object.keys(vehicleDieselAmount)
+        ]);
+        
+        const revenue = {} as Record<string, number>;
+
+        for (const vehicle of allVehicles) {
+            const saleAmount = vehicleSaleAmounts[vehicle] || 0;
+            const dieselCost = vehicleDieselAmount[vehicle] || 0;
+            revenue[vehicle] = saleAmount - dieselCost;
+        }
+
+        return revenue;
+    }, [vehicleSaleAmounts, vehicleDieselAmount]);
+
 
     if (error) {
         return (
@@ -225,6 +242,22 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Vehicle Net Revenue</CardTitle>
+                        <CardDescription>Sale Revenue - Diesel Cost</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Table>
+                            <TableHeader><TableRow><TableHead>Vehicle</TableHead><TableHead className="text-right">Net (₹)</TableHead></TableRow></TableHeader>
+                            <TableBody>
+                                {Object.entries(vehicleNetRevenue).map(([vehicle, amount]) => (
+                                    <TableRow key={vehicle}><TableCell>{vehicle}</TableCell><TableCell className="text-right">{amount.toFixed(2)}</TableCell></TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </CardContent>
+                </Card>
                  <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Total Diesel</CardTitle>
@@ -271,5 +304,7 @@ export function DashboardTab() {
             </Alert>
         </div>
     );
+
+    
 
     
