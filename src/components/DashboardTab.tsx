@@ -242,7 +242,7 @@ export function DashboardTab() {
                         </Table>
                     </CardContent>
                 </Card>
-                <Card>
+                <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle>Vehicle Net Revenue</CardTitle>
                         <CardDescription>Sale Revenue - Diesel Cost</CardDescription>
@@ -304,6 +304,8 @@ export function DashboardTab() {
             </Alert>
         </div>
     );
+
+    
 
     
 
