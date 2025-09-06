@@ -9,6 +9,9 @@ async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => 
     try {
         const supabase = getSupabase();
         // No error thrown here, but supabase can be null if not configured
+        if (!supabase) {
+            return emptyState;
+        }
         const { data, error } = await query(supabase);
 
         if (error) {
@@ -57,9 +60,10 @@ export async function addUser(entry: Omit<User, 'id' | 'created_at'>): Promise<U
 
 export async function verifyUser(username: string, pass: string): Promise<boolean> {
      try {
-        getSupabase(); // This will throw if not configured
+        getSupabase(); // This will throw if not configured, and we'll fall into the catch block
      } catch (e) {
          // Supabase is not configured, fall back to default admin user
+         console.log("Supabase not configured, falling back to default admin credentials.");
          return username === 'admin' && pass === 'admin';
      }
 
@@ -71,20 +75,22 @@ export async function verifyUser(username: string, pass: string): Promise<boolea
             .single()
     , null);
 
-    if (!user || !user.password) {
-        // For the default admin user if users table is empty or user not found
-        if (username === 'admin' && pass === 'admin') {
-            const users = await getAllUsers();
-            if (users.length === 0) {
-                 // First time login, add admin user
-                await addUser({ username: 'admin', password: 'admin' });
-                return true;
-            }
+    if (user && user.password) {
+        // User found, compare password
+        return bcrypt.compare(pass, user.password);
+    }
+
+    // User not found, check for default admin on first run
+    if (username === 'admin' && pass === 'admin') {
+        const users = await getAllUsers();
+        if (users.length === 0) {
+             console.log("No users found. Creating default admin user.");
+             await addUser({ username: 'admin', password: 'admin' });
+             return true;
         }
-        return false;
     }
     
-    return bcrypt.compare(pass, user.password);
+    return false;
 }
 
 
