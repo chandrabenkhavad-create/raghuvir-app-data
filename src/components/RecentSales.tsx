@@ -67,7 +67,7 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Sales</CardTitle>
+        <CardTitle>Recent Sales entry</CardTitle>
         <CardDescription>
           The last 10 sale entries recorded.
         </CardDescription>
