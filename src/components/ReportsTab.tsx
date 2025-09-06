@@ -54,14 +54,22 @@ export function ReportsTab() {
   }, []);
 
   const downloadCSV = (data: any[], filename: string, headers: string[]) => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [
-        headers.join(","),
-        ...data.map((row) =>
-          headers.map((header) => JSON.stringify(row[header] ?? "")).join(",")
-        ),
-      ].join("\n");
+    const csvRows = data.map(row => 
+        headers.map(header => {
+            let value = row[header];
+            if (value === null || value === undefined) {
+                return "";
+            }
+            // Stringify and escape quotes
+            let stringValue = String(value);
+            if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                stringValue = `"${stringValue.replace(/"/g, '""')}"`;
+            }
+            return stringValue;
+        }).join(',')
+    );
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...csvRows].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -75,7 +83,7 @@ export function ReportsTab() {
   const salesHeaders = [
     "id", "dcno", "date", "time", "name", "material", "supplier",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
-    "site", "remarks", "vehicleNumber", "created_at"
+    "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
   ];
   
   const dieselHeaders = [
@@ -209,5 +217,3 @@ export function ReportsTab() {
     </Tabs>
   );
 }
-
-    

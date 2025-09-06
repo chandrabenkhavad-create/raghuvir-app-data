@@ -18,7 +18,8 @@ import {
   Scale, 
   FileText,
   Car,
-  IndianRupee
+  IndianRupee,
+  Ticket
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -44,6 +45,8 @@ const saleSchema = z.object({
   netwt: z.coerce.number().positive('Net weight must be positive'),
   rent: z.coerce.number().min(0, 'Rent must be a positive number'),
   driver: z.string().min(1, 'Driver is required'),
+  royaltyPassNumber: z.string().optional(),
+  royaltyWeight: z.coerce.number().min(0).optional(),
   site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
 });
@@ -82,6 +85,8 @@ export const SaleForm: FC = () => {
       transporter: '',
       vehicleNumber: '',
       driver: '',
+      royaltyPassNumber: '',
+      royaltyWeight: 0,
       site: '',
       remarks: '',
       grosswt: 0,
@@ -128,6 +133,8 @@ export const SaleForm: FC = () => {
         transporter: '',
         vehicleNumber: '',
         driver: '',
+        royaltyPassNumber: '',
+        royaltyWeight: 0,
         site: '',
         remarks: '',
         grosswt: 0,
@@ -287,6 +294,32 @@ export const SaleForm: FC = () => {
                           <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="royaltyPassNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Ticket /> Royalty Pass Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., RP12345" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="royaltyWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Weight /> Royalty Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 2500" {...field} step="0.01" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

@@ -16,6 +16,8 @@ export interface SaleEntry {
   site: string;
   remarks?: string;
   vehicleNumber: string;
+  royaltyPassNumber?: string;
+  royaltyWeight?: number;
   created_at: string;
 }
 
