@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LogOut, Package } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -11,6 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
+import { DashboardTab } from '@/components/DashboardTab';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { SupabaseStatus } from '@/components/SupabaseStatus';
 
 export default function Home() {
   const { isAuthenticated, logout } = useAuth();
@@ -33,22 +36,30 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
-        <header className="text-center mb-8 relative">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
-            Raghuvir Infrastructure
-          </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Sayla-Sudamda Road,Sudamda.
-          </p>
-          <div className="absolute top-0 right-0">
+        <header className="mb-8 relative">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
+              Raghuvir Infrastructure
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Sayla-Sudamda Road,Sudamda.
+            </p>
+          </div>
+          <div className="absolute top-0 right-0 flex items-center gap-2">
+             <SupabaseStatus />
+             <ThemeToggle />
              <Button variant="outline" onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
             </Button>
           </div>
         </header>
 
-        <Tabs defaultValue="sale" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
+            <TabsTrigger value="dashboard">
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Dashboard
+            </TabsTrigger>
             <TabsTrigger value="sale">
               <Package className="mr-2 h-4 w-4" />
               Sale Entry
@@ -63,6 +74,10 @@ export default function Home() {
             </TabsTrigger>
           </TabsList>
           
+          <TabsContent value="dashboard" className="mt-6">
+            <DashboardTab />
+          </TabsContent>
+
           <TabsContent value="sale" className="mt-6">
             <SaleForm />
           </TabsContent>

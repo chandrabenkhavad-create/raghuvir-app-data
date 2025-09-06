@@ -26,12 +26,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { addSaleEntry, getRecentSaleEntries } from '@/services/saleService';
 import type { SaleEntry } from '@/types';
+import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -52,10 +51,26 @@ const saleSchema = z.object({
 type SaleFormValues = z.infer<typeof saleSchema>;
 
 export const SaleForm: FC = () => {
-  const [entries, setEntries] = useState<SaleEntry[]>([]);
   const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
   const { toast } = useToast();
   const [nextDcNo, setNextDcNo] = useState(1);
+
+  useEffect(() => {
+    const fetchLastDcNo = async () => {
+      try {
+        const lastEntry = await getLastSaleEntry();
+        if (lastEntry) {
+          setNextDcNo(lastEntry.dcno + 1);
+        } else {
+          setNextDcNo(1);
+        }
+      } catch (error) {
+        console.error("Failed to fetch last DC number", error);
+        setNextDcNo(1); // Start from 1 if fetch fails
+      }
+    };
+    fetchLastDcNo();
+  }, []);
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -77,32 +92,8 @@ export const SaleForm: FC = () => {
   });
 
   useEffect(() => {
-    async function fetchEntries() {
-      try {
-        const data: SaleEntry[] = await getRecentSaleEntries();
-        setEntries(data);
-        if (data.length > 0) {
-          setEntryToPrint(data[0]);
-          const lastEntry = data[0];
-          const lastDcNum = lastEntry.dcno;
-          const newDcNo = lastDcNum + 1;
-          setNextDcNo(newDcNo);
-          form.setValue('dcno', newDcNo);
-        } else {
-          setNextDcNo(1);
-          form.setValue('dcno', 1);
-        }
-      } catch (error) {
-        console.error('Failed to load sales entries:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error!',
-          description: 'Failed to load recent sales entries.',
-        });
-      }
-    }
-    fetchEntries();
-  }, [toast, form]);
+    form.setValue('dcno', nextDcNo);
+  }, [nextDcNo, form]);
 
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
@@ -112,13 +103,9 @@ export const SaleForm: FC = () => {
     form.setValue('netwt', parseFloat(net.toFixed(2)));
   }, [grosswt, tarewt, form]);
 
-  useEffect(() => {
-    form.setValue('dcno', nextDcNo);
-  }, [nextDcNo, form]);
-
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     const now = new Date();
-    const newEntryData = { 
+    const newEntryData: Omit<SaleEntry, 'id' | 'created_at'> = { 
       ...data,
       dcno: nextDcNo,
       date: now.toLocaleDateString('en-GB'),
@@ -128,8 +115,6 @@ export const SaleForm: FC = () => {
     try {
       const savedEntry = await addSaleEntry(newEntryData);
       
-      const updatedEntries = [savedEntry, ...entries];
-      setEntries(updatedEntries);
       setEntryToPrint(savedEntry);
 
       const newDcNo = nextDcNo + 1;
@@ -152,7 +137,7 @@ export const SaleForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Sale entry has been saved to Supabase.',
+        description: 'Sale entry has been saved.',
       });
     } catch (error) {
        console.error('Failed to save entry:', error);
@@ -183,8 +168,9 @@ export const SaleForm: FC = () => {
     }
   };
   
-  const openPrintDialog = (entry: SaleEntry) => {
-    setEntryToPrint(entry);
+  const openPrintDialog = () => {
+    // This is triggered by the button, we just need the dialog to open.
+    // The entryToPrint state is already set on form submission.
   };
 
   return (
@@ -387,7 +373,7 @@ export const SaleForm: FC = () => {
                       type="button"
                       variant="outline"
                       disabled={!entryToPrint}
-                      onClick={() => openPrintDialog(entries[0])}
+                      onClick={openPrintDialog}
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       Print Last Entry
@@ -398,59 +384,6 @@ export const SaleForm: FC = () => {
             </Form>
           </CardContent>
         </Card>
-
-        {entries.length > 0 && (
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Recent Sale Entries</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>DC No.</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Material</TableHead>
-                    <TableHead>Supplier</TableHead>
-                    <TableHead>Gross Wt.</TableHead>
-                    <TableHead>Tare Wt.</TableHead>
-                    <TableHead>Net Wt.</TableHead>
-                    <TableHead>Vehicle No.</TableHead>
-                    <TableHead>Remarks</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {entries.map((entry) => (
-                    <TableRow key={entry.id}>
-                      <TableCell>{String(entry.dcno).padStart(3, '0')}</TableCell>
-                      <TableCell>{entry.name}</TableCell>
-                      <TableCell>{entry.material}</TableCell>
-                      <TableCell>{entry.supplier}</TableCell>
-                      <TableCell>{entry.grosswt} KG</TableCell>
-                      <TableCell>{entry.tarewt} KG</TableCell>
-                      <TableCell>{entry.netwt} KG</TableCell>
-                      <TableCell>{entry.vehicleNumber}</TableCell>
-                      <TableCell>{entry.remarks}</TableCell>
-                      <TableCell className="text-right">
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => openPrintDialog(entry)}
-                          >
-                            <Printer className="h-4 w-4" />
-                            <span className="sr-only">Print</span>
-                          </Button>
-                        </DialogTrigger>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
 
         <DialogContent className="max-w-4xl">
           <DialogHeader>

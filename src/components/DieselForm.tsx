@@ -22,12 +22,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { addDieselEntry, getRecentDieselEntries } from '@/services/dieselService';
 import type { DieselEntry } from '@/types';
+import { addDieselEntry } from '@/services/dieselService';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -42,7 +41,6 @@ const dieselSchema = z.object({
 type DieselFormValues = z.infer<typeof dieselSchema>;
 
 export const DieselForm: FC = () => {
-  const [entries, setEntries] = useState<DieselEntry[]>([]);
   const [entryToPrint, setEntryToPrint] = useState<DieselEntry | null>(null);
   const { toast } = useToast();
 
@@ -63,33 +61,13 @@ export const DieselForm: FC = () => {
   const rate = form.watch('rate');
 
   useEffect(() => {
-    async function fetchEntries() {
-      try {
-        const data = await getRecentDieselEntries();
-        setEntries(data);
-        if (data.length > 0) {
-          setEntryToPrint(data[0]);
-        }
-      } catch (error) {
-        console.error('Failed to load diesel entries:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Error!',
-          description: 'Failed to load recent diesel entries.',
-        });
-      }
-    }
-    fetchEntries();
-  }, [toast]);
-
-  useEffect(() => {
     const calculatedAmount = (liters || 0) * (rate || 0);
     form.setValue('amount', parseFloat(calculatedAmount.toFixed(2)));
   }, [liters, rate, form]);
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     const now = new Date();
-    const newEntryData = { 
+    const newEntryData: Omit<DieselEntry, 'id' | 'created_at'> = { 
       ...data, 
       date: now.toLocaleDateString('en-GB'),
       time: now.toLocaleTimeString(),
@@ -97,8 +75,6 @@ export const DieselForm: FC = () => {
     
     try {
       const savedEntry = await addDieselEntry(newEntryData);
-
-      setEntries((prev) => [savedEntry, ...prev]);
       setEntryToPrint(savedEntry);
       form.reset({
         vehicleNumber: '',
@@ -111,7 +87,7 @@ export const DieselForm: FC = () => {
       });
       toast({
         title: 'Success!',
-        description: 'Diesel entry has been saved to Supabase.',
+        description: 'Diesel entry has been saved.',
       });
     } catch (error) {
       console.error('Failed to save entry:', error);
@@ -142,8 +118,9 @@ export const DieselForm: FC = () => {
     }
   };
   
-  const openPrintDialog = (entry: DieselEntry) => {
-    setEntryToPrint(entry);
+  const openPrintDialog = () => {
+    // This is triggered by the button, we just need the dialog to open.
+    // The entryToPrint state is already set on form submission.
   };
 
   return (
@@ -258,7 +235,7 @@ export const DieselForm: FC = () => {
                     type="button"
                     variant="outline"
                     disabled={!entryToPrint}
-                    onClick={() => openPrintDialog(entries[0])}
+                    onClick={openPrintDialog}
                   >
                     <Printer className="mr-2 h-4 w-4" />
                     Print Last Entry
@@ -270,52 +247,6 @@ export const DieselForm: FC = () => {
         </CardContent>
       </Card>
 
-      {entries.length > 0 && (
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Recent Diesel Entries</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="font-bold">Vehicle No.</TableHead>
-                  <TableHead>Liters</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Driver</TableHead>
-                  <TableHead>Pump</TableHead>
-                  <TableHead>ODO Meter</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {entries.map((entry) => (
-                  <TableRow key={entry.id}>
-                    <TableCell>{entry.vehicleNumber}</TableCell>
-                    <TableCell>{entry.liters.toFixed(2)}</TableCell>
-                    <TableCell>₹{entry.amount.toFixed(2)}</TableCell>
-                    <TableCell>{entry.driverName}</TableCell>
-                    <TableCell>{entry.pump}</TableCell>
-                    <TableCell>{entry.odo}</TableCell>
-                    <TableCell className="text-right">
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openPrintDialog(entry)}
-                        >
-                          <Printer className="h-4 w-4" />
-                          <span className="sr-only">Print</span>
-                        </Button>
-                      </DialogTrigger>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Print Preview</DialogTitle>
