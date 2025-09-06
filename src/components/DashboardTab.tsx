@@ -270,7 +270,7 @@ export function DashboardTab() {
                         </p>
                     </CardContent>
                  </Card>
-                 <Card className="lg:col-span-4">
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
                     </CardHeader>
@@ -297,5 +297,4 @@ export function DashboardTab() {
             </div>
         </div>
     );
-
-    
+}
