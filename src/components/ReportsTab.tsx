@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck, Building2 } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
@@ -47,10 +47,14 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Filters
   const [salesFromDate, setSalesFromDate] = useState<Date | undefined>();
   const [salesToDate, setSalesToDate] = useState<Date | undefined>();
   const [dieselFromDate, setDieselFromDate] = useState<Date | undefined>();
   const [dieselToDate, setDieselToDate] = useState<Date | undefined>();
+  const [purchaseFromDate, setPurchaseFromDate] = useState<Date | undefined>();
+  const [purchaseToDate, setPurchaseToDate] = useState<Date | undefined>();
+  
   const [salesSearchTerm, setSalesSearchTerm] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
@@ -127,10 +131,34 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
       return dieselData.filter(diesel => diesel.vehicleNumber === selectedVehicle);
   }, [dieselData, selectedVehicle]);
 
+  const purchaseMaterials = useMemo(() => {
+    const filteredData = salesData.filter(sale => {
+       if (purchaseFromDate || purchaseToDate) {
+        const saleDate = parseDate(sale.date);
+        const start = purchaseFromDate ? new Date(purchaseFromDate.setHours(0, 0, 0, 0)) : null;
+        const end = purchaseToDate ? new Date(purchaseToDate.setHours(23, 59, 59, 999)) : null;
+        if (start && saleDate < start) return false;
+        if (end && saleDate > end) return false;
+      }
+      return true;
+    });
 
-  const downloadCSV = (data: any[], filename: string, headers: string[]) => {
+    return filteredData.reduce((acc, sale) => {
+        if (!acc[sale.purchase]) {
+            acc[sale.purchase] = {};
+        }
+        const netwt = Number(sale.netwt) || 0;
+        acc[sale.purchase][sale.material] = (acc[sale.purchase][sale.material] || 0) + netwt;
+        return acc;
+    }, {} as Record<string, Record<string, number>>);
+  }, [salesData, purchaseFromDate, purchaseToDate]);
+
+
+  const downloadCSV = (data: any[], filename: string, headers?: string[]) => {
+    if (!data.length) return;
+    const allHeaders = headers || Object.keys(data[0]);
     const csvRows = data.map(row => 
-        headers.map(header => {
+        allHeaders.map(header => {
             let value = row[header];
             if (value === null || value === undefined) {
                 return "";
@@ -143,7 +171,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
         }).join(',')
     );
 
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...csvRows].join("\n");
+    const csvContent = "data:text/csv;charset=utf-8," + [allHeaders.join(","), ...csvRows].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -152,6 +180,20 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+  
+  const downloadPurchaseReportCSV = () => {
+    const dataForCsv: { party: string; material: string; total_net_weight_kg: number }[] = [];
+    Object.entries(purchaseMaterials).forEach(([party, materials]) => {
+      Object.entries(materials).forEach(([material, netwt]) => {
+        dataForCsv.push({
+          party,
+          material,
+          total_net_weight_kg: parseFloat(netwt.toFixed(2)),
+        });
+      });
+    });
+    downloadCSV(dataForCsv, 'party_wise_purchase_report');
   };
 
   const salesHeaders = [
@@ -180,10 +222,11 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
 
   return (
     <Tabs defaultValue="sales">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="sales">Sales Report</TabsTrigger>
         <TabsTrigger value="diesel">Diesel Report</TabsTrigger>
         <TabsTrigger value="vehicle">Vehicle Wise Report</TabsTrigger>
+        <TabsTrigger value="purchase">Purchase Report</TabsTrigger>
       </TabsList>
       <TabsContent value="sales">
         <Card>
@@ -521,8 +564,103 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
             </CardContent>
         </Card>
       </TabsContent>
+      <TabsContent value="purchase">
+        <Card>
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <CardTitle>Party-wise Purchase Report</CardTitle>
+                <CardDescription>Material purchased from each party.</CardDescription>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !purchaseFromDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {purchaseFromDate ? format(purchaseFromDate, "PPP") : <span>From date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={purchaseFromDate}
+                        onSelect={setPurchaseFromDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                </Popover>
+                 <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !purchaseToDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {purchaseToDate ? format(purchaseToDate, "PPP") : <span>To date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={purchaseToDate}
+                        onSelect={setPurchaseToDate}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                </Popover>
+                <Button
+                    onClick={downloadPurchaseReportCSV}
+                    disabled={loading || Object.keys(purchaseMaterials).length === 0}
+                    className="w-full sm:w-auto"
+                >
+                    <Download className="mr-2" /> Download CSV
+                </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+             {loading ? (
+                <div className="space-y-4">
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-24 w-full" />
+                </div>
+             ) : (
+                <div className="space-y-4">
+                    {Object.entries(purchaseMaterials).length > 0 ? (
+                        Object.entries(purchaseMaterials).map(([purchase, materials]) => (
+                            <Card key={purchase} className="bg-muted/50">
+                                <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Building2 className="h-5 w-5" />{purchase}</CardTitle></CardHeader>
+                                <CardContent>
+                                    <Table>
+                                        <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {Object.entries(materials).map(([material, netwt]) => (
+                                                <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </CardContent>
+                            </Card>
+                        ))
+                    ) : (
+                        <p className="text-muted-foreground text-center py-8">No purchase data found for the selected criteria.</p>
+                    )}
+                </div>
+             )}
+          </CardContent>
+        </Card>
+      </TabsContent>
     </Tabs>
   );
 }
+
+    
 
     
