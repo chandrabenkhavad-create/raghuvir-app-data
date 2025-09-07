@@ -139,7 +139,7 @@ export default function Home() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 max-w-5xl mx-auto">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 max-w-5xl mx-auto gap-2">
             {showDashboard && <TabsTrigger value="dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</TabsTrigger>}
             <TabsTrigger value="sale"><Package className="mr-2 h-4 w-4" />Sale Entry</TabsTrigger>
             <TabsTrigger value="diesel"><Fuel className="mr-2 h-4 w-4" />Diesel Entry</TabsTrigger>
@@ -157,6 +157,7 @@ export default function Home() {
               onEntrySaved={() => { /* Can be used to refresh recent list */ }}
               entryToPrint={printingSale}
               onPrintDialogChange={() => setPrintingSale(null)}
+              onEditRequest={handleEditSale}
             />
           </TabsContent>
           
@@ -164,6 +165,7 @@ export default function Home() {
             <DieselForm
               entryToPrint={printingDiesel}
               onPrintDialogChange={() => setPrintingDiesel(null)}
+              onEditRequest={handleEditDiesel}
             />
           </TabsContent>
 

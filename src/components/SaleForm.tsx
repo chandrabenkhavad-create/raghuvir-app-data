@@ -61,9 +61,10 @@ interface SaleFormProps {
   onEntrySaved: () => void;
   entryToPrint: SaleEntry | null;
   onPrintDialogChange: () => void;
+  onEditRequest: (entry: SaleEntry) => void;
 }
 
-export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
+export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<SaleEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -256,12 +257,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       }
   }
 
-  const handleEdit = (entry: SaleEntry) => {
-     toast({
-        title: "Redirecting...",
-        description: "Please use the 'Reports' tab to edit entries.",
-      });
-  }
 
   return (
     <>
@@ -526,7 +521,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         <RecentSales 
             refreshKey={refreshRecentSales} 
             onPrint={handleReprint}
-            onEdit={handleEdit}
+            onEdit={onEditRequest}
         />
       </div>
     </>

@@ -47,9 +47,10 @@ type DieselFormValues = z.infer<typeof dieselSchema>;
 interface DieselFormProps {
   entryToPrint: DieselEntry | null;
   onPrintDialogChange: () => void;
+  onEditRequest: (entry: DieselEntry) => void;
 }
 
-export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
+export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<DieselEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [refreshRecent, setRefreshRecent] = useState(false);
@@ -174,13 +175,6 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
     } else {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
     }
-  };
-
-  const handleEdit = (entry: DieselEntry) => {
-       toast({
-        title: "Redirecting...",
-        description: "Please use the 'Reports' tab or 'Recent Diesel' list to edit entries.",
-      });
   };
 
 
@@ -334,7 +328,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
         <RecentDiesel 
             refreshKey={refreshRecent} 
             onPrint={handleReprint}
-            onEdit={handleEdit}
+            onEdit={onEditRequest}
         />
       </div>
     </>
