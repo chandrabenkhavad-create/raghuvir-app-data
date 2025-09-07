@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -7,6 +8,9 @@ export interface PrintSettings {
   showQRCode: boolean;
   showCompanyHeader: boolean;
   showFooter: boolean;
+  companyName: string;
+  companyAddress: string;
+  companyContact: string;
 }
 
 const SETTINGS_KEY = 'raghuvir_infra_print_settings';
@@ -16,6 +20,9 @@ const defaultSettings: PrintSettings = {
   showQRCode: true,
   showCompanyHeader: true,
   showFooter: true,
+  companyName: 'Raghuvir Infrastructure',
+  companyAddress: 'Sayla-Sudamda Road, Sudamda.',
+  companyContact: '',
 };
 
 export const usePrintSettings = () => {
@@ -26,7 +33,8 @@ export const usePrintSettings = () => {
     try {
       const storedSettings = localStorage.getItem(SETTINGS_KEY);
       if (storedSettings) {
-        setSettings(JSON.parse(storedSettings));
+        // Merge stored settings with defaults to ensure all keys are present
+        setSettings(prev => ({ ...prev, ...JSON.parse(storedSettings) }));
       }
     } catch (error) {
       console.error("Could not read print settings from localStorage", error);

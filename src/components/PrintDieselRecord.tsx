@@ -32,10 +32,11 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
         {settings.showCompanyHeader && (
           <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2">
             <div>
-              <h1 className="text-2xl font-bold">Raghuvir Infrastructure</h1>
-              <p>Diesel Record</p>
+              <h1 className="text-xl font-bold">{settings.companyName}</h1>
+              <p className="text-xs">{settings.companyAddress}</p>
+              <p className="text-xs">{settings.companyContact}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right text-xs">
               <p><strong>Record ID:</strong> {data.id}</p>
               <p><strong>Date:</strong> {data.date}</p>
               <p><strong>Time:</strong> {data.time}</p>
@@ -44,7 +45,7 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow text-sm">
             <div className="col-span-2">
                 <strong className="block text-gray-600">Vehicle Number:</strong>
                 <span>{data.vehicleNumber}</span>
@@ -83,7 +84,7 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
       </div>
 
       {settings.showFooter && (
-        <footer className="text-center text-gray-500 pt-2 mt-auto">
+        <footer className="text-center text-xs text-gray-500 pt-2 mt-auto">
           This is a computer-generated document.
         </footer>
       )}
