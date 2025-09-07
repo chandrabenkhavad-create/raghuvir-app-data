@@ -20,6 +20,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   const grosswt = Number(data.grosswt || 0);
   const tarewt = Number(data.tarewt || 0);
   const netwt = Number(data.netwt || 0);
+  const royaltyWeight = Number(data.royaltyWeight || 0);
 
   return (
     <div className="bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans text-xs">
@@ -38,6 +39,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
 
         <main className="flex justify-between items-start">
           <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow">
+            <div className="col-span-2">
+              <strong className="block text-gray-600">Purchase:</strong>
+              <span>{data.purchase}</span>
+            </div>
             <div className="col-span-2">
               <strong className="block text-gray-600">Customer:</strong>
               <span>{data.customer || data.site}</span>
@@ -64,7 +69,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             </div>
              <div>
                 <strong className="block text-gray-600">Royalty Weight:</strong>
-                <span>{typeof data.royaltyWeight === 'number' && data.royaltyWeight >= 0 ? `${Number(data.royaltyWeight).toFixed(2)} KG` : 'N/A'}</span>
+                <span>{typeof data.royaltyWeight === 'number' && data.royaltyWeight >= 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Gross Weight:</strong>
