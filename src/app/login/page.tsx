@@ -44,9 +44,6 @@ export default function LoginPage() {
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
             Raghuvir Infrastructure
           </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Sayla-Sudamda Road,Sudamda.
-          </p>
         </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
