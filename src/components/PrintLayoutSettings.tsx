@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw } from "lucide-react";
+import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import {
@@ -105,13 +105,22 @@ export function PrintLayoutSettings() {
                                 onChange={(e) => handleSettingChange('companyWebsite', e.target.value)}
                             />
                         </div>
-                         <div className="space-y-2 md:col-span-2">
+                         <div className="space-y-2">
                             <Label htmlFor="company-logo-url" className="flex items-center gap-2 text-muted-foreground"><ImageIcon className="h-4 w-4" />Logo URL</Label>
                              <Input
                                 id="company-logo-url"
                                 placeholder="https://example.com/logo.png"
                                 value={settings.companyLogoUrl}
                                 onChange={(e) => handleSettingChange('companyLogoUrl', e.target.value)}
+                            />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="authorized-signatory" className="flex items-center gap-2 text-muted-foreground"><Edit className="h-4 w-4" />Authorized Signatory Text</Label>
+                             <Input
+                                id="authorized-signatory"
+                                placeholder="e.g., For Raghuvir Infrastructure"
+                                value={settings.authorizedSignatory}
+                                onChange={(e) => handleSettingChange('authorizedSignatory', e.target.value)}
                             />
                         </div>
                      </div>

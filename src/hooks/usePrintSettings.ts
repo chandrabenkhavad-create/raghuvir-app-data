@@ -25,6 +25,8 @@ export interface PrintSettings {
   // Diesel specific
   showDieselDriver: boolean;
   showDieselOdo: boolean;
+  // New
+  authorizedSignatory: string;
 }
 
 const SETTINGS_KEY = 'raghuvir_infra_print_settings';
@@ -41,6 +43,7 @@ const defaultSettings: PrintSettings = {
   companyGst: '',
   companyEmail: '',
   companyWebsite: '',
+  authorizedSignatory: 'For Raghuvir Infrastructure',
   useCompactLayout: false,
   showSaleTransporter: true,
   showSaleDriver: true,
