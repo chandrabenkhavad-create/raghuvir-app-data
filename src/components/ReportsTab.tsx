@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import {
   Table,
@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
@@ -28,6 +28,7 @@ import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
+import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 
 interface ReportsTabProps {
@@ -48,6 +49,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   const [salesToDate, setSalesToDate] = useState<Date | undefined>();
   const [dieselFromDate, setDieselFromDate] = useState<Date | undefined>();
   const [dieselToDate, setDieselToDate] = useState<Date | undefined>();
+  const [salesSearchTerm, setSalesSearchTerm] = useState("");
 
   useEffect(() => {
     async function fetchData() {
@@ -75,22 +77,40 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
       return new Date(year, month - 1, day);
   }
 
-  const downloadCSV = (data: any[], filename: string, headers: string[], fromDate?: Date, toDate?: Date) => {
-    let filteredData = data;
-    
-    if (fromDate || toDate) {
-        filteredData = data.filter(row => {
-            const rowDate = parseDate(row.date);
-            const start = fromDate ? new Date(fromDate.setHours(0, 0, 0, 0)) : null;
-            const end = toDate ? new Date(toDate.setHours(23, 59, 59, 999)) : null;
-            
-            if (start && rowDate < start) return false;
-            if (end && rowDate > end) return false;
-            return true;
-        });
-    }
+  const filteredSalesData = useMemo(() => {
+    return salesData.filter(sale => {
+      // Date filtering
+      if (salesFromDate || salesToDate) {
+        const saleDate = parseDate(sale.date);
+        const start = salesFromDate ? new Date(salesFromDate.setHours(0, 0, 0, 0)) : null;
+        const end = salesToDate ? new Date(salesToDate.setHours(23, 59, 59, 999)) : null;
+        if (start && saleDate < start) return false;
+        if (end && saleDate > end) return false;
+      }
+      // DC No search
+      if (salesSearchTerm && !String(sale.dcno).includes(salesSearchTerm)) {
+        return false;
+      }
+      return true;
+    });
+  }, [salesData, salesFromDate, salesToDate, salesSearchTerm]);
+  
+  const filteredDieselData = useMemo(() => {
+     return dieselData.filter(diesel => {
+        if (dieselFromDate || dieselToDate) {
+            const dieselDate = parseDate(diesel.date);
+            const start = dieselFromDate ? new Date(dieselFromDate.setHours(0, 0, 0, 0)) : null;
+            const end = dieselToDate ? new Date(dieselToDate.setHours(23, 59, 59, 999)) : null;
+            if (start && dieselDate < start) return false;
+            if (end && dieselDate > end) return false;
+        }
+        return true;
+     });
+  }, [dieselData, dieselFromDate, dieselToDate]);
 
-    const csvRows = filteredData.map(row => 
+
+  const downloadCSV = (data: any[], filename: string, headers: string[]) => {
+    const csvRows = data.map(row => 
         headers.map(header => {
             let value = row[header];
             if (value === null || value === undefined) {
@@ -155,6 +175,15 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
               </CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                 <div className="relative w-full sm:w-auto">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Search by DC No..."
+                        value={salesSearchTerm}
+                        onChange={(e) => setSalesSearchTerm(e.target.value)}
+                        className="pl-8 w-full sm:w-auto"
+                    />
+                 </div>
                  <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -200,8 +229,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                     </PopoverContent>
                 </Popover>
                 <Button
-                    onClick={() => downloadCSV(salesData, "sales_report", salesHeaders, salesFromDate, salesToDate)}
-                    disabled={loading || salesData.length === 0}
+                    onClick={() => downloadCSV(filteredSalesData, "sales_report", salesHeaders)}
+                    disabled={loading || filteredSalesData.length === 0}
                     className="w-full sm:w-auto"
                 >
                     <Download className="mr-2" /> Download CSV
@@ -229,7 +258,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {salesData.map((sale) => (
+                  {filteredSalesData.map((sale) => (
                     <TableRow key={sale.id}>
                       <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
                       <TableCell>{sale.date}</TableCell>
@@ -310,8 +339,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                     </PopoverContent>
                 </Popover>
                 <Button
-                  onClick={() => downloadCSV(dieselData, "diesel_report", dieselHeaders, dieselFromDate, dieselToDate)}
-                  disabled={loading || dieselData.length === 0}
+                  onClick={() => downloadCSV(filteredDieselData, "diesel_report", dieselHeaders)}
+                  disabled={loading || filteredDieselData.length === 0}
                   className="w-full sm:w-auto"
                 >
                   <Download className="mr-2" /> Download CSV
@@ -338,7 +367,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dieselData.map((diesel) => (
+                  {filteredDieselData.map((diesel) => (
                     <TableRow key={diesel.id}>
                       <TableCell>{diesel.date}</TableCell>
                       <TableCell>{diesel.vehicleNumber}</TableCell>
@@ -366,3 +395,5 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     </Tabs>
   );
 }
+
+    
