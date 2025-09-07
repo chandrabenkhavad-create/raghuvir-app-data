@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -32,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
+import { addSaleEntry, getLastSaleEntry, getAllSaleEntries } from '@/services/saleService';
 import { RecentSales } from './RecentSales';
 
 
@@ -68,6 +68,21 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
   const { toast } = useToast();
   const [dcNumber, setDcNumber] = useState<number | null>(null);
   const [refreshRecentSales, setRefreshRecentSales] = useState(false);
+  const [allSales, setAllSales] = useState<SaleEntry[]>([]);
+
+  useEffect(() => {
+    getAllSaleEntries().then(setAllSales);
+  }, [refreshRecentSales]);
+
+  const suggestionLists = useMemo(() => {
+    const purchase = [...new Set(allSales.map(s => s.purchase))];
+    const customer = [...new Set(allSales.map(s => s.customer || s.site))];
+    const material = [...new Set(allSales.map(s => s.material))];
+    const transporter = [...new Set(allSales.map(s => s.transporter))];
+    const vehicleNumber = [...new Set(allSales.map(s => s.vehicleNumber))];
+    const driver = [...new Set(allSales.map(s => s.driver))];
+    return { purchase, customer, material, transporter, vehicleNumber, driver };
+  }, [allSales]);
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -233,6 +248,25 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
 
   return (
     <>
+      <datalist id="purchase-list">
+        {suggestionLists.purchase.map(p => <option key={p} value={p} />)}
+      </datalist>
+      <datalist id="customer-list">
+        {suggestionLists.customer.map(c => <option key={c} value={c} />)}
+      </datalist>
+      <datalist id="material-list">
+        {suggestionLists.material.map(m => <option key={m} value={m} />)}
+      </datalist>
+      <datalist id="transporter-list">
+        {suggestionLists.transporter.map(t => <option key={t} value={t} />)}
+      </datalist>
+      <datalist id="vehicleNumber-list">
+        {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+      </datalist>
+      <datalist id="driver-list">
+        {suggestionLists.driver.map(d => <option key={d} value={d} />)}
+      </datalist>
+
       <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
         <Card>
           <CardHeader>
@@ -266,7 +300,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                             <Input placeholder="e.g., Self" {...field} />
+                             <Input placeholder="e.g., Self" {...field} list="purchase-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -279,7 +313,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                             <Input placeholder="e.g., Local Builders" {...field} />
+                             <Input placeholder="e.g., Local Builders" {...field} list="customer-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -292,7 +326,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                             <Input placeholder="e.g., 20mm" {...field} />
+                             <Input placeholder="e.g., 20mm" {...field} list="material-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -305,7 +339,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                             <Input placeholder="e.g., Self" {...field} />
+                             <Input placeholder="e.g., Self" {...field} list="transporter-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -318,7 +352,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MH12AB1234" {...field} />
+                            <Input placeholder="e.g., MH12AB1234" {...field} list="vehicleNumber-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -331,7 +365,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
+                            <Input placeholder="e.g., John Doe" {...field} list="driver-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

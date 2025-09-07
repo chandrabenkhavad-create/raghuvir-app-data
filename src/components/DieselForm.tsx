@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import type { DieselEntry } from '@/types';
-import { addDieselEntry } from '@/services/dieselService';
+import { addDieselEntry, getAllDieselEntries } from '@/services/dieselService';
 import { RecentDiesel } from './RecentDiesel';
 
 const dieselSchema = z.object({
@@ -52,6 +52,18 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [refreshRecent, setRefreshRecent] = useState(false);
   const { toast } = useToast();
+  const [allDiesel, setAllDiesel] = useState<DieselEntry[]>([]);
+
+  useEffect(() => {
+    getAllDieselEntries().then(setAllDiesel);
+  }, [refreshRecent]);
+
+  const suggestionLists = useMemo(() => {
+    const vehicleNumber = [...new Set(allDiesel.map(d => d.vehicleNumber))];
+    const driverName = [...new Set(allDiesel.map(d => d.driverName))];
+    const pump = [...new Set(allDiesel.map(d => d.pump))];
+    return { vehicleNumber, driverName, pump };
+  }, [allDiesel]);
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
@@ -165,6 +177,16 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
 
   return (
     <>
+      <datalist id="diesel-vehicleNumber-list">
+        {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+      </datalist>
+      <datalist id="diesel-driverName-list">
+        {suggestionLists.driverName.map(d => <option key={d} value={d} />)}
+      </datalist>
+      <datalist id="diesel-pump-list">
+        {suggestionLists.pump.map(p => <option key={p} value={p} />)}
+      </datalist>
+
       <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
         <Card>
           <CardHeader>
@@ -186,7 +208,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., MH12-AB1234" {...field} />
+                          <Input placeholder="e.g., MH12-AB1234" {...field} list="diesel-vehicleNumber-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -238,7 +260,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Jane Smith" {...field} />
+                          <Input placeholder="e.g., Jane Smith" {...field} list="diesel-driverName-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -251,7 +273,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., HP Petrol Pump" {...field} />
+                          <Input placeholder="e.g., HP Petrol Pump" {...field} list="diesel-pump-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

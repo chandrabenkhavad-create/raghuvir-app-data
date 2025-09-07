@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import type { DieselEntry } from '@/types';
-import { updateDieselEntry } from '@/services/dieselService';
+import { updateDieselEntry, getAllDieselEntries } from '@/services/dieselService';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -48,6 +48,20 @@ interface EditDieselDialogProps {
 
 export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, onDieselUpdated, dieselEntry }) => {
   const { toast } = useToast();
+  const [allDiesel, setAllDiesel] = useState<DieselEntry[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getAllDieselEntries().then(setAllDiesel);
+    }
+  }, [isOpen]);
+
+  const suggestionLists = useMemo(() => {
+    const vehicleNumber = [...new Set(allDiesel.map(d => d.vehicleNumber))];
+    const driverName = [...new Set(allDiesel.map(d => d.driverName))];
+    const pump = [...new Set(allDiesel.map(d => d.pump))];
+    return { vehicleNumber, driverName, pump };
+  }, [allDiesel]);
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
@@ -108,6 +122,15 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl">
+           <datalist id="edit-diesel-vehicleNumber-list">
+             {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+           </datalist>
+           <datalist id="edit-diesel-driverName-list">
+             {suggestionLists.driverName.map(d => <option key={d} value={d} />)}
+           </datalist>
+           <datalist id="edit-diesel-pump-list">
+             {suggestionLists.pump.map(p => <option key={p} value={p} />)}
+           </datalist>
           <DialogHeader>
             <DialogTitle>Edit Diesel Entry (ID: {dieselEntry?.id})</DialogTitle>
             <DialogDescription>
@@ -124,7 +147,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., MH12-AB1234" {...field} />
+                          <Input placeholder="e.g., MH12-AB1234" {...field} list="edit-diesel-vehicleNumber-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -176,7 +199,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Jane Smith" {...field} />
+                          <Input placeholder="e.g., Jane Smith" {...field} list="edit-diesel-driverName-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -189,7 +212,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., HP Petrol Pump" {...field} />
+                          <Input placeholder="e.g., HP Petrol Pump" {...field} list="edit-diesel-pump-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

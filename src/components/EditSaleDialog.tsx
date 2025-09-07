@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,7 +30,7 @@ import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { updateSaleEntry } from '@/services/saleService';
+import { updateSaleEntry, getAllSaleEntries } from '@/services/saleService';
 
 const saleSchema = z.object({
   id: z.number(),
@@ -61,6 +61,24 @@ interface EditSaleDialogProps {
 
 export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSaleUpdated, saleEntry }) => {
   const { toast } = useToast();
+  const [allSales, setAllSales] = useState<SaleEntry[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getAllSaleEntries().then(setAllSales);
+    }
+  }, [isOpen]);
+
+  const suggestionLists = useMemo(() => {
+    const purchase = [...new Set(allSales.map(s => s.purchase))];
+    const customer = [...new Set(allSales.map(s => s.customer || s.site))];
+    const material = [...new Set(allSales.map(s => s.material))];
+    const transporter = [...new Set(allSales.map(s => s.transporter))];
+    const vehicleNumber = [...new Set(allSales.map(s => s.vehicleNumber))];
+    const driver = [...new Set(allSales.map(s => s.driver))];
+    return { purchase, customer, material, transporter, vehicleNumber, driver };
+  }, [allSales]);
+
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -126,6 +144,24 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl">
+           <datalist id="edit-purchase-list">
+             {suggestionLists.purchase.map(p => <option key={p} value={p} />)}
+           </datalist>
+           <datalist id="edit-customer-list">
+             {suggestionLists.customer.map(c => <option key={c} value={c} />)}
+           </datalist>
+           <datalist id="edit-material-list">
+             {suggestionLists.material.map(m => <option key={m} value={m} />)}
+           </datalist>
+           <datalist id="edit-transporter-list">
+             {suggestionLists.transporter.map(t => <option key={t} value={t} />)}
+           </datalist>
+           <datalist id="edit-vehicleNumber-list">
+             {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+           </datalist>
+           <datalist id="edit-driver-list">
+             {suggestionLists.driver.map(d => <option key={d} value={d} />)}
+           </datalist>
           <DialogHeader>
             <DialogTitle>Edit Sale Entry (DC No: {String(saleEntry?.dcno).padStart(3, '0')})</DialogTitle>
             <DialogDescription>
@@ -143,7 +179,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Self" {...field} />
+                            <Input placeholder="e.g., Self" {...field} list="edit-purchase-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -156,7 +192,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Local Builders" {...field} />
+                            <Input placeholder="e.g., Local Builders" {...field} list="edit-customer-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -169,7 +205,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., 20mm" {...field} />
+                            <Input placeholder="e.g., 20mm" {...field} list="edit-material-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -182,7 +218,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Self" {...field} />
+                            <Input placeholder="e.g., Self" {...field} list="edit-transporter-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -195,7 +231,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MH12AB1234" {...field} />
+                            <Input placeholder="e.g., MH12AB1234" {...field} list="edit-vehicleNumber-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -208,7 +244,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
+                            <Input placeholder="e.g., John Doe" {...field} list="edit-driver-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
