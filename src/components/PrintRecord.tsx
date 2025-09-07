@@ -23,18 +23,27 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   const tarewt = Number(data.tarewt || 0);
   const netwt = Number(data.netwt || 0);
   const royaltyWeight = Number(data.royaltyWeight);
+  const rent = Number(data.rent || 0);
+  
+  const compactClass = settings.useCompactLayout ? 'gap-y-0.5' : 'gap-y-1.5';
+  const compactPadding = settings.useCompactLayout ? 'py-0' : 'py-0.5';
 
   return (
     <div className={`bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans ${settings.fontSize}`}>
       <div>
         {settings.showCompanyHeader && (
-          <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2">
-            <div>
-              <h1 className="text-xl font-bold">{settings.companyName}</h1>
-              <p className="text-xs">{settings.companyAddress}</p>
-              <p className="text-xs">{settings.companyContact}</p>
+          <header className={`flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2`}>
+            <div className="flex items-center gap-4">
+                {settings.companyLogoUrl && (
+                    <img src={settings.companyLogoUrl} alt="Company Logo" className="h-12 max-w-24 object-contain" />
+                )}
+                <div>
+                  <h1 className="text-xl font-bold">{settings.companyName}</h1>
+                  <p className="text-xs">{settings.companyAddress}</p>
+                  <p className="text-xs">{settings.companyContact}</p>
+                </div>
             </div>
-            <div className="text-right text-xs">
+            <div className="text-right text-xs flex-shrink-0">
               <p><strong>DC No:</strong> {String(data.dcno).padStart(3, '0')}</p>
               <p><strong>Date:</strong> {data.date}</p>
               <p><strong>Time:</strong> {data.time}</p>
@@ -43,52 +52,56 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow text-sm">
-            <div className="col-span-2">
+          <div className={`grid grid-cols-2 gap-x-6 ${compactClass} flex-grow text-sm`}>
+            <div className={`col-span-2 ${compactPadding}`}>
               <strong className="block text-gray-600">Purchase:</strong>
               <span>{data.purchase}</span>
             </div>
-            <div className="col-span-2">
+            <div className={`col-span-2 ${compactPadding}`}>
               <strong className="block text-gray-600">Customer:</strong>
               <span>{data.customer || data.site}</span>
             </div>
-             <div className="col-span-2">
+             {settings.showSaleTransporter && (<div className={`col-span-2 ${compactPadding}`}>
               <strong className="block text-gray-600">Transporter:</strong>
               <span>{data.transporter}</span>
-            </div>
-            <div>
+            </div>)}
+            <div className={compactPadding}>
               <strong className="block text-gray-600">Material:</strong>
               <span>{data.material}</span>
             </div>
-            <div>
+            {settings.showSaleDriver && (<div className={compactPadding}>
               <strong className="block text-gray-600">Driver:</strong>
               <span>{data.driver}</span>
-            </div>
-            <div>
+            </div>)}
+            <div className={compactPadding}>
                 <strong className="block text-gray-600">Vehicle Number:</strong>
                 <span>{data.vehicleNumber}</span>
             </div>
-            <div>
+            {settings.showSaleRoyalty && (<div className={compactPadding}>
               <strong className="block text-gray-600">Royalty Pass Number:</strong>
               <span>{data.royaltyPassNumber || 'N/A'}</span>
-            </div>
-             <div>
+            </div>)}
+             <div className={compactPadding}>
                 <strong className="block text-gray-600">Gross Weight:</strong>
                 <span>{grosswt.toFixed(2)} KG</span>
             </div>
-             <div>
+             <div className={compactPadding}>
                 <strong className="block text-gray-600">Tare Weight:</strong>
                 <span>{tarewt.toFixed(2)} KG</span>
             </div>
-             <div>
+             {settings.showSaleRoyalty && (<div className={compactPadding}>
                 <strong className="block text-gray-600">Royalty Weight:</strong>
                 <span>{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
-            </div>
-            <div className="font-bold">
+            </div>)}
+            <div className={`font-bold ${compactPadding}`}>
               <strong className="block text-gray-600">Net Weight:</strong>
               <span>{netwt.toFixed(2)} KG</span>
             </div>
-            {data.remarks && (
+            {settings.showSaleRent && (<div className={compactPadding}>
+              <strong className="block text-gray-600">Rent:</strong>
+              <span>₹{rent.toFixed(2)}</span>
+            </div>)}
+            {settings.showSaleRemarks && data.remarks && (
               <div className="col-span-2 mt-1">
                 <strong className="block text-gray-600">Remarks:</strong>
                 <p className="mt-0.5 border p-1 rounded-md text-xs">{data.remarks}</p>

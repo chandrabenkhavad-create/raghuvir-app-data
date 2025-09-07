@@ -11,6 +11,17 @@ export interface PrintSettings {
   companyName: string;
   companyAddress: string;
   companyContact: string;
+  companyLogoUrl: string;
+  useCompactLayout: boolean;
+  // Sale specific
+  showSaleTransporter: boolean;
+  showSaleDriver: boolean;
+  showSaleRent: boolean;
+  showSaleRemarks: boolean;
+  showSaleRoyalty: boolean;
+  // Diesel specific
+  showDieselDriver: boolean;
+  showDieselOdo: boolean;
 }
 
 const SETTINGS_KEY = 'raghuvir_infra_print_settings';
@@ -23,6 +34,15 @@ const defaultSettings: PrintSettings = {
   companyName: 'Raghuvir Infrastructure',
   companyAddress: 'Sayla-Sudamda Road, Sudamda.',
   companyContact: '',
+  companyLogoUrl: '',
+  useCompactLayout: false,
+  showSaleTransporter: true,
+  showSaleDriver: true,
+  showSaleRent: true,
+  showSaleRemarks: true,
+  showSaleRoyalty: true,
+  showDieselDriver: true,
+  showDieselOdo: true,
 };
 
 export const usePrintSettings = () => {
@@ -34,7 +54,7 @@ export const usePrintSettings = () => {
       const storedSettings = localStorage.getItem(SETTINGS_KEY);
       if (storedSettings) {
         // Merge stored settings with defaults to ensure all keys are present
-        setSettings(prev => ({ ...prev, ...JSON.parse(storedSettings) }));
+        setSettings(prev => ({ ...defaultSettings, ...JSON.parse(storedSettings) }));
       }
     } catch (error) {
       console.error("Could not read print settings from localStorage", error);
