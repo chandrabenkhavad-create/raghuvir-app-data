@@ -212,7 +212,7 @@ export function PrintLayoutSettings() {
                     <CardDescription>See how your changes look in real-time. The previews below will update automatically as you change settings.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-8">
                         <div>
                              <h3 className="font-semibold mb-4 text-center">Sale Record Preview</h3>
                              <div className="scale-75 mx-auto">
@@ -247,5 +247,7 @@ export function PrintLayoutSettings() {
         </AlertDialog>
     );
 }
+
+    
 
     
