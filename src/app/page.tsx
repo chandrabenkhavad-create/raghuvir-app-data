@@ -174,11 +174,13 @@ export default function Home() {
                        <ThemeToggle />
                     </div>
                      {user?.role === 'admin' && (
-                        <Link href="/users" passHref>
-                          <Button variant="outline" className="w-full justify-between p-6">
-                             Manage Users
-                            <UserCog className="h-5 w-5" />
-                          </Button>
+                        <Link href="/users" passHref legacyBehavior>
+                          <a className="inline-block w-full">
+                            <Button variant="outline" className="w-full justify-between p-6">
+                               Manage Users
+                              <UserCog className="h-5 w-5" />
+                            </Button>
+                          </a>
                         </Link>
                       )}
                 </CardContent>
