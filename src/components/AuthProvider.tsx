@@ -22,14 +22,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      const storedAuth = localStorage.getItem(AUTH_KEY);
+      const storedAuth = sessionStorage.getItem(AUTH_KEY);
       if (storedAuth) {
         const { authenticated, username } = JSON.parse(storedAuth);
         setIsAuthenticated(authenticated);
         setUser(username);
       }
     } catch (error) {
-        console.error("Could not read from local storage", error)
+        console.error("Could not read from session storage", error)
     } finally {
         setLoading(false);
     }
@@ -41,9 +41,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(true);
       setUser(username);
       try {
-        localStorage.setItem(AUTH_KEY, JSON.stringify({ authenticated: true, username }));
+        sessionStorage.setItem(AUTH_KEY, JSON.stringify({ authenticated: true, username }));
       } catch (error) {
-        console.error("Could not write to local storage", error)
+        console.error("Could not write to session storage", error)
       }
       return true;
     }
@@ -54,9 +54,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     try {
-      localStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(AUTH_KEY);
     } catch (error) {
-      console.error("Could not remove from local storage", error)
+      console.error("Could not remove from session storage", error)
     }
   };
   
