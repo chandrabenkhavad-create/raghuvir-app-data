@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle, Calendar as CalendarIcon } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
@@ -30,7 +30,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { cn } from "@/lib/utils";
 
-export function ReportsTab() {
+interface ReportsTabProps {
+  onEditSale: (entry: SaleEntry) => void;
+  onEditDiesel: (entry: DieselEntry) => void;
+  onPrintSale: (entry: SaleEntry) => void;
+  onPrintDiesel: (entry: DieselEntry) => void;
+}
+
+export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiesel }: ReportsTabProps) {
   const [salesData, setSalesData] = useState<SaleEntry[]>([]);
   const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -217,7 +224,7 @@ export function ReportsTab() {
                     <TableHead>Material</TableHead>
                     <TableHead>Customer</TableHead>
                     <TableHead>Net Weight</TableHead>
-                    <TableHead>Supplier</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -229,7 +236,16 @@ export function ReportsTab() {
                       <TableCell>{sale.material}</TableCell>
                       <TableCell>{sale.customer || sale.site}</TableCell>
                       <TableCell>{sale.netwt.toFixed(2)} KG</TableCell>
-                      <TableCell>{sale.supplier}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -316,8 +332,8 @@ export function ReportsTab() {
                     <TableHead>Vehicle</TableHead>
                     <TableHead>Liters</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Driver</TableHead>
                     <TableHead>Pump</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -327,8 +343,17 @@ export function ReportsTab() {
                       <TableCell>{diesel.vehicleNumber}</TableCell>
                       <TableCell>{diesel.liters.toFixed(2)} L</TableCell>
                       <TableCell>₹{diesel.amount.toFixed(2)}</TableCell>
-                      <TableCell>{diesel.driverName}</TableCell>
                       <TableCell>{diesel.pump}</TableCell>
+                      <TableCell className="text-right space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => onPrintDiesel(diesel)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            Print
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

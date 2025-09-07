@@ -42,8 +42,15 @@ const dieselSchema = z.object({
 
 type DieselFormValues = z.infer<typeof dieselSchema>;
 
-export const DieselForm: FC = () => {
-  const [entryToPrint, setEntryToPrint] = useState<DieselEntry | null>(null);
+interface DieselFormProps {
+  entryToEdit: DieselEntry | null;
+  onEntrySaved: () => void;
+  entryToPrint: DieselEntry | null;
+  onPrintDialogChange: () => void;
+}
+
+export const DieselForm: FC<DieselFormProps> = ({ entryToEdit, onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
+  const [internalEntryToPrint, setInternalEntryToPrint] = useState<DieselEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
   const [refreshRecent, setRefreshRecent] = useState(false);
@@ -73,7 +80,29 @@ export const DieselForm: FC = () => {
         pump: '',
         odo: 0,
     });
+    onEntrySaved(); // Notify parent that edit is complete
   }
+  
+  useEffect(() => {
+    if (entryToEdit) {
+      handleEdit(entryToEdit);
+    } else {
+      resetForm();
+    }
+  }, [entryToEdit]);
+
+  useEffect(() => {
+    if (externalEntryToPrint) {
+      setInternalEntryToPrint(externalEntryToPrint);
+      setIsPrintDialogOpen(true);
+    }
+  }, [externalEntryToPrint]);
+
+  useEffect(() => {
+    if (!isPrintDialogOpen) {
+      onPrintDialogChange();
+    }
+  }, [isPrintDialogOpen]);
 
   const liters = form.watch('liters');
   const rate = form.watch('rate');
@@ -110,7 +139,7 @@ export const DieselForm: FC = () => {
         });
       }
       
-      setEntryToPrint(savedEntry);
+      setInternalEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
       resetForm();
       setRefreshRecent(prev => !prev);
@@ -146,7 +175,7 @@ export const DieselForm: FC = () => {
 
   const handleReprint = (entry: DieselEntry) => {
     if (entry) {
-        setEntryToPrint(entry);
+        setInternalEntryToPrint(entry);
         setIsPrintDialogOpen(true);
     } else {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
@@ -289,7 +318,7 @@ export const DieselForm: FC = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={!entryToPrint}
+                      disabled={!internalEntryToPrint}
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       Print Last Entry
@@ -309,7 +338,7 @@ export const DieselForm: FC = () => {
             </DialogDescription>
           </DialogHeader>
           <div id="printable-diesel-content">
-             <PrintDieselRecord data={entryToPrint} />
+             <PrintDieselRecord data={internalEntryToPrint} />
           </div>
           <DialogFooter>
             <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>

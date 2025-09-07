@@ -59,8 +59,15 @@ const saleSchema = z.object({
 
 type SaleFormValues = z.infer<typeof saleSchema>;
 
-export const SaleForm: FC = () => {
-  const [entryToPrint, setEntryToPrint] = useState<SaleEntry | null>(null);
+interface SaleFormProps {
+  entryToEdit: SaleEntry | null;
+  onEntrySaved: () => void;
+  entryToPrint: SaleEntry | null;
+  onPrintDialogChange: () => void;
+}
+
+export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
+  const [internalEntryToPrint, setInternalEntryToPrint] = useState<SaleEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
   const [dcNumber, setDcNumber] = useState<number | null>(null);
@@ -111,6 +118,7 @@ export const SaleForm: FC = () => {
         royaltyPassNumber: '',
         royaltyWeight: 0,
       });
+      onEntrySaved(); // Notify parent that edit is complete
     } catch (error) {
       console.error("Failed to fetch last DC number for new entry", error);
       toast({
@@ -140,8 +148,31 @@ export const SaleForm: FC = () => {
   }
 
   useEffect(() => {
-    resetFormForNewEntry();
-  }, []);
+    if (entryToEdit) {
+      setEditingEntryId(entryToEdit.id);
+      setDcNumber(entryToEdit.dcno);
+      form.reset({
+        ...entryToEdit,
+        customer: entryToEdit.customer || entryToEdit.site, // Fallback to site if customer is null
+        royaltyWeight: entryToEdit.royaltyWeight ?? 0,
+      });
+    } else {
+      resetFormForNewEntry();
+    }
+  }, [entryToEdit]);
+
+  useEffect(() => {
+    if (externalEntryToPrint) {
+      setInternalEntryToPrint(externalEntryToPrint);
+      setIsPrintDialogOpen(true);
+    }
+  }, [externalEntryToPrint]);
+
+  useEffect(() => {
+    if (!isPrintDialogOpen) {
+      onPrintDialogChange();
+    }
+  }, [isPrintDialogOpen]);
 
 
   const grosswt = form.watch('grosswt');
@@ -183,7 +214,7 @@ export const SaleForm: FC = () => {
         });
       }
       
-      setEntryToPrint(savedEntry);
+      setInternalEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
       await resetFormForNewEntry();
       setRefreshRecentSales(prev => !prev);
@@ -219,7 +250,7 @@ export const SaleForm: FC = () => {
   
   const handleReprint = (entry: SaleEntry) => {
       if (entry) {
-        setEntryToPrint(entry);
+        setInternalEntryToPrint(entry);
         setIsPrintDialogOpen(true);
       } else {
         toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
@@ -242,7 +273,7 @@ export const SaleForm: FC = () => {
   }
 
 
-  if (dcNumber === null) {
+  if (dcNumber === null && !entryToEdit) {
       return (
           <Card>
               <CardHeader>
@@ -283,7 +314,7 @@ export const SaleForm: FC = () => {
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
-                            <Input type="text" value={String(field.value).padStart(3, '0')} disabled />
+                            <Input type="text" value={String(dcNumber || field.value).padStart(3, '0')} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -475,7 +506,7 @@ export const SaleForm: FC = () => {
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={!entryToPrint}
+                      disabled={!internalEntryToPrint}
                     >
                       <Printer className="mr-2 h-4 w-4" />
                       Print Last Entry
@@ -495,7 +526,7 @@ export const SaleForm: FC = () => {
             </DialogDescription>
           </DialogHeader>
           <div id="printable-content">
-             <PrintRecord data={entryToPrint} />
+             <PrintRecord data={internalEntryToPrint} />
           </div>
           <DialogFooter>
             <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
