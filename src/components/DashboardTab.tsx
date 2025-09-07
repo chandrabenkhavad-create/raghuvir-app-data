@@ -9,13 +9,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel, AlertTriangle, Briefcase } from 'lucide-react';
+import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel, AlertTriangle, Briefcase, Calendar as CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Button } from './ui/button';
+import { Calendar } from './ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export function DashboardTab() {
     const [salesData, setSalesData] = useState<SaleEntry[]>([]);
     const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const [fromDate, setFromDate] = useState<Date | undefined>();
+    const [toDate, setToDate] = useState<Date | undefined>();
 
     useEffect(() => {
         async function fetchData() {
@@ -36,80 +44,112 @@ export function DashboardTab() {
         }
         fetchData();
     }, []);
+    
+    // Helper to parse DD/MM/YYYY into a Date object
+    const parseDate = (dateString: string): Date => {
+      const [day, month, year] = dateString.split('/').map(Number);
+      return new Date(year, month - 1, day);
+    }
+
+    const filteredSalesData = useMemo(() => {
+        if (!fromDate && !toDate) return salesData;
+        return salesData.filter(sale => {
+            const saleDate = parseDate(sale.date);
+            const start = fromDate ? new Date(fromDate.setHours(0, 0, 0, 0)) : null;
+            const end = toDate ? new Date(toDate.setHours(23, 59, 59, 999)) : null;
+
+            if (start && saleDate < start) return false;
+            if (end && saleDate > end) return false;
+            return true;
+        });
+    }, [salesData, fromDate, toDate]);
+
+    const filteredDieselData = useMemo(() => {
+        if (!fromDate && !toDate) return dieselData;
+        return dieselData.filter(diesel => {
+            const dieselDate = parseDate(diesel.date);
+            const start = fromDate ? new Date(fromDate.setHours(0, 0, 0, 0)) : null;
+            const end = toDate ? new Date(toDate.setHours(23, 59, 59, 999)) : null;
+
+            if (start && dieselDate < start) return false;
+            if (end && dieselDate > end) return false;
+            return true;
+        });
+    }, [dieselData, fromDate, toDate]);
 
     const vehicleTrips = useMemo(() => {
-        if (!salesData.length) return {};
-        return salesData.reduce((acc, sale) => {
+        if (!filteredSalesData.length) return {};
+        return filteredSalesData.reduce((acc, sale) => {
             acc[sale.vehicleNumber] = (acc[sale.vehicleNumber] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-    }, [salesData]);
+    }, [filteredSalesData]);
 
     const supplierMaterials = useMemo(() => {
-        if (!salesData.length) return {};
-        return salesData.reduce((acc, sale) => {
+        if (!filteredSalesData.length) return {};
+        return filteredSalesData.reduce((acc, sale) => {
             if (!acc[sale.supplier]) {
                 acc[sale.supplier] = {};
             }
             acc[sale.supplier][sale.material] = (acc[sale.supplier][sale.material] || 0) + sale.netwt;
             return acc;
         }, {} as Record<string, Record<string, number>>);
-    }, [salesData]);
+    }, [filteredSalesData]);
 
     const customerTotalSales = useMemo(() => {
-        if (!salesData.length) return {};
-        return salesData.reduce((acc, sale) => {
+        if (!filteredSalesData.length) return {};
+        return filteredSalesData.reduce((acc, sale) => {
             const customer = sale.customer || sale.site; // Use customer field, fallback to site
             acc[customer] = (acc[customer] || 0) + sale.netwt;
             return acc;
         }, {} as Record<string, number>);
-    }, [salesData]);
+    }, [filteredSalesData]);
 
     const transporterTrips = useMemo(() => {
-        if (!salesData.length) return {};
-        return salesData.reduce((acc, sale) => {
+        if (!filteredSalesData.length) return {};
+        return filteredSalesData.reduce((acc, sale) => {
             acc[sale.transporter] = (acc[sale.transporter] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
-    }, [salesData]);
+    }, [filteredSalesData]);
 
     const vehicleSaleAmounts = useMemo(() => {
-        if (!salesData.length) return {};
-        return salesData.reduce((acc, sale) => {
+        if (!filteredSalesData.length) return {};
+        return filteredSalesData.reduce((acc, sale) => {
             const amount = (sale.netwt / 1000) * sale.rent;
             acc[sale.vehicleNumber] = (acc[sale.vehicleNumber] || 0) + amount;
             return acc;
         }, {} as Record<string, number>);
-    }, [salesData]);
+    }, [filteredSalesData]);
 
     const vehicleDieselAmount = useMemo(() => {
-        if (!dieselData.length) return {};
-        return dieselData.reduce((acc, diesel) => {
+        if (!filteredDieselData.length) return {};
+        return filteredDieselData.reduce((acc, diesel) => {
             acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.amount;
             return acc;
         }, {} as Record<string, number>);
-    }, [dieselData]);
+    }, [filteredDieselData]);
 
     const vehicleDieselLiters = useMemo(() => {
-        if (!dieselData.length) return {};
-        return dieselData.reduce((acc, diesel) => {
+        if (!filteredDieselData.length) return {};
+        return filteredDieselData.reduce((acc, diesel) => {
             acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.liters;
             return acc;
         }, {} as Record<string, number>);
-    }, [dieselData]);
+    }, [filteredDieselData]);
     
     const totalDieselLiters = useMemo(() => {
-        if (!dieselData.length) return 0;
-        return dieselData.reduce((total, entry) => total + entry.liters, 0);
-    }, [dieselData]);
+        if (!filteredDieselData.length) return 0;
+        return filteredDieselData.reduce((total, entry) => total + entry.liters, 0);
+    }, [filteredDieselData]);
 
     const pumpDieselLiters = useMemo(() => {
-        if (!dieselData.length) return {};
-        return dieselData.reduce((acc, diesel) => {
+        if (!filteredDieselData.length) return {};
+        return filteredDieselData.reduce((acc, diesel) => {
             acc[diesel.pump] = (acc[diesel.pump] || 0) + diesel.liters;
             return acc;
         }, {} as Record<string, number>);
-    }, [dieselData]);
+    }, [filteredDieselData]);
 
     const vehicleNetRevenue = useMemo(() => {
         const allVehicles = new Set([
@@ -154,6 +194,62 @@ export function DashboardTab() {
 
     return (
         <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Filter Dashboard</CardTitle>
+                    <CardDescription>Select a date range to filter all dashboard metrics.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                         <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full sm:w-[280px] justify-start text-left font-normal",
+                                  !fromDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {fromDate ? format(fromDate, "PPP") : <span>From date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={fromDate}
+                                onSelect={setFromDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                        </Popover>
+                         <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full sm:w-[280px] justify-start text-left font-normal",
+                                  !toDate && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {toDate ? format(toDate, "PPP") : <span>To date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                              <Calendar
+                                mode="single"
+                                selected={toDate}
+                                onSelect={setToDate}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                        </Popover>
+                        <Button onClick={() => { setFromDate(undefined); setToDate(undefined); }} variant="secondary">Clear</Button>
+                    </div>
+                </CardContent>
+            </Card>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                  <Card className="lg:col-span-2">
                     <CardHeader>
@@ -323,3 +419,5 @@ export function DashboardTab() {
         </div>
     );
 }
+
+    
