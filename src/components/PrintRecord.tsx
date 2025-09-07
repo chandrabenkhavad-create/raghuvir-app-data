@@ -130,7 +130,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         <footer className="text-right text-xs text-gray-700 pt-8 mt-auto">
           <div className="border-t-2 border-dashed border-gray-400 w-48 ml-auto mb-1"></div>
           <p>{settings.authorizedSignatory}</p>
-          <p>(Authorised Signatory)</p>
+          <p>(Signature)</p>
         </footer>
       )}
     </div>
