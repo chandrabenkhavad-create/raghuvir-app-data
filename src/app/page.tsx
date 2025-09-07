@@ -39,12 +39,15 @@ export default function Home() {
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
         <header className="mb-8 relative">
-          <div className="absolute top-0 right-0 flex items-center gap-4">
+          <div className="absolute top-0 right-0 flex items-start gap-4">
               <SupabaseStatus />
-               <Button variant="ghost" onClick={logout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-               </Button>
+              <div className="flex flex-col items-end">
+                 <Button variant="ghost" onClick={logout} className="px-3 py-1 h-auto">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                 </Button>
+                 {user && <span className="text-xs text-muted-foreground mt-1">Welcome, {user}</span>}
+              </div>
           </div>
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
