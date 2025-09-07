@@ -68,32 +68,32 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
                 {settings.showSalePurchase && (
                   <div className={compactPadding}>
                       <strong className="block text-gray-600">Purchase:</strong>
-                      <span>{data.purchase}</span>
+                      <span className="text-lg">{data.purchase}</span>
                   </div>
                 )}
                  <div className={compactPadding}>
                     <strong className="block text-gray-600">Customer:</strong>
-                    <span>{data.customer || data.site}</span>
+                    <span className="text-lg">{data.customer || data.site}</span>
                 </div>
                 {settings.showSaleTransporter && (
                     <div className={compactPadding}>
                         <strong className="block text-gray-600">Transporter:</strong>
-                        <span>{data.transporter}</span>
+                        <span className="text-lg">{data.transporter}</span>
                     </div>
                 )}
                  {settings.showSaleWeightDetails && (
                   <div className="mt-2 space-y-1">
                      <div className={compactPadding}>
                         <strong className="block text-gray-600">Gross Weight:</strong>
-                        <span>{grosswt.toFixed(2)} KG</span>
+                        <span className="text-lg">{grosswt.toFixed(2)} KG</span>
                      </div>
                      <div className={compactPadding}>
                         <strong className="block text-gray-600">Tare Weight:</strong>
-                        <span>{tarewt.toFixed(2)} KG</span>
+                        <span className="text-lg">{tarewt.toFixed(2)} KG</span>
                      </div>
-                     <div className={`font-bold text-base pt-1 ${compactPadding}`}>
+                     <div className={`font-bold pt-1 ${compactPadding}`}>
                         <strong className="block text-gray-600">Net Weight:</strong>
-                        <span>{netwt.toFixed(2)} KG</span>
+                        <span className="text-lg">{netwt.toFixed(2)} KG</span>
                      </div>
                   </div>
                 )}
@@ -109,30 +109,30 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
              <div className={`space-y-1 ${compactClass}`}>
                 <div className={compactPadding}>
                     <strong className="block text-gray-600">Material:</strong>
-                    <span>{data.material}</span>
+                    <span className="text-lg">{data.material}</span>
                 </div>
                 {settings.showSaleVehicleNumber && (
                     <div className={compactPadding}>
                         <strong className="block text-gray-600">Vehicle Number:</strong>
-                        <span>{data.vehicleNumber}</span>
+                        <span className="text-lg">{data.vehicleNumber}</span>
                     </div>
                 )}
                  {settings.showSaleDriver && (
                     <div className={compactPadding}>
                         <strong className="block text-gray-600">Driver:</strong>
-                        <span>{data.driver}</span>
+                        <span className="text-lg">{data.driver}</span>
                     </div>
                  )}
                  {settings.showSaleRoyalty && (
                     <div className={compactPadding}>
                         <strong className="block text-gray-600">Royalty Pass Number:</strong>
-                        <span>{data.royaltyPassNumber || 'N/A'}</span>
+                        <span className="text-lg">{data.royaltyPassNumber || 'N/A'}</span>
                     </div>
                 )}
                 {settings.showSaleRoyalty && (
                     <div className={compactPadding}>
                         <strong className="block text-gray-600">Royalty Weight:</strong>
-                        <span>{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+                        <span className="text-lg">{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
                     </div>
                 )}
                 
