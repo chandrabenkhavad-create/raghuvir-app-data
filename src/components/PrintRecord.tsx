@@ -23,14 +23,14 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   const royaltyWeight = Number(data.royaltyWeight || 0);
 
   return (
-    <div className="bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
+    <div className="bg-white text-black p-6 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans">
       <div>
-        <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2">
+        <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-4">
           <div>
-            <h1 className="text-2xl font-bold">Raghuvir Infrastructure</h1>
-            <p className="text-sm">Sale Record</p>
+            <h1 className="text-3xl font-bold">Raghuvir Infrastructure</h1>
+            <p className="text-lg">Sale Record</p>
           </div>
-          <div className="text-right text-sm">
+          <div className="text-right text-base">
             <p><strong>DC No:</strong> {String(data.dcno).padStart(3, '0')}</p>
             <p><strong>Date:</strong> {data.date}</p>
             <p><strong>Time:</strong> {data.time}</p>
@@ -38,7 +38,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         </header>
 
         <main className="flex justify-between items-start">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-2.5 flex-grow text-base">
             <div className="col-span-2">
               <strong className="block text-gray-600">Purchase:</strong>
               <span>{data.purchase}</span>
@@ -69,7 +69,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             </div>
              <div>
                 <strong className="block text-gray-600">Royalty Weight:</strong>
-                <span>{typeof data.royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+                <span>{typeof data.royaltyWeight === 'number' && data.royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Gross Weight:</strong>
@@ -84,19 +84,19 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <span>{netwt.toFixed(2)} KG</span>
             </div>
             {data.remarks && (
-              <div className="col-span-2 mt-1">
+              <div className="col-span-2 mt-2">
                 <strong className="block text-gray-600">Remarks:</strong>
-                <p className="mt-1 border p-1 rounded-md text-xs">{data.remarks}</p>
+                <p className="mt-1 border p-2 rounded-md text-base">{data.remarks}</p>
               </div>
             )}
           </div>
-          <div className="ml-4 flex-shrink-0">
-             <QRCode value={qrCodeValue} size={80} />
+          <div className="ml-6 flex-shrink-0">
+             <QRCode value={qrCodeValue} size={90} />
           </div>
         </main>
       </div>
 
-      <footer className="text-center text-sm text-gray-500 pt-2 mt-auto">
+      <footer className="text-center text-base text-gray-500 pt-4 mt-auto">
         This is a computer-generated document.
       </footer>
     </div>
