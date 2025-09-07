@@ -108,7 +108,7 @@ export function ReportsTab() {
   };
 
   const salesHeaders = [
-    "id", "dcno", "date", "time", "material", "supplier",
+    "id", "dcno", "date", "time", "material", "supplier", "customer",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
     "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
   ];
@@ -215,6 +215,7 @@ export function ReportsTab() {
                     <TableHead>Date</TableHead>
                     <TableHead>Vehicle</TableHead>
                     <TableHead>Material</TableHead>
+                    <TableHead>Customer</TableHead>
                     <TableHead>Net Weight</TableHead>
                     <TableHead>Supplier</TableHead>
                   </TableRow>
@@ -226,6 +227,7 @@ export function ReportsTab() {
                       <TableCell>{sale.date}</TableCell>
                       <TableCell>{sale.vehicleNumber}</TableCell>
                       <TableCell>{sale.material}</TableCell>
+                      <TableCell>{sale.customer || sale.site}</TableCell>
                       <TableCell>{sale.netwt.toFixed(2)} KG</TableCell>
                       <TableCell>{sale.supplier}</TableCell>
                     </TableRow>

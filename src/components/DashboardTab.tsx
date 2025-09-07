@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/
 import { Skeleton } from './ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
-import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel, AlertTriangle } from 'lucide-react';
+import { Terminal, Droplets, Truck, Users, Package, IndianRupee, HandCoins, Building, Fuel, AlertTriangle, Briefcase } from 'lucide-react';
 
 export function DashboardTab() {
     const [salesData, setSalesData] = useState<SaleEntry[]>([]);
@@ -59,7 +59,7 @@ export function DashboardTab() {
     const customerTotalSales = useMemo(() => {
         if (!salesData.length) return {};
         return salesData.reduce((acc, sale) => {
-            const customer = sale.site; // Assuming site is the customer
+            const customer = sale.customer || sale.site; // Use customer field, fallback to site
             acc[customer] = (acc[customer] || 0) + sale.netwt;
             return acc;
         }, {} as Record<string, number>);
@@ -305,12 +305,12 @@ export function DashboardTab() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Users /> Site Material Sales</CardTitle>
-                        <CardDescription>Total net weight of material sold to each site</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Briefcase /> Customer Material Sales</CardTitle>
+                        <CardDescription>Total net weight of material sold to each customer</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow><TableHead>Site</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {Object.entries(customerTotalSales).map(([customer, totalNetWt]) => (
                                     <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{totalNetWt.toFixed(2)}</TableCell></TableRow>
