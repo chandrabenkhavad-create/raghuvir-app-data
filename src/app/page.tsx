@@ -2,10 +2,11 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings, Palette, Type } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,11 +21,14 @@ import type { SaleEntry, DieselEntry } from '@/types';
 import { EditSaleDialog } from '@/components/EditSaleDialog';
 import { EditDieselDialog } from '@/components/EditDieselDialog';
 import { PrintLayoutSettings } from '@/components/PrintLayoutSettings';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const { setTheme: setColorTheme } = useTheme();
   
   // State for editing entries
   const [editingSale, setEditingSale] = useState<SaleEntry | null>(null);
@@ -156,7 +160,7 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">
-             <div className="grid md:grid-cols-2 gap-8">
+             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                  <Card>
                     <CardHeader>
                         <CardTitle>Application Settings</CardTitle>
@@ -164,19 +168,68 @@ export default function Home() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                           <span className="font-medium">Theme</span>
+                           <span className="font-medium">Dark/Light Mode</span>
                            <ThemeToggle />
                         </div>
                          {user?.role === 'admin' && (
                             <Link href="/users" passHref>
-                              <Button asChild variant="outline" className="w-full justify-between p-6">
-                                 <a>
+                              <Button asChild variant="outline" className="w-full justify-start p-6 text-left">
+                                 <div className="flex justify-between items-center w-full">
                                    Manage Users
                                    <UserCog className="h-5 w-5" />
-                                 </a>
+                                 </div>
                               </Button>
                             </Link>
                           )}
+                    </CardContent>
+                 </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Appearance</CardTitle>
+                        <CardDescription>Customize the look and feel of the application.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                       <div>
+                          <Label className="flex items-center gap-2 mb-3"><Palette /> Color Scheme</Label>
+                          <RadioGroup defaultValue="default" onValueChange={(v) => setColorTheme(v)}>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="default" id="r1" />
+                              <Label htmlFor="r1">Default</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="theme-zinc" id="r2" />
+                              <Label htmlFor="r2">Zinc</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="theme-rose" id="r3" />
+                              <Label htmlFor="r3">Rose</Label>
+                            </div>
+                             <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="theme-blue" id="r4" />
+                              <Label htmlFor="r4">Blue</Label>
+                            </div>
+                          </RadioGroup>
+                       </div>
+                        <div>
+                          <Label className="flex items-center gap-2 mb-3"><Type /> Font Style</Label>
+                          <RadioGroup defaultValue="font-body" onValueChange={(v) => {
+                             document.body.classList.remove('font-body', 'font-poppins', 'font-roboto');
+                             document.body.classList.add(v);
+                          }}>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="font-body" id="f1" />
+                              <Label htmlFor="f1">Inter (Default)</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="font-poppins" id="f2" />
+                              <Label htmlFor="f2">Poppins</Label>
+                            </div>
+                             <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="font-roboto" id="f3" />
+                              <Label htmlFor="f3">Roboto</Label>
+                            </div>
+                          </RadioGroup>
+                       </div>
                     </CardContent>
                  </Card>
                  <PrintLayoutSettings />
