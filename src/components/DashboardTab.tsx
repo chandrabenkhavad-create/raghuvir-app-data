@@ -201,61 +201,64 @@ export function DashboardTab() {
 
     return (
         <div className="space-y-6">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Filter Dashboard</CardTitle>
-                    <CardDescription>Select a date range to filter all dashboard metrics.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col sm:flex-row items-center gap-4">
-                         <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full sm:w-[280px] justify-start text-left font-normal",
-                                  !fromDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {fromDate ? format(fromDate, "PPP") : <span>From date</span>}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={fromDate}
-                                onSelect={setFromDate}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                        </Popover>
-                         <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant={"outline"}
-                                className={cn(
-                                  "w-full sm:w-[280px] justify-start text-left font-normal",
-                                  !toDate && "text-muted-foreground"
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                {toDate ? format(toDate, "PPP") : <span>To date</span>}
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                              <Calendar
-                                mode="single"
-                                selected={toDate}
-                                onSelect={setToDate}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                        </Popover>
-                        <Button onClick={() => { setFromDate(undefined); setToDate(undefined); }} variant="secondary">Clear</Button>
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="flex justify-end">
+                <Card className="max-w-xl">
+                    <CardHeader>
+                        <CardTitle>Filter Dashboard</CardTitle>
+                        <CardDescription>Select a date range to filter all dashboard metrics.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "w-full sm:w-[240px] justify-start text-left font-normal",
+                                    !fromDate && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {fromDate ? format(fromDate, "PPP") : <span>From date</span>}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={fromDate}
+                                    onSelect={setFromDate}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                    "w-full sm:w-[240px] justify-start text-left font-normal",
+                                    !toDate && "text-muted-foreground"
+                                    )}
+                                >
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {toDate ? format(toDate, "PPP") : <span>To date</span>}
+                                </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={toDate}
+                                    onSelect={setToDate}
+                                    initialFocus
+                                />
+                                </PopoverContent>
+                            </Popover>
+                            <Button onClick={() => { setFromDate(undefined); setToDate(undefined); }} variant="secondary">Clear</Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                  <Card className="lg:col-span-2">
@@ -382,7 +385,7 @@ export function DashboardTab() {
                         </p>
                     </CardContent>
                  </Card>
-                 <Card className="lg:col-span-4">
+                 <Card className="lg:col-span-2">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Building /> Material Purchase by Party</CardTitle>
                     </CardHeader>
@@ -428,5 +431,9 @@ export function DashboardTab() {
 }
 
     
+
+    
+
+
 
     

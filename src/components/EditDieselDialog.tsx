@@ -24,8 +24,10 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import type { DieselEntry } from '@/types';
+import type { DieselEntry, MasterDataItem } from '@/types';
 import { updateDieselEntry } from '@/services/dieselService';
+import { getMasterData } from '@/services/masterService';
+import { Combobox } from './ui/combobox';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -48,10 +50,26 @@ interface EditDieselDialogProps {
 
 export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, onDieselUpdated, dieselEntry }) => {
   const { toast } = useToast();
+  const [pumps, setPumps] = useState<MasterDataItem[]>([]);
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
   });
+
+  const fetchPumps = async () => {
+      try {
+          const pumpData = await getMasterData('pumps');
+          setPumps(pumpData);
+      } catch (error) {
+          toast({ variant: 'destructive', title: 'Error fetching pumps', description: (error as Error).message });
+      }
+  }
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchPumps();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (dieselEntry) {
@@ -75,7 +93,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
         description: 'Diesel entry has been updated.',
       });
       onDieselUpdated();
-      onClose(); // Close the dialog on successful update
+      onClose();
     } catch (error) {
        console.error('Failed to update entry:', error);
        toast({
@@ -189,7 +207,12 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., City Fuel Station" {...field} />
+                           <Combobox
+                                options={pumps.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type pump..."
+                            />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

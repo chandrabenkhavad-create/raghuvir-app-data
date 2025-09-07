@@ -31,9 +31,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import type { SaleEntry } from '@/types';
+import type { SaleEntry, MasterDataItem } from '@/types';
 import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
+import { getMasterData } from '@/services/masterService';
 import { RecentSales } from './RecentSales';
+import { Combobox } from './ui/combobox';
+
 
 const saleSchema = z.object({
   dcno: z.coerce.number(),
@@ -58,14 +61,21 @@ interface SaleFormProps {
   onEntrySaved: () => void;
   entryToPrint: SaleEntry | null;
   onPrintDialogChange: () => void;
+  onEditRequest: (entry: SaleEntry) => void;
 }
 
-export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
+export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<SaleEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
   const [dcNumber, setDcNumber] = useState<number | null>(null);
   const [refreshRecentSales, setRefreshRecentSales] = useState(false);
+
+  // Master data states
+  const [materials, setMaterials] = useState<MasterDataItem[]>([]);
+  const [customers, setCustomers] = useState<MasterDataItem[]>([]);
+  const [transporters, setTransporters] = useState<MasterDataItem[]>([]);
+  const [purchaseParties, setPurchaseParties] = useState<MasterDataItem[]>([]);
   
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
@@ -86,6 +96,23 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       royaltyWeight: 0,
     },
   });
+
+  const fetchMasterData = async () => {
+      try {
+          const [matData, custData, tranData, purData] = await Promise.all([
+              getMasterData('materials'),
+              getMasterData('customers'),
+              getMasterData('transporters'),
+              getMasterData('purchase_parties')
+          ]);
+          setMaterials(matData);
+          setCustomers(custData);
+          setTransporters(tranData);
+          setPurchaseParties(purData);
+      } catch (error) {
+          toast({ variant: 'destructive', title: 'Error fetching master data', description: (error as Error).message });
+      }
+  };
   
   const resetFormForNewEntry = async () => {
     try {
@@ -108,7 +135,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         royaltyPassNumber: '',
         royaltyWeight: 0,
       });
-      onEntrySaved(); // Notify parent that edit is complete
+      onEntrySaved();
     } catch (error) {
       console.error("Failed to fetch last DC number for new entry", error);
       toast({
@@ -138,6 +165,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
 
   useEffect(() => {
     resetFormForNewEntry();
+    fetchMasterData();
   }, []);
 
   useEffect(() => {
@@ -170,8 +198,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
     
     try {
       let savedEntry: SaleEntry;
-      // The `site` field is deprecated but the DB table might still have it.
-      // We will save the `customer` value into the `site` field for backward compatibility.
       const submissionData = { ...data, site: data.customer };
 
       const now = new Date();
@@ -191,6 +217,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       setIsPrintDialogOpen(true);
       await resetFormForNewEntry();
       setRefreshRecentSales(prev => !prev);
+      fetchMasterData(); // Refresh master data in case a new item was added
       
     } catch (error) {
        console.error('Failed to save entry:', error);
@@ -230,13 +257,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       }
   }
 
-  // Edit is now handled by a separate component
-  const handleEdit = (entry: SaleEntry) => {
-     toast({
-        title: "Redirecting...",
-        description: "Please use the 'Reports' tab to edit entries.",
-      });
-  }
 
   return (
     <>
@@ -273,7 +293,12 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., ABC Traders" {...field} />
+                            <Combobox
+                                options={purchaseParties.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type party..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -286,7 +311,12 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Main Construction Site" {...field} />
+                             <Combobox
+                                options={customers.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type customer..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -299,7 +329,12 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Cement Bags" {...field} />
+                             <Combobox
+                                options={materials.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type material..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -312,7 +347,12 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., XYZ Logistics" {...field} />
+                             <Combobox
+                                options={transporters.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type transporter..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -481,7 +521,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         <RecentSales 
             refreshKey={refreshRecentSales} 
             onPrint={handleReprint}
-            onEdit={handleEdit}
+            onEdit={onEditRequest}
         />
       </div>
     </>
