@@ -46,7 +46,7 @@ export default function Home() {
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                  </Button>
-                 {user && <span className="text-base text-muted-foreground mt-1">Welcome, {user}</span>}
+                 {user && <span className="text-base text-muted-foreground mt-1">Welcome, {user.username}</span>}
               </div>
           </div>
           <div className="text-center">
@@ -110,7 +110,7 @@ export default function Home() {
                        <span className="font-medium">Theme</span>
                        <ThemeToggle />
                     </div>
-                     {user === 'admin' && (
+                     {user?.role === 'admin' && (
                         <Link href="/users" passHref>
                           <Button variant="outline" className="w-full justify-between p-6">
                              Manage Users

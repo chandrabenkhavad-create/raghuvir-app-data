@@ -39,11 +39,11 @@ export async function addUser(entry: Omit<User, 'id' | 'created_at'>): Promise<U
         const supabase = getSupabase();
         if (!supabase) throw new Error("Supabase not connected");
         
-        const hashedPassword = await bcrypt.hash(entry.password, 10);
+        const hashedPassword = await bcrypt.hash(entry.password!, 10);
         
         const { data, error } = await supabase
             .from('users')
-            .insert([{ username: entry.username, password: hashedPassword }])
+            .insert([{ username: entry.username, password: hashedPassword, role: entry.role }])
             .select()
             .single();
 
@@ -58,26 +58,32 @@ export async function addUser(entry: Omit<User, 'id' | 'created_at'>): Promise<U
     }
 }
 
-export async function verifyUser(username: string, pass: string): Promise<boolean> {
+export async function verifyUser(username: string, pass: string): Promise<User | null> {
      try {
         getSupabase(); // This will throw if not configured, and we'll fall into the catch block
      } catch (e) {
          // Supabase is not configured, fall back to default admin user
          console.log("Supabase not configured, falling back to default admin credentials.");
-         return username === 'admin' && pass === 'admin';
+         if (username === 'admin' && pass === 'admin') {
+            return { id: 0, username: 'admin', role: 'admin', created_at: new Date().toISOString() };
+         }
+         return null;
      }
 
      const user = await runQuery(supabase => 
         supabase
             .from('users')
-            .select('password')
+            .select('id, username, password, role, created_at')
             .eq('username', username)
             .single()
     , null);
 
     if (user && user.password) {
-        // User found, compare password
-        return bcrypt.compare(pass, user.password);
+        const isMatch = await bcrypt.compare(pass, user.password);
+        if (isMatch) {
+            const { password, ...userWithoutPassword } = user;
+            return userWithoutPassword;
+        }
     }
 
     // User not found, check for default admin on first run
@@ -85,12 +91,13 @@ export async function verifyUser(username: string, pass: string): Promise<boolea
         const users = await getAllUsers();
         if (users.length === 0) {
              console.log("No users found. Creating default admin user.");
-             await addUser({ username: 'admin', password: 'admin' });
-             return true;
+             const newAdmin = await addUser({ username: 'admin', password: 'admin', role: 'admin' });
+             const { password, ...adminWithoutPassword } = newAdmin;
+             return adminWithoutPassword;
         }
     }
     
-    return false;
+    return null;
 }
 
 
@@ -98,7 +105,7 @@ export async function getAllUsers(): Promise<Omit<User, 'password'>[]> {
   return runQuery(supabase => 
     supabase
         .from('users')
-        .select('id, username, created_at')
+        .select('id, username, role, created_at')
         .order('id', { ascending: false })
   , []);
 }
