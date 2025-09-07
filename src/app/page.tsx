@@ -23,14 +23,17 @@ import { EditSaleDialog } from '@/components/EditSaleDialog';
 import { EditDieselDialog } from '@/components/EditDieselDialog';
 import { PrintLayoutSettings } from '@/components/PrintLayoutSettings';
 import { CompanyDetailsSettings } from '@/components/CompanyDetailsSettings';
+import { UserPermissionsSettings } from '@/components/UserPermissionsSettings';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { useAppSettings } from '@/hooks/useAppSettings';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('dashboard');
   const { setTheme } = useTheme();
+  const { settings: appSettings, isLoaded: appSettingsLoaded } = useAppSettings();
   
   // State for editing entries
   const [editingSale, setEditingSale] = useState<SaleEntry | null>(null);
@@ -48,6 +51,27 @@ export default function Home() {
     }
   }, [isAuthenticated, router]);
   
+  useEffect(() => {
+    // If the user is not an admin and their default tab is hidden, switch to a visible tab.
+    if (user?.role !== 'admin' && appSettingsLoaded) {
+      const tabsVisibility = {
+        dashboard: appSettings.userCanViewDashboard,
+        sale: true,
+        diesel: true,
+        reports: appSettings.userCanViewReports,
+        masters: appSettings.userCanViewMasters,
+        settings: appSettings.userCanViewSettings,
+      };
+
+      if (!tabsVisibility[activeTab as keyof typeof tabsVisibility]) {
+          // Default to the first available tab for the user
+          if (appSettings.userCanViewDashboard) setActiveTab('dashboard');
+          else setActiveTab('sale'); 
+      }
+    }
+  }, [user, appSettings, appSettingsLoaded, activeTab]);
+
+
   const handleEditSale = (entry: SaleEntry) => {
     setEditingSale(entry);
   }
@@ -75,13 +99,19 @@ export default function Home() {
   }
 
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !appSettingsLoaded) {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <p>Loading...</p>
       </main>
     );
   }
+  
+  const isAdmin = user?.role === 'admin';
+  const showDashboard = isAdmin || appSettings.userCanViewDashboard;
+  const showReports = isAdmin || appSettings.userCanViewReports;
+  const showMasters = isAdmin || appSettings.userCanViewMasters;
+  const showSettings = isAdmin || appSettings.userCanViewSettings;
 
   return (
     <>
@@ -110,30 +140,12 @@ export default function Home() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-6 max-w-5xl mx-auto">
-            <TabsTrigger value="dashboard">
-                <LayoutDashboard className="mr-2 h-4 w-4" />
-                Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="sale">
-              <Package className="mr-2 h-4 w-4" />
-              Sale Entry
-            </TabsTrigger>
-            <TabsTrigger value="diesel">
-              <Fuel className="mr-2 h-4 w-4" />
-              Diesel Entry
-            </TabsTrigger>
-            <TabsTrigger value="reports">
-              <FileSpreadsheet className="mr-2 h-4 w-4" />
-              Reports
-            </TabsTrigger>
-             <TabsTrigger value="masters">
-              <Database className="mr-2 h-4 w-4" />
-              Masters
-            </TabsTrigger>
-            <TabsTrigger value="settings">
-              <Settings className="mr-2 h-4 w-4" />
-              Settings
-            </TabsTrigger>
+            {showDashboard && <TabsTrigger value="dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</TabsTrigger>}
+            <TabsTrigger value="sale"><Package className="mr-2 h-4 w-4" />Sale Entry</TabsTrigger>
+            <TabsTrigger value="diesel"><Fuel className="mr-2 h-4 w-4" />Diesel Entry</TabsTrigger>
+            {showReports && <TabsTrigger value="reports"><FileSpreadsheet className="mr-2 h-4 w-4" />Reports</TabsTrigger>}
+            {showMasters && <TabsTrigger value="masters"><Database className="mr-2 h-4 w-4" />Masters</TabsTrigger>}
+            {showSettings && <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Settings</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="dashboard" className="mt-6">
@@ -182,7 +194,7 @@ export default function Home() {
                                <span className="font-medium">Dark/Light Mode</span>
                                <ThemeToggle />
                             </div>
-                             {user?.role === 'admin' && (
+                             {isAdmin && (
                                 <Link href="/users" passHref>
                                   <Button asChild variant="outline" className="w-full justify-start p-6 text-left">
                                      <div className="flex justify-between items-center w-full">
@@ -244,8 +256,9 @@ export default function Home() {
                         </CardContent>
                      </Card>
                 </div>
-                 {user?.role === 'admin' && (
+                 {isAdmin && (
                     <div className="space-y-8">
+                        <UserPermissionsSettings />
                         <CompanyDetailsSettings />
                         <PrintLayoutSettings />
                     </div>
