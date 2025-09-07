@@ -5,19 +5,25 @@ import { getSupabase } from '@/lib/supabaseClient';
 import bcrypt from 'bcryptjs';
 import type { User } from '@/types';
 
-async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>, emptyState: T): Promise<T> {
+// This generic query runner handles Supabase queries, including connection errors and non-existent tables.
+async function runQuery<T>(
+    query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T | null; error: any }>,
+    // The fallback is returned when the table doesn't exist or no rows are found.
+    // For single objects it should be `null`, for arrays it should be `[]`.
+    fallback: T | null
+): Promise<T | null> {
     try {
         const supabase = getSupabase();
         // No error thrown here, but supabase can be null if not configured
         if (!supabase) {
-            return emptyState;
+             throw new Error("Supabase is not connected. Please check your environment variables.");
         }
         const { data, error } = await query(supabase);
 
         if (error) {
             if (error.code === '42P01' || error.code === 'PGRST116') {
                 console.warn(`Supabase query warning: ${error.message}`);
-                return emptyState;
+                return fallback;
             }
             console.error('Supabase query failed:', error);
             throw new Error(`Supabase query failed: ${error.message}`);
@@ -27,7 +33,7 @@ async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => 
         console.error("Service-level error:", e.message)
         // Check if the error is due to Supabase not being connected and return empty state
         if (e.message.includes("Supabase is not connected")) {
-            return emptyState;
+            return fallback;
         }
         throw e;
     }
@@ -99,11 +105,11 @@ export async function verifyUser(username: string, pass: string): Promise<User |
     // User not found, check for default admin on first run
     if (username === 'admin' && pass === 'admin') {
         const { data: allUsers, error: fetchAllError } = await supabase.from('users').select('id').limit(1);
-        if (fetchAllError) {
+        if (fetchAllError && fetchAllError.code !== '42P01') {
              throw new Error(`Could not check for existing users. Check RLS policies. Error: ${fetchAllError.message}`);
         }
 
-        if (allUsers.length === 0) {
+        if (!allUsers || allUsers.length === 0) {
              console.log("No users found. Creating default admin user.");
              // This will likely fail if RLS is enabled and no policy allows insertion.
              // The user needs an RLS policy for this too.
@@ -118,12 +124,13 @@ export async function verifyUser(username: string, pass: string): Promise<User |
 
 
 export async function getAllUsers(): Promise<Omit<User, 'password'>[]> {
-  return runQuery(supabase => 
+  const data = await runQuery(supabase => 
     supabase
         .from('users')
         .select('id, username, role, created_at')
         .order('id', { ascending: false })
   , []);
+  return data || [];
 }
 
 export async function deleteUser(id: number): Promise<void> {
