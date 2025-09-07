@@ -6,7 +6,13 @@ import type { DieselEntry } from '@/types';
 
 type NewDieselEntry = Omit<DieselEntry, 'id' | 'created_at'>;
 
-async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T; error: any }>, emptyState: T): Promise<T> {
+// This generic query runner handles Supabase queries, including connection errors and non-existent tables.
+async function runQuery<T>(
+    query: (supabase: ReturnType<typeof getSupabase>) => PromiseLike<{ data: T | null; error: any }>,
+    // The fallback is returned when the table doesn't exist or no rows are found.
+    // For single objects it should be `null`, for arrays it should be `[]`.
+    fallback: T | null
+): Promise<T | null> {
     try {
         const supabase = getSupabase();
         if (!supabase) {
@@ -15,10 +21,11 @@ async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => 
         const { data, error } = await query(supabase);
 
         if (error) {
-            // '42P01' is the Postgres error code for "undefined_table"
-            if (error.code === '42P01') {
-                console.warn(`Supabase table not found. Returning empty state. Error: ${error.message}`);
-                return emptyState;
+            // '42P01': undefined_table. This is a special case where we don't want to throw.
+            // 'PGRST116': The result contains 0 rows. This is not an error, just no record found.
+            if (error.code === '42P01' || error.code === 'PGRST116') {
+                console.warn(`Supabase query warning: ${error.message}`);
+                return fallback;
             }
             console.error('Supabase query failed:', error);
             throw new Error(`Supabase query failed: ${error.message}`);
@@ -69,13 +76,14 @@ export async function updateDieselEntry(id: number, entry: Partial<NewDieselEntr
 
 
 export async function getRecentDieselEntries(limit = 10): Promise<DieselEntry[]> {
-     return runQuery(supabase => 
+     const data = await runQuery(supabase => 
         supabase
             .from('diesel')
             .select('*')
             .order('id', { ascending: false })
             .limit(limit)
     , []);
+    return data || [];
 }
 
 export async function getDieselEntryById(id: number): Promise<DieselEntry | null> {
@@ -93,10 +101,11 @@ export async function getDieselEntryById(id: number): Promise<DieselEntry | null
 }
 
 export async function getAllDieselEntries(): Promise<DieselEntry[]> {
-  return runQuery(supabase => 
+  const data = await runQuery(supabase => 
     supabase
         .from('diesel')
         .select('*')
         .order('id', { ascending: false })
   , []);
+  return data || [];
 }

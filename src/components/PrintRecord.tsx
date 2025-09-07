@@ -16,6 +16,12 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   }
 
   const qrCodeValue = JSON.stringify(data);
+  
+  // Ensure that weight values are numbers before calling toFixed
+  const grosswt = Number(data.grosswt || 0);
+  const tarewt = Number(data.tarewt || 0);
+  const netwt = Number(data.netwt || 0);
+  const royaltyWeight = Number(data.royaltyWeight || 0);
 
   return (
     <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
@@ -64,19 +70,19 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
             </div>
              <div>
               <strong className="block text-gray-600">Royalty Weight:</strong>
-              <span>{typeof data.royaltyWeight === 'number' ? `${data.royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+              <span>{typeof data.royaltyWeight === 'number' ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Gross Weight:</strong>
-              <span>{data.grosswt.toFixed(2)} KG</span>
+              <span>{grosswt.toFixed(2)} KG</span>
             </div>
             <div>
               <strong className="block text-gray-600">Tare Weight:</strong>
-              <span>{data.tarewt.toFixed(2)} KG</span>
+              <span>{tarewt.toFixed(2)} KG</span>
             </div>
             <div className="font-bold">
               <strong className="block text-gray-600">Net Weight:</strong>
-              <span>{data.netwt.toFixed(2)} KG</span>
+              <span>{netwt.toFixed(2)} KG</span>
             </div>
             {data.remarks && (
               <div className="col-span-2 mt-2">

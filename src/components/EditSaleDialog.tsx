@@ -61,21 +61,21 @@ interface EditSaleDialogProps {
 }
 
 export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSaleUpdated, saleEntry }) => {
-  const [isPrintSubmitting, setIsPrintSubmitting] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
-    defaultValues: saleEntry,
   });
 
   useEffect(() => {
-    form.reset({
-      ...saleEntry,
-      customer: saleEntry.customer || saleEntry.site,
-      royaltyWeight: saleEntry.royaltyWeight ?? 0,
-    });
-  }, [saleEntry, form]);
+    if (saleEntry) {
+      form.reset({
+        ...saleEntry,
+        customer: saleEntry.customer || saleEntry.site,
+        royaltyWeight: saleEntry.royaltyWeight ?? 0,
+      });
+    }
+  }, [saleEntry, form, isOpen]);
 
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
@@ -94,6 +94,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
         description: 'Sale entry has been updated.',
       });
       onSaleUpdated();
+      onClose(); // Close the dialog on successful update
     } catch (error) {
        console.error('Failed to update entry:', error);
        toast({
@@ -127,7 +128,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Edit Sale Entry (DC No: {String(saleEntry.dcno).padStart(3, '0')})</DialogTitle>
+            <DialogTitle>Edit Sale Entry (DC No: {String(saleEntry?.dcno).padStart(3, '0')})</DialogTitle>
             <DialogDescription>
               Update the details of this sale entry. Click Update to save changes.
             </DialogDescription>

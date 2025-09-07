@@ -97,8 +97,8 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                   <TableCell>{diesel.liters.toFixed(2)} L</TableCell>
                   <TableCell>₹{diesel.amount.toFixed(2)}</TableCell>
                   <TableCell>{diesel.pump}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => onPrint(diesel)} className="mr-2">
+                  <TableCell className="text-right space-x-2">
+                    <Button variant="outline" size="sm" onClick={() => onPrint(diesel)}>
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
