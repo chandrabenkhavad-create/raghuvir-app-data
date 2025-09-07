@@ -12,6 +12,9 @@ export interface PrintSettings {
   companyAddress: string;
   companyContact: string;
   companyLogoUrl: string;
+  companyGst: string;
+  companyEmail: string;
+  companyWebsite: string;
   useCompactLayout: boolean;
   // Sale specific
   showSaleTransporter: boolean;
@@ -35,6 +38,9 @@ const defaultSettings: PrintSettings = {
   companyAddress: 'Sayla-Sudamda Road, Sudamda.',
   companyContact: '',
   companyLogoUrl: '',
+  companyGst: '',
+  companyEmail: '',
+  companyWebsite: '',
   useCompactLayout: false,
   showSaleTransporter: true,
   showSaleDriver: true,

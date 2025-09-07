@@ -39,7 +39,14 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
                 <div>
                   <h1 className="text-xl font-bold">{settings.companyName}</h1>
                   <p className="text-xs">{settings.companyAddress}</p>
-                  <p className="text-xs">{settings.companyContact}</p>
+                   <p className="text-xs">
+                    {settings.companyContact && `Contact: ${settings.companyContact}`}
+                    {settings.companyGst && ` | GST: ${settings.companyGst}`}
+                  </p>
+                   <p className="text-xs">
+                    {settings.companyEmail && `Email: ${settings.companyEmail}`}
+                    {settings.companyWebsite && ` | Web: ${settings.companyWebsite}`}
+                  </p>
                 </div>
             </div>
             <div className="text-right text-xs flex-shrink-0">
