@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2 } from "lucide-react";
+import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2, Weight, Car } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import {
@@ -227,6 +227,10 @@ export function PrintLayoutSettings() {
                 <div className="grid md:grid-cols-2 gap-4">
                      <Card className="bg-muted/30 p-4 space-y-2">
                         <h3 className="font-semibold mb-2 flex items-center gap-2"><PackageSearch /> Sale Print Fields</h3>
+                          <div className="flex items-center justify-between p-2 border rounded-lg">
+                            <Label htmlFor="show-sale-purchase" className="flex items-center gap-2"><Building2 className="h-4 w-4" />Purchase Party</Label>
+                            <Switch id="show-sale-purchase" checked={settings.showSalePurchase} onCheckedChange={(c) => handleSettingChange('showSalePurchase', c)} />
+                        </div>
                          <div className="flex items-center justify-between p-2 border rounded-lg">
                             <Label htmlFor="show-sale-transporter" className="flex items-center gap-2"><Truck className="h-4 w-4" />Transporter</Label>
                             <Switch id="show-sale-transporter" checked={settings.showSaleTransporter} onCheckedChange={(c) => handleSettingChange('showSaleTransporter', c)} />
@@ -236,11 +240,19 @@ export function PrintLayoutSettings() {
                             <Switch id="show-sale-driver" checked={settings.showSaleDriver} onCheckedChange={(c) => handleSettingChange('showSaleDriver', c)} />
                         </div>
                          <div className="flex items-center justify-between p-2 border rounded-lg">
+                            <Label htmlFor="show-sale-vehicle" className="flex items-center gap-2"><Car className="h-4 w-4" />Vehicle Number</Label>
+                            <Switch id="show-sale-vehicle" checked={settings.showSaleVehicleNumber} onCheckedChange={(c) => handleSettingChange('showSaleVehicleNumber', c)} />
+                        </div>
+                         <div className="flex items-center justify-between p-2 border rounded-lg">
+                            <Label htmlFor="show-sale-weights" className="flex items-center gap-2"><Weight className="h-4 w-4" />Weight Details (Gross/Tare)</Label>
+                            <Switch id="show-sale-weights" checked={settings.showSaleWeightDetails} onCheckedChange={(c) => handleSettingChange('showSaleWeightDetails', c)} />
+                        </div>
+                         <div className="flex items-center justify-between p-2 border rounded-lg">
                             <Label htmlFor="show-sale-rent" className="flex items-center gap-2"><IndianRupee className="h-4 w-4" />Rent</Label>
                             <Switch id="show-sale-rent" checked={settings.showSaleRent} onCheckedChange={(c) => handleSettingChange('showSaleRent', c)} />
                         </div>
                         <div className="flex items-center justify-between p-2 border rounded-lg">
-                            <Label htmlFor="show-sale-royalty" className="flex items-center gap-2"><Ticket className="h-4 w-4" />Royalty</Label>
+                            <Label htmlFor="show-sale-royalty" className="flex items-center gap-2"><Ticket className="h-4 w-4" />Royalty Details</Label>
                             <Switch id="show-sale-royalty" checked={settings.showSaleRoyalty} onCheckedChange={(c) => handleSettingChange('showSaleRoyalty', c)} />
                         </div>
                          <div className="flex items-center justify-between p-2 border rounded-lg">

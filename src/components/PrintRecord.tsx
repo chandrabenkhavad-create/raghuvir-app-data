@@ -63,10 +63,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
 
         <main className="flex justify-between items-start">
           <div className={`grid grid-cols-2 gap-x-6 ${compactClass} flex-grow text-sm`}>
-            <div className={`col-span-2 ${compactPadding}`}>
+            {settings.showSalePurchase && (<div className={`col-span-2 ${compactPadding}`}>
               <strong className="block text-gray-600">Purchase:</strong>
               <span>{data.purchase}</span>
-            </div>
+            </div>)}
             <div className={`col-span-2 ${compactPadding}`}>
               <strong className="block text-gray-600">Customer:</strong>
               <span>{data.customer || data.site}</span>
@@ -83,22 +83,22 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Driver:</strong>
               <span>{data.driver}</span>
             </div>)}
-            <div className={compactPadding}>
+            {settings.showSaleVehicleNumber && (<div className={compactPadding}>
                 <strong className="block text-gray-600">Vehicle Number:</strong>
                 <span>{data.vehicleNumber}</span>
-            </div>
+            </div>)}
             {settings.showSaleRoyalty && (<div className={compactPadding}>
               <strong className="block text-gray-600">Royalty Pass Number:</strong>
               <span>{data.royaltyPassNumber || 'N/A'}</span>
             </div>)}
-             <div className={compactPadding}>
+             {settings.showSaleWeightDetails && (<div className={compactPadding}>
                 <strong className="block text-gray-600">Gross Weight:</strong>
                 <span>{grosswt.toFixed(2)} KG</span>
-            </div>
-             <div className={compactPadding}>
+            </div>)}
+             {settings.showSaleWeightDetails && (<div className={compactPadding}>
                 <strong className="block text-gray-600">Tare Weight:</strong>
                 <span>{tarewt.toFixed(2)} KG</span>
-            </div>
+            </div>)}
              {settings.showSaleRoyalty && (<div className={compactPadding}>
                 <strong className="block text-gray-600">Royalty Weight:</strong>
                 <span>{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
