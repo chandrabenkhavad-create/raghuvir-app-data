@@ -24,18 +24,17 @@ import {
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
-import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
-import { RecentSales } from './RecentSales';
+import { updateSaleEntry } from '@/services/saleService';
 
 const saleSchema = z.object({
+  id: z.number(),
   dcno: z.coerce.number(),
   material: z.string().min(1, 'Material is required'),
   supplier: z.string().min(1, 'Supplier is required'),
@@ -54,105 +53,29 @@ const saleSchema = z.object({
 
 type SaleFormValues = z.infer<typeof saleSchema>;
 
-interface SaleFormProps {
-  onEntrySaved: () => void;
-  entryToPrint: SaleEntry | null;
-  onPrintDialogChange: () => void;
+interface EditSaleDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSaleUpdated: () => void;
+  saleEntry: SaleEntry;
 }
 
-export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
-  const [internalEntryToPrint, setInternalEntryToPrint] = useState<SaleEntry | null>(null);
-  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
+export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSaleUpdated, saleEntry }) => {
+  const [isPrintSubmitting, setIsPrintSubmitting] = useState(false);
   const { toast } = useToast();
-  const [dcNumber, setDcNumber] = useState<number | null>(null);
-  const [refreshRecentSales, setRefreshRecentSales] = useState(false);
-  
+
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
-    defaultValues: {
-      dcno: 0,
-      material: '',
-      supplier: '',
-      customer: '',
-      transporter: '',
-      vehicleNumber: '',
-      driver: '',
-      remarks: '',
-      grosswt: 0,
-      tarewt: 0,
-      netwt: 0,
-      rent: 0,
-      royaltyPassNumber: '',
-      royaltyWeight: 0,
-    },
+    defaultValues: saleEntry,
   });
-  
-  const resetFormForNewEntry = async () => {
-    try {
-      const lastEntry = await getLastSaleEntry();
-      const newDcNo = (lastEntry?.dcno ?? 0) + 1;
-      setDcNumber(newDcNo);
-      form.reset({
-        dcno: newDcNo,
-        material: '',
-        supplier: '',
-        customer: '',
-        transporter: '',
-        vehicleNumber: '',
-        driver: '',
-        remarks: '',
-        grosswt: 0,
-        tarewt: 0,
-        netwt: 0,
-        rent: 0,
-        royaltyPassNumber: '',
-        royaltyWeight: 0,
-      });
-      onEntrySaved(); // Notify parent that edit is complete
-    } catch (error) {
-      console.error("Failed to fetch last DC number for new entry", error);
-      toast({
-          variant: 'destructive',
-          title: 'Error fetching DC Number',
-          description: (error as Error).message || 'Could not get the last DC number.'
-      })
-      setDcNumber(1); 
-      form.reset({ 
-        dcno: 1,
-        material: '',
-        supplier: '',
-        customer: '',
-        transporter: '',
-        vehicleNumber: '',
-        driver: '',
-        remarks: '',
-        grosswt: 0,
-        tarewt: 0,
-        netwt: 0,
-        rent: 0,
-        royaltyPassNumber: '',
-        royaltyWeight: 0,
-      });
-    }
-  }
 
   useEffect(() => {
-    resetFormForNewEntry();
-  }, []);
-
-  useEffect(() => {
-    if (externalEntryToPrint) {
-      setInternalEntryToPrint(externalEntryToPrint);
-      setIsPrintDialogOpen(true);
-    }
-  }, [externalEntryToPrint]);
-
-  useEffect(() => {
-    if (!isPrintDialogOpen) {
-      onPrintDialogChange();
-    }
-  }, [isPrintDialogOpen]);
-
+    form.reset({
+      ...saleEntry,
+      customer: saleEntry.customer || saleEntry.site,
+      royaltyWeight: saleEntry.royaltyWeight ?? 0,
+    });
+  }, [saleEntry, form]);
 
   const grosswt = form.watch('grosswt');
   const tarewt = form.watch('tarewt');
@@ -163,47 +86,26 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
   }, [grosswt, tarewt, form]);
 
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
-    if (dcNumber === null) {
-        toast({ variant: 'destructive', title: 'Error', description: 'DC Number not initialized.' });
-        return;
-    }
-    
     try {
-      let savedEntry: SaleEntry;
-      // The `site` field is deprecated but the DB table might still have it.
-      // We will save the `customer` value into the `site` field for backward compatibility.
       const submissionData = { ...data, site: data.customer };
-
-      const now = new Date();
-      const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
-        ...submissionData,
-        dcno: dcNumber!,
-        date: now.toLocaleDateString('en-GB'),
-        time: now.toLocaleTimeString(),
-      };
-      savedEntry = await addSaleEntry(newEntryData);
+      await updateSaleEntry(saleEntry.id, submissionData);
       toast({
-          title: 'Success!',
-          description: 'Sale entry has been saved.',
+        title: 'Success!',
+        description: 'Sale entry has been updated.',
       });
-      
-      setInternalEntryToPrint(savedEntry);
-      setIsPrintDialogOpen(true);
-      await resetFormForNewEntry();
-      setRefreshRecentSales(prev => !prev);
-      
+      onSaleUpdated();
     } catch (error) {
-       console.error('Failed to save entry:', error);
+       console.error('Failed to update entry:', error);
        toast({
          variant: 'destructive',
          title: 'Error!',
-         description: (error as Error).message || 'Failed to save entry.',
+         description: (error as Error).message || 'Failed to update entry.',
        });
     }
   };
 
   const handlePrint = () => {
-    const printableContent = document.getElementById('printable-content');
+    const printableContent = document.getElementById('printable-edit-content');
     if (!printableContent) return;
 
     const printWindow = window.open('', '_blank', 'height=800,width=800');
@@ -221,51 +123,19 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
     }
   };
   
-  const handleReprint = (entry: SaleEntry) => {
-      if (entry) {
-        setInternalEntryToPrint(entry);
-        setIsPrintDialogOpen(true);
-      } else {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
-      }
-  }
-
-  // Edit is now handled by a separate component
-  const handleEdit = (entry: SaleEntry) => {
-     toast({
-        title: "Redirecting...",
-        description: "Please use the 'Reports' tab to edit entries.",
-      });
-  }
-
   return (
-    <>
-      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Package /> New Sale Entry
-            </CardTitle>
-            <CardDescription>Enter the details of the new sale.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Edit Sale Entry (DC No: {String(saleEntry.dcno).padStart(3, '0')})</DialogTitle>
+            <DialogDescription>
+              Update the details of this sale entry. Click Update to save changes.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto p-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                    <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="dcno"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
-                          <FormControl>
-                            <Input type="text" value={dcNumber !== null ? String(dcNumber).padStart(3, '0') : 'Loading...'} disabled />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                      <FormField
                       control={form.control}
                       name="supplier"
@@ -441,49 +311,19 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                     )}
                   />
                   </div>
-
-                 
                 </div>
-                <div className="flex gap-4">
-                  <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
-                   <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={!internalEntryToPrint}
-                    >
-                      <Printer className="mr-2 h-4 w-4" />
-                      Print Last Entry
-                    </Button>
-                  </DialogTrigger>
-                </div>
+                <DialogFooter className="pt-4 border-t">
+                    <Button type="button" variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
+                    <Button type="submit"><Save className="mr-2 h-4 w-4" />Update Entry</Button>
+                </DialogFooter>
               </form>
             </Form>
-          </CardContent>
-        </Card>
-
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Print Preview</DialogTitle>
-            <DialogDescription>
-              This is a preview of the record to be printed.
-            </DialogDescription>
-          </DialogHeader>
-          <div id="printable-content">
-             <PrintRecord data={internalEntryToPrint} />
-          </div>
-          <DialogFooter>
-            <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
-          </DialogFooter>
+            <div className="hidden">
+                <div id="printable-edit-content">
+                    <PrintRecord data={form.getValues() as SaleEntry} />
+                </div>
+            </div>
         </DialogContent>
-      </Dialog>
-      <div className="mt-8">
-        <RecentSales 
-            refreshKey={refreshRecentSales} 
-            onPrint={handleReprint}
-            onEdit={handleEdit}
-        />
-      </div>
-    </>
+    </Dialog>
   );
 };

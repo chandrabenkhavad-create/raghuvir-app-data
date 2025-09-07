@@ -116,5 +116,3 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
     </Card>
   );
 }
-
-    
