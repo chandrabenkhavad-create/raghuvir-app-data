@@ -15,20 +15,17 @@ import {
   IndianRupee, 
   User, 
   Building, 
-  Gauge,
-  PlusCircle
+  Gauge
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import type { DieselEntry } from '@/types';
-import { addDieselEntry } from '@/services/dieselService';
-import { RecentDiesel } from './RecentDiesel';
+import { updateDieselEntry } from '@/services/dieselService';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -42,60 +39,25 @@ const dieselSchema = z.object({
 
 type DieselFormValues = z.infer<typeof dieselSchema>;
 
-interface DieselFormProps {
-  entryToPrint: DieselEntry | null;
-  onPrintDialogChange: () => void;
-  // The props for editing are removed, as this is now handled by the dialog
+interface EditDieselDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onDieselUpdated: () => void;
+  dieselEntry: DieselEntry;
 }
 
-export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
-  const [internalEntryToPrint, setInternalEntryToPrint] = useState<DieselEntry | null>(null);
-  const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [refreshRecent, setRefreshRecent] = useState(false);
+export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, onDieselUpdated, dieselEntry }) => {
   const { toast } = useToast();
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
-    defaultValues: {
-      vehicleNumber: '',
-      liters: 0,
-      rate: 0,
-      amount: 0,
-      driverName: '',
-      pump: '',
-      odo: 0,
-    },
   });
-  
-  const resetForm = () => {
-    form.reset({
-        vehicleNumber: '',
-        liters: 0,
-        rate: 0,
-        amount: 0,
-        driverName: '',
-        pump: '',
-        odo: 0,
-    });
-  }
-  
-  useEffect(() => {
-    resetForm();
-  }, []);
-
 
   useEffect(() => {
-    if (externalEntryToPrint) {
-      setInternalEntryToPrint(externalEntryToPrint);
-      setIsPrintDialogOpen(true);
+    if (dieselEntry) {
+      form.reset(dieselEntry);
     }
-  }, [externalEntryToPrint]);
-
-  useEffect(() => {
-    if (!isPrintDialogOpen) {
-      onPrintDialogChange();
-    }
-  }, [isPrintDialogOpen]);
+  }, [dieselEntry, form, isOpen]);
 
   const liters = form.watch('liters');
   const rate = form.watch('rate');
@@ -107,36 +69,25 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     try {
-      let savedEntry: DieselEntry;
-      const now = new Date();
-      const newEntryData: Omit<DieselEntry, 'id' | 'created_at'> = { 
-        ...data, 
-        date: now.toLocaleDateString('en-GB'),
-        time: now.toLocaleTimeString(),
-      };
-      savedEntry = await addDieselEntry(newEntryData);
+      await updateDieselEntry(dieselEntry.id, data);
       toast({
         title: 'Success!',
-        description: 'Diesel entry has been saved.',
+        description: 'Diesel entry has been updated.',
       });
-      
-      setInternalEntryToPrint(savedEntry);
-      setIsPrintDialogOpen(true);
-      resetForm();
-      setRefreshRecent(prev => !prev);
-
+      onDieselUpdated();
+      onClose(); // Close the dialog on successful update
     } catch (error) {
-      console.error('Failed to save entry:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error!',
-        description: (error as Error).message || 'Failed to save entry.',
-      });
+       console.error('Failed to update entry:', error);
+       toast({
+         variant: 'destructive',
+         title: 'Error!',
+         description: (error as Error).message || 'Failed to update entry.',
+       });
     }
   };
 
   const handlePrint = () => {
-    const printableContent = document.getElementById('printable-diesel-content');
+    const printableContent = document.getElementById('printable-edit-diesel-content');
     if (!printableContent) return;
 
     const printWindow = window.open('', '_blank', 'height=800,width=800');
@@ -153,40 +104,18 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       }, 500);
     }
   };
-
-  const handleReprint = (entry: DieselEntry) => {
-    if (entry) {
-        setInternalEntryToPrint(entry);
-        setIsPrintDialogOpen(true);
-    } else {
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not find the entry to print.' });
-    }
-  };
-
-  const handleEdit = (entry: DieselEntry) => {
-      // This is now handled in ReportsTab and RecentDiesel, which open the dialog
-       toast({
-        title: "Redirecting...",
-        description: "Please use the 'Reports' tab or 'Recent Diesel' list to edit entries.",
-      });
-  };
-
-
+  
   return (
-    <>
-      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Fuel /> New Diesel Entry
-            </CardTitle>
-            <CardDescription>
-              Enter the details of the diesel purchase.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Edit Diesel Entry (ID: {dieselEntry?.id})</DialogTitle>
+            <DialogDescription>
+              Update the details of this diesel entry. Click Update to save changes.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-h-[70vh] overflow-y-auto p-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   <FormField
                     control={form.control}
@@ -280,46 +209,18 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
                     )}
                   />
                 </div>
-                <div className="flex gap-4">
-                  <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={!internalEntryToPrint}
-                    >
-                      <Printer className="mr-2 h-4 w-4" />
-                      Print Last Entry
-                    </Button>
-                  </DialogTrigger>
-                </div>
+                <DialogFooter className="pt-4 border-t">
+                    <Button type="button" variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
+                    <Button type="submit"><Save className="mr-2 h-4 w-4" />Update Entry</Button>
+                </DialogFooter>
               </form>
             </Form>
-          </CardContent>
-        </Card>
-
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Print Preview</DialogTitle>
-            <DialogDescription>
-              This is a preview of the diesel record to be printed.
-            </DialogDescription>
-          </DialogHeader>
-          <div id="printable-diesel-content">
-             <PrintDieselRecord data={internalEntryToPrint} />
-          </div>
-          <DialogFooter>
-            <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
-          </DialogFooter>
+            <div className="hidden">
+                <div id="printable-edit-diesel-content">
+                    <PrintDieselRecord data={{ ...dieselEntry, ...form.getValues() }} />
+                </div>
+            </div>
         </DialogContent>
-      </Dialog>
-      <div className="mt-8">
-        <RecentDiesel 
-            refreshKey={refreshRecent} 
-            onPrint={handleReprint}
-            onEdit={handleEdit}
-        />
-      </div>
-    </>
+    </Dialog>
   );
 };

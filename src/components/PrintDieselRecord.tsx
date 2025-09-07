@@ -15,6 +15,13 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
   }
 
   const qrCodeValue = JSON.stringify(data);
+  
+  // Ensure values are numbers before calling toFixed
+  const liters = Number(data.liters || 0);
+  const rate = Number(data.rate || 0);
+  const amount = Number(data.amount || 0);
+  const odo = Number(data.odo || 0);
+
 
   return (
     <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
@@ -47,19 +54,19 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
             </div>
              <div>
               <strong className="block text-gray-600">ODO Reading:</strong>
-              <span>{data.odo}</span>
+              <span>{odo}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Liters:</strong>
-              <span>{data.liters.toFixed(2)} L</span>
+              <span>{liters.toFixed(2)} L</span>
             </div>
             <div>
               <strong className="block text-gray-600">Rate:</strong>
-              <span>₹{data.rate.toFixed(2)} / L</span>
+              <span>₹{rate.toFixed(2)} / L</span>
             </div>
             <div className="font-bold">
               <strong className="block text-gray-600">Total Amount:</strong>
-              <span>₹{data.amount.toFixed(2)}</span>
+              <span>₹{amount.toFixed(2)}</span>
             </div>
           </div>
            <div className="ml-8 flex-shrink-0">

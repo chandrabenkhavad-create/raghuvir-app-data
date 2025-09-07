@@ -18,6 +18,7 @@ import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { SaleEntry, DieselEntry } from '@/types';
 import { EditSaleDialog } from '@/components/EditSaleDialog';
+import { EditDieselDialog } from '@/components/EditDieselDialog';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -46,8 +47,6 @@ export default function Home() {
 
   const handleEditDiesel = (entry: DieselEntry) => {
     setEditingDiesel(entry);
-    setEditingSale(null);
-    setActiveTab('diesel');
   }
   
   const handlePrintSale = (entry: SaleEntry) => {
@@ -58,18 +57,13 @@ export default function Home() {
     setPrintingDiesel(entry);
   }
   
-  const handleNewSale = () => {
-    setActiveTab('sale');
-  }
-  
-  const handleNewDiesel = () => {
-    setEditingDiesel(null);
-    setActiveTab('diesel');
-  }
-
   const onSaleUpdated = () => {
     setEditingSale(null); // Close the dialog
-    // Add a mechanism to refresh reports if needed, e.g., a state variable
+    setRefreshReports(prev => !prev);
+  }
+
+  const onDieselUpdated = () => {
+    setEditingDiesel(null); // Close the dialog
     setRefreshReports(prev => !prev);
   }
 
@@ -145,8 +139,6 @@ export default function Home() {
           
           <TabsContent value="diesel" className="mt-6">
             <DieselForm
-              entryToEdit={editingDiesel}
-              onEntrySaved={() => setEditingDiesel(null)}
               entryToPrint={printingDiesel}
               onPrintDialogChange={() => setPrintingDiesel(null)}
             />
@@ -174,13 +166,13 @@ export default function Home() {
                        <ThemeToggle />
                     </div>
                      {user?.role === 'admin' && (
-                        <Link href="/users" passHref legacyBehavior>
-                          <a className="inline-block w-full">
-                            <Button variant="outline" className="w-full justify-between p-6">
+                        <Link href="/users" passHref>
+                          <Button asChild variant="outline" className="w-full justify-between p-6">
+                             <a>
                                Manage Users
-                              <UserCog className="h-5 w-5" />
-                            </Button>
-                          </a>
+                               <UserCog className="h-5 w-5" />
+                             </a>
+                          </Button>
                         </Link>
                       )}
                 </CardContent>
@@ -196,6 +188,14 @@ export default function Home() {
             onClose={() => setEditingSale(null)}
             onSaleUpdated={onSaleUpdated}
             saleEntry={editingSale}
+        />
+    )}
+    {editingDiesel && (
+        <EditDieselDialog
+            isOpen={!!editingDiesel}
+            onClose={() => setEditingDiesel(null)}
+            onDieselUpdated={onDieselUpdated}
+            dieselEntry={editingDiesel}
         />
     )}
     </>
