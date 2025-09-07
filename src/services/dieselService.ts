@@ -38,18 +38,49 @@ async function runQuery<T>(
     }
 }
 
+const toSnakeCase = (entry: Partial<NewDieselEntry>) => {
+    const newEntry: { [key: string]: any } = {};
+    for (const key in entry) {
+        if (Object.prototype.hasOwnProperty.call(entry, key)) {
+            const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+            newEntry[snakeKey] = (entry as any)[key];
+        }
+    }
+    return newEntry;
+};
+
+const toCamelCase = (data: any[] | any): any => {
+    if (Array.isArray(data)) {
+        return data.map(item => toCamelCase(item));
+    }
+    if (data === null || typeof data !== 'object') {
+        return data;
+    }
+    const newObj: { [key: string]: any } = {};
+    for (const key in data) {
+        if (Object.prototype.hasOwnProperty.call(data, key)) {
+            const camelKey = key.replace(/_([a-z])/g, g => g[1].toUpperCase());
+            newObj[camelKey] = data[key];
+        }
+    }
+    return newObj;
+};
+
 export async function addDieselEntry(entry: NewDieselEntry): Promise<DieselEntry> {
     // addDieselEntry should fail if the table doesn't exist.
      try {
         const supabase = getSupabase();
         if (!supabase) throw new Error("Supabase not connected");
+        
+        const snakeCaseEntry = toSnakeCase(entry);
+
         const { data, error } = await supabase
             .from('diesel')
-            .insert([entry])
+            .insert([snakeCaseEntry])
             .select()
             .single();
         if (error) throw error;
-        return data;
+        return toCamelCase(data);
     } catch(error: any) {
         console.error('Failed to add diesel entry:', error);
         throw new Error(`Failed to add diesel entry: ${error.message}`);
@@ -60,14 +91,17 @@ export async function updateDieselEntry(id: number, entry: Partial<NewDieselEntr
     try {
         const supabase = getSupabase();
         if (!supabase) throw new Error("Supabase not connected");
+        
+        const snakeCaseEntry = toSnakeCase(entry);
+
         const { data, error } = await supabase
             .from('diesel')
-            .update(entry)
+            .update(snakeCaseEntry)
             .eq('id', id)
             .select()
             .single();
         if (error) throw error;
-        return data;
+        return toCamelCase(data);
     } catch (error: any) {
         console.error('Failed to update diesel entry:', error);
         throw new Error(`Failed to update diesel entry: ${error.message}`);
@@ -83,7 +117,7 @@ export async function getRecentDieselEntries(limit = 10): Promise<DieselEntry[]>
             .order('id', { ascending: false })
             .limit(limit)
     , []);
-    return data || [];
+    return toCamelCase(data || []);
 }
 
 export async function getDieselEntryById(id: number): Promise<DieselEntry | null> {
@@ -91,13 +125,14 @@ export async function getDieselEntryById(id: number): Promise<DieselEntry | null
         console.error("getDieselEntryById: Invalid ID provided", id);
         return null;
     }
-    return runQuery(supabase => 
+    const data = await runQuery(supabase => 
         supabase
             .from('diesel')
             .select('*')
             .eq('id', id)
             .single()
     , null);
+    return toCamelCase(data);
 }
 
 export async function getAllDieselEntries(): Promise<DieselEntry[]> {
@@ -107,5 +142,5 @@ export async function getAllDieselEntries(): Promise<DieselEntry[]> {
         .select('*')
         .order('id', { ascending: false })
   , []);
-  return data || [];
+  return toCamelCase(data || []);
 }
