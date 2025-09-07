@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
@@ -30,6 +30,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar } from "./ui/calendar";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+
 
 interface ReportsTabProps {
   onEditSale: (entry: SaleEntry) => void;
@@ -50,6 +52,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   const [dieselFromDate, setDieselFromDate] = useState<Date | undefined>();
   const [dieselToDate, setDieselToDate] = useState<Date | undefined>();
   const [salesSearchTerm, setSalesSearchTerm] = useState("");
+  const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -76,6 +79,12 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
       const [day, month, year] = dateString.split('/').map(Number);
       return new Date(year, month - 1, day);
   }
+
+  const allVehicleNumbers = useMemo(() => {
+      const salesVehicles = salesData.map(s => s.vehicleNumber);
+      const dieselVehicles = dieselData.map(d => d.vehicleNumber);
+      return [...new Set([...salesVehicles, ...dieselVehicles])].sort();
+  }, [salesData, dieselData]);
 
   const filteredSalesData = useMemo(() => {
     return salesData.filter(sale => {
@@ -107,6 +116,16 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
         return true;
      });
   }, [dieselData, dieselFromDate, dieselToDate]);
+  
+  const vehicleFilteredSales = useMemo(() => {
+      if (!selectedVehicle) return [];
+      return salesData.filter(sale => sale.vehicleNumber === selectedVehicle);
+  }, [salesData, selectedVehicle]);
+
+  const vehicleFilteredDiesel = useMemo(() => {
+      if (!selectedVehicle) return [];
+      return dieselData.filter(diesel => diesel.vehicleNumber === selectedVehicle);
+  }, [dieselData, selectedVehicle]);
 
 
   const downloadCSV = (data: any[], filename: string, headers: string[]) => {
@@ -161,9 +180,10 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
 
   return (
     <Tabs defaultValue="sales">
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="sales">Sales Report</TabsTrigger>
         <TabsTrigger value="diesel">Diesel Report</TabsTrigger>
+        <TabsTrigger value="vehicle">Vehicle Wise Report</TabsTrigger>
       </TabsList>
       <TabsContent value="sales">
         <Card>
@@ -390,6 +410,115 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
               </Table>
             )}
           </CardContent>
+        </Card>
+      </TabsContent>
+      <TabsContent value="vehicle">
+        <Card>
+            <CardHeader>
+                <CardTitle>Vehicle Wise Report</CardTitle>
+                <CardDescription>Select a vehicle to see its sales and diesel history.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="max-w-xs">
+                    <Select onValueChange={setSelectedVehicle} value={selectedVehicle || ''}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={<div className="flex items-center gap-2"><Truck/>Select a vehicle</div>} />
+                        </SelectTrigger>
+                        <SelectContent>
+                             {allVehicleNumbers.map(vehicle => (
+                                <SelectItem key={vehicle} value={vehicle}>{vehicle}</SelectItem>
+                             ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {selectedVehicle && (
+                    <div className="space-y-8">
+                        {/* Sales Table */}
+                        <div>
+                             <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-semibold">Sales Entries</h3>
+                                <Button
+                                    onClick={() => downloadCSV(vehicleFilteredSales, `${selectedVehicle}_sales_report`, salesHeaders)}
+                                    disabled={loading || vehicleFilteredSales.length === 0}
+                                >
+                                    <Download className="mr-2" /> Download Sales CSV
+                                </Button>
+                             </div>
+                             {loading ? <Skeleton className="h-20 w-full" /> : (
+                                vehicleFilteredSales.length > 0 ? (
+                                     <Table>
+                                        <TableHeader>
+                                        <TableRow>
+                                            <TableHead>DC No.</TableHead>
+                                            <TableHead>Date</TableHead>
+                                            <TableHead>Material</TableHead>
+                                            <TableHead>Net Weight</TableHead>
+                                            <TableHead className="text-right">Actions</TableHead>
+                                        </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                        {vehicleFilteredSales.map((sale) => (
+                                            <TableRow key={sale.id}>
+                                            <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                                            <TableCell>{sale.date}</TableCell>
+                                            <TableCell>{sale.material}</TableCell>
+                                            <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>
+                                            <TableCell className="text-right space-x-2">
+                                                 <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}><Printer className="mr-2 h-4 w-4" />Print</Button>
+                                                 <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                            </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : <p className="text-muted-foreground">No sales entries found for this vehicle.</p>
+                             )}
+                        </div>
+                        {/* Diesel Table */}
+                        <div>
+                             <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-xl font-semibold">Diesel Entries</h3>
+                                <Button
+                                    onClick={() => downloadCSV(vehicleFilteredDiesel, `${selectedVehicle}_diesel_report`, dieselHeaders)}
+                                    disabled={loading || vehicleFilteredDiesel.length === 0}
+                                >
+                                    <Download className="mr-2" /> Download Diesel CSV
+                                </Button>
+                             </div>
+                              {loading ? <Skeleton className="h-20 w-full" /> : (
+                                vehicleFilteredDiesel.length > 0 ? (
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Liters</TableHead>
+                                                <TableHead>Amount</TableHead>
+                                                <TableHead>Pump</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                        {vehicleFilteredDiesel.map((diesel) => (
+                                            <TableRow key={diesel.id}>
+                                                <TableCell>{diesel.date}</TableCell>
+                                                <TableCell>{Number(diesel.liters).toFixed(2)} L</TableCell>
+                                                <TableCell>₹{Number(diesel.amount).toFixed(2)}</TableCell>
+                                                <TableCell>{diesel.pump}</TableCell>
+                                                <TableCell className="text-right space-x-2">
+                                                    <Button variant="outline" size="sm" onClick={() => onPrintDiesel(diesel)}><Printer className="mr-2 h-4 w-4" />Print</Button>
+                                                    <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        </TableBody>
+                                    </Table>
+                                ) : <p className="text-muted-foreground">No diesel entries found for this vehicle.</p>
+                              )}
+                        </div>
+                    </div>
+                )}
+            </CardContent>
         </Card>
       </TabsContent>
     </Tabs>
