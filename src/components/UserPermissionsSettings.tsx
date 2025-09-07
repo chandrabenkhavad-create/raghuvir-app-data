@@ -5,7 +5,7 @@ import { useAppSettings, type AppSettings } from "@/hooks/useAppSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
-import { ShieldCheck, LayoutDashboard, FileSpreadsheet, Database, Settings } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, FileSpreadsheet, Settings } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 
 export function UserPermissionsSettings() {
@@ -57,17 +57,6 @@ export function UserPermissionsSettings() {
                             id="show-reports"
                             checked={settings.userCanViewReports}
                             onCheckedChange={(checked) => handleSettingChange('userCanViewReports', checked)}
-                        />
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
-                            <Database className="h-5 w-5 text-muted-foreground" />
-                            <Label htmlFor="show-masters">User can see Masters</Label>
-                        </div>
-                        <Switch
-                            id="show-masters"
-                            checked={settings.userCanViewMasters}
-                            onCheckedChange={(checked) => handleSettingChange('userCanViewMasters', checked)}
                         />
                     </div>
                     <div className="flex items-center justify-between p-3 border rounded-lg">

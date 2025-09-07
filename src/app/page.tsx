@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings, Palette, Type, Database } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings, Palette, Type } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -14,7 +14,6 @@ import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
 import { DashboardTab } from '@/components/DashboardTab';
-import { MastersTab } from '@/components/MastersTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -59,7 +58,6 @@ export default function Home() {
         sale: true,
         diesel: true,
         reports: appSettings.userCanViewReports,
-        masters: appSettings.userCanViewMasters,
         settings: appSettings.userCanViewSettings,
       };
 
@@ -110,7 +108,6 @@ export default function Home() {
   const isAdmin = user?.role === 'admin';
   const showDashboard = isAdmin || appSettings.userCanViewDashboard;
   const showReports = isAdmin || appSettings.userCanViewReports;
-  const showMasters = isAdmin || appSettings.userCanViewMasters;
   const showSettings = isAdmin || appSettings.userCanViewSettings;
 
   return (
@@ -139,12 +136,11 @@ export default function Home() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 max-w-5xl mx-auto gap-2">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 max-w-5xl mx-auto gap-2">
             {showDashboard && <TabsTrigger value="dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</TabsTrigger>}
             <TabsTrigger value="sale"><Package className="mr-2 h-4 w-4" />Sale Entry</TabsTrigger>
             <TabsTrigger value="diesel"><Fuel className="mr-2 h-4 w-4" />Diesel Entry</TabsTrigger>
             {showReports && <TabsTrigger value="reports"><FileSpreadsheet className="mr-2 h-4 w-4" />Reports</TabsTrigger>}
-            {showMasters && <TabsTrigger value="masters"><Database className="mr-2 h-4 w-4" />Masters</TabsTrigger>}
             {showSettings && <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Settings</TabsTrigger>}
           </TabsList>
           
@@ -177,10 +173,6 @@ export default function Home() {
               onPrintDiesel={handlePrintDiesel}
               refreshKey={refreshReports}
             />
-          </TabsContent>
-
-           <TabsContent value="masters" className="mt-6">
-             <MastersTab />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">

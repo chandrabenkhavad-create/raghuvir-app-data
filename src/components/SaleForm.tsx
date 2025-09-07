@@ -31,11 +31,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import type { SaleEntry, MasterDataItem } from '@/types';
+import type { SaleEntry } from '@/types';
 import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
-import { getMasterData } from '@/services/masterService';
 import { RecentSales } from './RecentSales';
-import { Combobox } from './ui/combobox';
 
 
 const saleSchema = z.object({
@@ -71,12 +69,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
   const [dcNumber, setDcNumber] = useState<number | null>(null);
   const [refreshRecentSales, setRefreshRecentSales] = useState(false);
 
-  // Master data states
-  const [materials, setMaterials] = useState<MasterDataItem[]>([]);
-  const [customers, setCustomers] = useState<MasterDataItem[]>([]);
-  const [transporters, setTransporters] = useState<MasterDataItem[]>([]);
-  const [purchaseParties, setPurchaseParties] = useState<MasterDataItem[]>([]);
-  
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
@@ -96,23 +88,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       royaltyWeight: 0,
     },
   });
-
-  const fetchMasterData = async () => {
-      try {
-          const [matData, custData, tranData, purData] = await Promise.all([
-              getMasterData('materials'),
-              getMasterData('customers'),
-              getMasterData('transporters'),
-              getMasterData('purchase_parties')
-          ]);
-          setMaterials(matData);
-          setCustomers(custData);
-          setTransporters(tranData);
-          setPurchaseParties(purData);
-      } catch (error) {
-          toast({ variant: 'destructive', title: 'Error fetching master data', description: (error as Error).message });
-      }
-  };
   
   const resetFormForNewEntry = async () => {
     try {
@@ -165,7 +140,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
 
   useEffect(() => {
     resetFormForNewEntry();
-    fetchMasterData();
   }, []);
 
   useEffect(() => {
@@ -217,7 +191,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       setIsPrintDialogOpen(true);
       await resetFormForNewEntry();
       setRefreshRecentSales(prev => !prev);
-      fetchMasterData(); // Refresh master data in case a new item was added
       
     } catch (error) {
        console.error('Failed to save entry:', error);
@@ -293,12 +266,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Combobox
-                                options={purchaseParties.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type party..."
-                            />
+                             <Input placeholder="e.g., Self" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -311,12 +279,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                             <Combobox
-                                options={customers.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type customer..."
-                            />
+                             <Input placeholder="e.g., Local Builders" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -329,12 +292,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                             <Combobox
-                                options={materials.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type material..."
-                            />
+                             <Input placeholder="e.g., 20mm" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -347,12 +305,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                             <Combobox
-                                options={transporters.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type transporter..."
-                            />
+                             <Input placeholder="e.g., Self" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

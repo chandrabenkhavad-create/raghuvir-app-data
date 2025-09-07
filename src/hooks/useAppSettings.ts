@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback } from 'react';
 export interface AppSettings {
   userCanViewDashboard: boolean;
   userCanViewReports: boolean;
-  userCanViewMasters: boolean;
   userCanViewSettings: boolean;
 }
 
@@ -15,7 +14,6 @@ const SETTINGS_KEY = 'raghuvir_infra_app_settings';
 const defaultSettings: AppSettings = {
   userCanViewDashboard: true,
   userCanViewReports: true,
-  userCanViewMasters: true,
   userCanViewSettings: true,
 };
 
