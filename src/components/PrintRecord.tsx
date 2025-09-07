@@ -62,68 +62,93 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-          <div className={`grid grid-cols-2 gap-x-6 ${compactClass} flex-grow text-sm`}>
-            {settings.showSalePurchase && (<div className={`col-span-2 ${compactPadding}`}>
-              <strong className="block text-gray-600">Purchase:</strong>
-              <span>{data.purchase}</span>
-            </div>)}
-            <div className={`col-span-2 ${compactPadding}`}>
-              <strong className="block text-gray-600">Customer:</strong>
-              <span>{data.customer || data.site}</span>
-            </div>
-             {settings.showSaleTransporter && (<div className={`col-span-2 ${compactPadding}`}>
-              <strong className="block text-gray-600">Transporter:</strong>
-              <span>{data.transporter}</span>
-            </div>)}
-            <div className={compactPadding}>
-              <strong className="block text-gray-600">Material:</strong>
-              <span>{data.material}</span>
-            </div>
-            {settings.showSaleDriver && (<div className={compactPadding}>
-              <strong className="block text-gray-600">Driver:</strong>
-              <span>{data.driver}</span>
-            </div>)}
-            {settings.showSaleVehicleNumber && (<div className={compactPadding}>
-                <strong className="block text-gray-600">Vehicle Number:</strong>
-                <span>{data.vehicleNumber}</span>
-            </div>)}
-            {settings.showSaleRoyalty && (<div className={compactPadding}>
-              <strong className="block text-gray-600">Royalty Pass Number:</strong>
-              <span>{data.royaltyPassNumber || 'N/A'}</span>
-            </div>)}
-            {settings.showSaleRoyalty && (<div className={compactPadding}>
-                <strong className="block text-gray-600">Royalty Weight:</strong>
-                <span>{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
-            </div>)}
-             {settings.showSaleRent && (<div className={compactPadding}>
-              <strong className="block text-gray-600">Rent:</strong>
-              <span>₹{rent.toFixed(2)}</span>
-            </div>)}
+           <div className={`flex-grow text-sm ${compactClass}`}>
+             <div className="grid grid-cols-2 gap-x-6">
+                {/* Left Column */}
+                <div className={`space-y-1 ${compactClass}`}>
+                    {settings.showSalePurchase && (
+                      <div className={compactPadding}>
+                          <strong className="block text-gray-600">Purchase:</strong>
+                          <span>{data.purchase}</span>
+                      </div>
+                    )}
+                     <div className={compactPadding}>
+                        <strong className="block text-gray-600">Customer:</strong>
+                        <span>{data.customer || data.site}</span>
+                    </div>
+                    {settings.showSaleTransporter && (
+                        <div className={compactPadding}>
+                            <strong className="block text-gray-600">Transporter:</strong>
+                            <span>{data.transporter}</span>
+                        </div>
+                    )}
+                    {settings.showSaleDriver && (
+                        <div className={compactPadding}>
+                            <strong className="block text-gray-600">Driver:</strong>
+                            <span>{data.driver}</span>
+                        </div>
+                    )}
+                    {settings.showSaleRoyalty && (
+                        <div className={compactPadding}>
+                            <strong className="block text-gray-600">Royalty Pass Number:</strong>
+                            <span>{data.royaltyPassNumber || 'N/A'}</span>
+                        </div>
+                    )}
+                    {settings.showSaleRent && (
+                        <div className={compactPadding}>
+                            <strong className="block text-gray-600">Rent:</strong>
+                            <span>₹{rent.toFixed(2)}</span>
+                        </div>
+                    )}
+                </div>
 
-            {/* This is the new vertical layout for weights */}
-            {settings.showSaleWeightDetails && (
-              <div className="col-span-2 mt-2 space-y-1">
-                 <div>
-                    <strong className="block text-gray-600">Gross Weight:</strong>
-                    <span>{grosswt.toFixed(2)} KG</span>
-                 </div>
-                 <div>
-                    <strong className="block text-gray-600">Tare Weight:</strong>
-                    <span>{tarewt.toFixed(2)} KG</span>
-                 </div>
-                 <div className="font-bold text-base pt-1">
-                    <strong className="block text-gray-600">Net Weight:</strong>
-                    <span>{netwt.toFixed(2)} KG</span>
-                 </div>
-              </div>
-            )}
-           
-            {settings.showSaleRemarks && data.remarks && (
-              <div className="col-span-2 mt-1">
-                <strong className="block text-gray-600">Remarks:</strong>
-                <p className="mt-0.5 border p-1 rounded-md text-xs">{data.remarks}</p>
-              </div>
-            )}
+                {/* Right Column */}
+                 <div className={`space-y-1 ${compactClass}`}>
+                    <div className={compactPadding}>
+                        <strong className="block text-gray-600">Material:</strong>
+                        <span>{data.material}</span>
+                    </div>
+                    {settings.showSaleVehicleNumber && (
+                        <div className={compactPadding}>
+                            <strong className="block text-gray-600">Vehicle Number:</strong>
+                            <span>{data.vehicleNumber}</span>
+                        </div>
+                    )}
+                    {settings.showSaleRoyalty && (
+                        <div className={compactPadding}>
+                            <strong className="block text-gray-600">Royalty Weight:</strong>
+                            <span>{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Weights and Remarks Section */}
+            <div className="grid grid-cols-1 mt-2">
+                 {settings.showSaleWeightDetails && (
+                  <div className="col-span-2 space-y-1">
+                     <div>
+                        <strong className="block text-gray-600">Gross Weight:</strong>
+                        <span>{grosswt.toFixed(2)} KG</span>
+                     </div>
+                     <div>
+                        <strong className="block text-gray-600">Tare Weight:</strong>
+                        <span>{tarewt.toFixed(2)} KG</span>
+                     </div>
+                     <div className="font-bold text-base pt-1">
+                        <strong className="block text-gray-600">Net Weight:</strong>
+                        <span>{netwt.toFixed(2)} KG</span>
+                     </div>
+                  </div>
+                )}
+               
+                {settings.showSaleRemarks && data.remarks && (
+                  <div className="col-span-2 mt-1">
+                    <strong className="block text-gray-600">Remarks:</strong>
+                    <p className="mt-0.5 border p-1 rounded-md text-xs">{data.remarks}</p>
+                  </div>
+                )}
+            </div>
           </div>
           {settings.showQRCode && (
             <div className="ml-4 flex-shrink-0">
@@ -136,8 +161,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
       {settings.showFooter && (
         <footer className="text-right text-xs text-gray-700 pt-8 mt-auto">
           <div className="border-t-2 border-dashed border-gray-400 w-48 ml-auto mb-1"></div>
-          <p>{settings.authorizedSignatory}</p>
-          <p>(Signature)</p>
+          <p>Signature</p>
         </footer>
       )}
     </div>
