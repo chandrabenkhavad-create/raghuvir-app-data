@@ -38,19 +38,19 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
                         <img src={settings.companyLogoUrl} alt="Company Logo" className="h-12 max-w-24 object-contain" />
                     )}
                     <div>
-                      <h1 className="text-xl font-bold">{settings.companyName}</h1>
-                      <p className="text-xs">{settings.companyAddress}</p>
-                       <p className="text-xs">
+                      <h1 className="text-2xl font-bold">{settings.companyName}</h1>
+                      <p className="text-sm">{settings.companyAddress}</p>
+                       <p className="text-sm">
                         {settings.companyContact && `Contact: ${settings.companyContact}`}
                         {settings.companyGst && ` | GST: ${settings.companyGst}`}
                       </p>
-                       <p className="text-xs">
+                       <p className="text-sm">
                         {settings.companyEmail && `Email: ${settings.companyEmail}`}
                         {settings.companyWebsite && ` | Web: ${settings.companyWebsite}`}
                       </p>
                     </div>
                 </div>
-                <div className="text-right text-xs flex-shrink-0">
+                <div className="text-right text-sm flex-shrink-0">
                   <p><strong>Record ID:</strong> {data.id}</p>
                   <p><strong>Date:</strong> {data.date}</p>
                   <p><strong>Time:</strong> {data.time}</p>
