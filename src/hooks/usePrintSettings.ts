@@ -27,6 +27,8 @@ export interface PrintSettings {
   showDieselOdo: boolean;
   // New
   authorizedSignatory: string;
+  saleDocumentTitle: string;
+  dieselDocumentTitle: string;
 }
 
 const SETTINGS_KEY = 'raghuvir_infra_print_settings';
@@ -52,6 +54,8 @@ const defaultSettings: PrintSettings = {
   showSaleRoyalty: true,
   showDieselDriver: true,
   showDieselOdo: true,
+  saleDocumentTitle: 'DELIVERY CHALLAN (Original)',
+  dieselDocumentTitle: 'DIESEL SLIP',
 };
 
 export const usePrintSettings = () => {

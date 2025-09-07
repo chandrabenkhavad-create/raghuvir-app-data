@@ -31,29 +31,32 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
     <div className={`bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans ${settings.fontSize}`}>
       <div>
         {settings.showCompanyHeader && (
-          <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2">
-             <div className="flex items-center gap-4">
-                {settings.companyLogoUrl && (
-                    <img src={settings.companyLogoUrl} alt="Company Logo" className="h-12 max-w-24 object-contain" />
-                )}
-                <div>
-                  <h1 className="text-xl font-bold">{settings.companyName}</h1>
-                  <p className="text-xs">{settings.companyAddress}</p>
-                   <p className="text-xs">
-                    {settings.companyContact && `Contact: ${settings.companyContact}`}
-                    {settings.companyGst && ` | GST: ${settings.companyGst}`}
-                  </p>
-                   <p className="text-xs">
-                    {settings.companyEmail && `Email: ${settings.companyEmail}`}
-                    {settings.companyWebsite && ` | Web: ${settings.companyWebsite}`}
-                  </p>
+          <header className="pb-2 border-b-2 border-gray-400 mb-2">
+             <div className="flex justify-between items-start">
+                <div className="flex items-center gap-4">
+                    {settings.companyLogoUrl && (
+                        <img src={settings.companyLogoUrl} alt="Company Logo" className="h-12 max-w-24 object-contain" />
+                    )}
+                    <div>
+                      <h1 className="text-xl font-bold">{settings.companyName}</h1>
+                      <p className="text-xs">{settings.companyAddress}</p>
+                       <p className="text-xs">
+                        {settings.companyContact && `Contact: ${settings.companyContact}`}
+                        {settings.companyGst && ` | GST: ${settings.companyGst}`}
+                      </p>
+                       <p className="text-xs">
+                        {settings.companyEmail && `Email: ${settings.companyEmail}`}
+                        {settings.companyWebsite && ` | Web: ${settings.companyWebsite}`}
+                      </p>
+                    </div>
+                </div>
+                <div className="text-right text-xs flex-shrink-0">
+                  <p><strong>Record ID:</strong> {data.id}</p>
+                  <p><strong>Date:</strong> {data.date}</p>
+                  <p><strong>Time:</strong> {data.time}</p>
                 </div>
             </div>
-            <div className="text-right text-xs flex-shrink-0">
-              <p><strong>Record ID:</strong> {data.id}</p>
-              <p><strong>Date:</strong> {data.date}</p>
-              <p><strong>Time:</strong> {data.time}</p>
-            </div>
+             {settings.dieselDocumentTitle && <h2 className="text-center font-bold text-lg underline mt-2">{settings.dieselDocumentTitle}</h2>}
           </header>
         )}
 

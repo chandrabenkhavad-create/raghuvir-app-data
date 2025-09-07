@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit } from "lucide-react";
+import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import {
@@ -125,6 +125,30 @@ export function PrintLayoutSettings() {
                         </div>
                      </div>
                 </Card>
+                
+                <Separator />
+                
+                 <Card className="bg-muted/30 p-4 space-y-4">
+                    <h3 className="font-semibold mb-2">Document Titles</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="sale-doc-title" className="flex items-center gap-2 text-muted-foreground"><Heading2 className="h-4 w-4" />Sale Record Title</Label>
+                            <Input
+                                id="sale-doc-title"
+                                value={settings.saleDocumentTitle}
+                                onChange={(e) => handleSettingChange('saleDocumentTitle', e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="diesel-doc-title" className="flex items-center gap-2 text-muted-foreground"><Heading2 className="h-4 w-4" />Diesel Record Title</Label>
+                            <Input
+                                id="diesel-doc-title"
+                                value={settings.dieselDocumentTitle}
+                                onChange={(e) => handleSettingChange('dieselDocumentTitle', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                 </Card>
 
                 <Separator />
 
