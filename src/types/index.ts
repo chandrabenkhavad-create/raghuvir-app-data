@@ -43,3 +43,12 @@ export interface User {
   role: 'admin' | 'user';
   created_at: string;
 }
+
+// Master Data Types
+export interface MasterDataItem {
+    id: number;
+    name: string;
+    created_at: string;
+}
+
+export type MasterDataType = 'materials' | 'customers' | 'transporters' | 'pumps' | 'purchase_parties';

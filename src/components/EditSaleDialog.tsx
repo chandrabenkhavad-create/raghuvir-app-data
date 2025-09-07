@@ -9,7 +9,6 @@ import {
   Package, 
   Printer, 
   Save, 
-  Hash, 
   User, 
   Building, 
   Truck, 
@@ -30,8 +29,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import type { SaleEntry } from '@/types';
+import type { SaleEntry, MasterDataItem } from '@/types';
 import { updateSaleEntry } from '@/services/saleService';
+import { getMasterData } from '@/services/masterService';
+import { Combobox } from './ui/combobox';
 
 const saleSchema = z.object({
   id: z.number(),
@@ -62,10 +63,37 @@ interface EditSaleDialogProps {
 
 export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSaleUpdated, saleEntry }) => {
   const { toast } = useToast();
+  const [materials, setMaterials] = useState<MasterDataItem[]>([]);
+  const [customers, setCustomers] = useState<MasterDataItem[]>([]);
+  const [transporters, setTransporters] = useState<MasterDataItem[]>([]);
+  const [purchaseParties, setPurchaseParties] = useState<MasterDataItem[]>([]);
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
   });
+
+  const fetchMasterData = async () => {
+      try {
+          const [matData, custData, tranData, purData] = await Promise.all([
+              getMasterData('materials'),
+              getMasterData('customers'),
+              getMasterData('transporters'),
+              getMasterData('purchase_parties')
+          ]);
+          setMaterials(matData);
+          setCustomers(custData);
+          setTransporters(tranData);
+          setPurchaseParties(purData);
+      } catch (error) {
+          toast({ variant: 'destructive', title: 'Error fetching master data', description: (error as Error).message });
+      }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchMasterData();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (saleEntry) {
@@ -144,7 +172,12 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., ABC Traders" {...field} />
+                            <Combobox
+                                options={purchaseParties.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type party..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -157,7 +190,12 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Main Construction Site" {...field} />
+                            <Combobox
+                                options={customers.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type customer..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -170,7 +208,12 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Cement Bags" {...field} />
+                            <Combobox
+                                options={materials.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type material..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -183,7 +226,12 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., XYZ Logistics" {...field} />
+                            <Combobox
+                                options={transporters.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type transporter..."
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -321,7 +369,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
             </Form>
             <div className="hidden">
                 <div id="printable-edit-content">
-                    <PrintRecord data={form.getValues() as SaleEntry} />
+                    <PrintRecord data={{ ...saleEntry, ...form.getValues() }} />
                 </div>
             </div>
         </DialogContent>

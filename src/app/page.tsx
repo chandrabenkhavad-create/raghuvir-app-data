@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings, Palette, Type } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings, Palette, Type, Database } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -14,6 +14,7 @@ import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
 import { DashboardTab } from '@/components/DashboardTab';
+import { MastersTab } from '@/components/MastersTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -107,7 +108,7 @@ export default function Home() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 max-w-4xl mx-auto">
+          <TabsList className="grid w-full grid-cols-6 max-w-5xl mx-auto">
             <TabsTrigger value="dashboard">
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 Dashboard
@@ -123,6 +124,10 @@ export default function Home() {
             <TabsTrigger value="reports">
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               Reports
+            </TabsTrigger>
+             <TabsTrigger value="masters">
+              <Database className="mr-2 h-4 w-4" />
+              Masters
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="mr-2 h-4 w-4" />
@@ -157,6 +162,10 @@ export default function Home() {
               onPrintDiesel={handlePrintDiesel}
               refreshKey={refreshReports}
             />
+          </TabsContent>
+
+           <TabsContent value="masters" className="mt-6">
+             <MastersTab />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">

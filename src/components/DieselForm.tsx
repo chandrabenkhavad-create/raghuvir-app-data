@@ -26,9 +26,11 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import type { DieselEntry } from '@/types';
+import type { DieselEntry, MasterDataItem } from '@/types';
 import { addDieselEntry } from '@/services/dieselService';
+import { getMasterData } from '@/services/masterService';
 import { RecentDiesel } from './RecentDiesel';
+import { Combobox } from './ui/combobox';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -45,7 +47,6 @@ type DieselFormValues = z.infer<typeof dieselSchema>;
 interface DieselFormProps {
   entryToPrint: DieselEntry | null;
   onPrintDialogChange: () => void;
-  // The props for editing are removed, as this is now handled by the dialog
 }
 
 export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToPrint, onPrintDialogChange }) => {
@@ -53,6 +54,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const [refreshRecent, setRefreshRecent] = useState(false);
   const { toast } = useToast();
+  const [pumps, setPumps] = useState<MasterDataItem[]>([]);
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
@@ -66,6 +68,15 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       odo: 0,
     },
   });
+
+  const fetchPumps = async () => {
+      try {
+          const pumpData = await getMasterData('pumps');
+          setPumps(pumpData);
+      } catch (error) {
+          toast({ variant: 'destructive', title: 'Error fetching pumps', description: (error as Error).message });
+      }
+  }
   
   const resetForm = () => {
     form.reset({
@@ -81,6 +92,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
   
   useEffect(() => {
     resetForm();
+    fetchPumps();
   }, []);
 
 
@@ -124,6 +136,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       setIsPrintDialogOpen(true);
       resetForm();
       setRefreshRecent(prev => !prev);
+      fetchPumps(); // Refresh pumps list in case a new one was added
 
     } catch (error) {
       console.error('Failed to save entry:', error);
@@ -164,7 +177,6 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
   };
 
   const handleEdit = (entry: DieselEntry) => {
-      // This is now handled in ReportsTab and RecentDiesel, which open the dialog
        toast({
         title: "Redirecting...",
         description: "Please use the 'Reports' tab or 'Recent Diesel' list to edit entries.",
@@ -260,7 +272,12 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., City Fuel Station" {...field} />
+                           <Combobox
+                                options={pumps.map(item => ({ value: item.name, label: item.name }))}
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Select or type pump..."
+                            />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
