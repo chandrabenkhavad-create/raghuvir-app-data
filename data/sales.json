@@ -3,7 +3,7 @@
   {
     "dcno": 1756577651405,
     "material": "20mm",
-    "supplier": "RAGHUVIR INFRASTRUCTURE",
+    "purchase": "RAGHUVIR INFRASTRUCTURE",
     "transporter": "RAGHUVIR INFRA",
     "vehicleNumber": "RJ58GA7575",
     "grosswt": 52500,
@@ -20,7 +20,7 @@
   {
     "dcno": 1756577651404,
     "material": "20mm",
-    "supplier": "RAGHUVIR INFRASTRUCTURE",
+    "purchase": "RAGHUVIR INFRASTRUCTURE",
     "transporter": "RAGHUVIR INFRA",
     "vehicleNumber": "RJ58GA7575",
     "grosswt": 58200,
@@ -37,7 +37,7 @@
   {
     "dcno": 1756577651403,
     "material": "20mm",
-    "supplier": "RAGHUVIR INFRASTRUCTURE",
+    "purchase": "RAGHUVIR INFRASTRUCTURE",
     "transporter": "RAGHUVIR INFRA",
     "vehicleNumber": "RJ58GB7575",
     "grosswt": 45200,
@@ -54,7 +54,7 @@
   {
     "dcno": 1756577651402,
     "material": "'kprqw[rpwkr[pp[ikp[k",
-    "supplier": "[k[p",
+    "purchase": "[k[p",
     "transporter": "N/A",
     "grosswt": 58200,
     "tarewt": 2500,
@@ -70,7 +70,7 @@
   },
   {
     "material": "aoiawiorjwoinoino",
-    "supplier": "inionionoinion",
+    "purchase": "inionionoinion",
     "transporter": "N/A",
     "grosswt": 25800,
     "tarewt": 20220,
