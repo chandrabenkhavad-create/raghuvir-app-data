@@ -23,8 +23,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PrintRecord } from "./PrintRecord";
 import { PrintDieselRecord } from "./PrintDieselRecord";
-import sampleSalesData from '../../../data/sales.json';
-import sampleDieselData from '../../../data/diesel.json';
+import sampleSalesData from '../../data/sales.json';
+import sampleDieselData from '../../data/diesel.json';
 import type { SaleEntry, DieselEntry } from "@/types";
 
 export function PrintLayoutSettings() {
@@ -247,7 +247,5 @@ export function PrintLayoutSettings() {
         </AlertDialog>
     );
 }
-
-    
 
     
