@@ -244,10 +244,12 @@ export default function Home() {
                         </CardContent>
                      </Card>
                 </div>
-                 <div className="space-y-8">
-                    <CompanyDetailsSettings />
-                    <PrintLayoutSettings />
-                </div>
+                 {user?.role === 'admin' && (
+                    <div className="space-y-8">
+                        <CompanyDetailsSettings />
+                        <PrintLayoutSettings />
+                    </div>
+                 )}
              </div>
           </TabsContent>
         </Tabs>
