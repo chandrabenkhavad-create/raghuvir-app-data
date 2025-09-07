@@ -292,7 +292,7 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
-                            <Input type="text" value={dcNumber !== null ? String(dcNumber).padStart(3, '0') : '...'} disabled />
+                            <Input type="text" value={dcNumber !== null ? String(dcNumber).padStart(3, '0') : ''} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
