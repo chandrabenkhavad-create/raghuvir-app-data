@@ -91,7 +91,8 @@ export function DashboardTab() {
             if (!acc[sale.supplier]) {
                 acc[sale.supplier] = {};
             }
-            acc[sale.supplier][sale.material] = (acc[sale.supplier][sale.material] || 0) + sale.netwt;
+            const netwt = Number(sale.netwt) || 0;
+            acc[sale.supplier][sale.material] = (acc[sale.supplier][sale.material] || 0) + netwt;
             return acc;
         }, {} as Record<string, Record<string, number>>);
     }, [filteredSalesData]);
@@ -100,7 +101,8 @@ export function DashboardTab() {
         if (!filteredSalesData.length) return {};
         return filteredSalesData.reduce((acc, sale) => {
             const customer = sale.customer || sale.site; // Use customer field, fallback to site
-            acc[customer] = (acc[customer] || 0) + sale.netwt;
+            const netwt = Number(sale.netwt) || 0;
+            acc[customer] = (acc[customer] || 0) + netwt;
             return acc;
         }, {} as Record<string, number>);
     }, [filteredSalesData]);
@@ -116,7 +118,9 @@ export function DashboardTab() {
     const vehicleSaleAmounts = useMemo(() => {
         if (!filteredSalesData.length) return {};
         return filteredSalesData.reduce((acc, sale) => {
-            const amount = (sale.netwt / 1000) * sale.rent;
+            const netwt = Number(sale.netwt) || 0;
+            const rent = Number(sale.rent) || 0;
+            const amount = (netwt / 1000) * rent;
             acc[sale.vehicleNumber] = (acc[sale.vehicleNumber] || 0) + amount;
             return acc;
         }, {} as Record<string, number>);
@@ -125,7 +129,8 @@ export function DashboardTab() {
     const vehicleDieselAmount = useMemo(() => {
         if (!filteredDieselData.length) return {};
         return filteredDieselData.reduce((acc, diesel) => {
-            acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.amount;
+            const amount = Number(diesel.amount) || 0;
+            acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + amount;
             return acc;
         }, {} as Record<string, number>);
     }, [filteredDieselData]);
@@ -133,20 +138,22 @@ export function DashboardTab() {
     const vehicleDieselLiters = useMemo(() => {
         if (!filteredDieselData.length) return {};
         return filteredDieselData.reduce((acc, diesel) => {
-            acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + diesel.liters;
+            const liters = Number(diesel.liters) || 0;
+            acc[diesel.vehicleNumber] = (acc[diesel.vehicleNumber] || 0) + liters;
             return acc;
         }, {} as Record<string, number>);
     }, [filteredDieselData]);
     
     const totalDieselLiters = useMemo(() => {
         if (!filteredDieselData.length) return 0;
-        return filteredDieselData.reduce((total, entry) => total + entry.liters, 0);
+        return filteredDieselData.reduce((total, entry) => total + (Number(entry.liters) || 0), 0);
     }, [filteredDieselData]);
 
     const pumpDieselLiters = useMemo(() => {
         if (!filteredDieselData.length) return {};
         return filteredDieselData.reduce((acc, diesel) => {
-            acc[diesel.pump] = (acc[diesel.pump] || 0) + diesel.liters;
+            const liters = Number(diesel.liters) || 0;
+            acc[diesel.pump] = (acc[diesel.pump] || 0) + liters;
             return acc;
         }, {} as Record<string, number>);
     }, [filteredDieselData]);
@@ -419,5 +426,7 @@ export function DashboardTab() {
         </div>
     );
 }
+
+    
 
     
