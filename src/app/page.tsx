@@ -22,6 +22,7 @@ import type { SaleEntry, DieselEntry } from '@/types';
 import { EditSaleDialog } from '@/components/EditSaleDialog';
 import { EditDieselDialog } from '@/components/EditDieselDialog';
 import { PrintLayoutSettings } from '@/components/PrintLayoutSettings';
+import { CompanyDetailsSettings } from '@/components/CompanyDetailsSettings';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 
@@ -243,7 +244,8 @@ export default function Home() {
                         </CardContent>
                      </Card>
                 </div>
-                <div>
+                 <div className="space-y-8">
+                    <CompanyDetailsSettings />
                     <PrintLayoutSettings />
                 </div>
              </div>
