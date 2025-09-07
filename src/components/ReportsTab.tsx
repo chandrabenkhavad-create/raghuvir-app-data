@@ -35,9 +35,10 @@ interface ReportsTabProps {
   onEditDiesel: (entry: DieselEntry) => void;
   onPrintSale: (entry: SaleEntry) => void;
   onPrintDiesel: (entry: DieselEntry) => void;
+  refreshKey: boolean;
 }
 
-export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiesel }: ReportsTabProps) {
+export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiesel, refreshKey }: ReportsTabProps) {
   const [salesData, setSalesData] = useState<SaleEntry[]>([]);
   const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,7 +67,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
       }
     }
     fetchData();
-  }, []);
+  }, [refreshKey]);
   
   // Helper to parse DD/MM/YYYY into a Date object
   const parseDate = (dateString: string): Date => {

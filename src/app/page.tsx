@@ -17,6 +17,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { SaleEntry, DieselEntry } from '@/types';
+import { EditSaleDialog } from '@/components/EditSaleDialog';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -30,6 +31,8 @@ export default function Home() {
   // State for printing entries
   const [printingSale, setPrintingSale] = useState<SaleEntry | null>(null);
   const [printingDiesel, setPrintingDiesel] = useState<DieselEntry | null>(null);
+  
+  const [refreshReports, setRefreshReports] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -39,8 +42,6 @@ export default function Home() {
   
   const handleEditSale = (entry: SaleEntry) => {
     setEditingSale(entry);
-    setEditingDiesel(null);
-    setActiveTab('sale');
   }
 
   const handleEditDiesel = (entry: DieselEntry) => {
@@ -58,13 +59,18 @@ export default function Home() {
   }
   
   const handleNewSale = () => {
-    setEditingSale(null);
     setActiveTab('sale');
   }
   
   const handleNewDiesel = () => {
     setEditingDiesel(null);
     setActiveTab('diesel');
+  }
+
+  const onSaleUpdated = () => {
+    setEditingSale(null); // Close the dialog
+    // Add a mechanism to refresh reports if needed, e.g., a state variable
+    setRefreshReports(prev => !prev);
   }
 
 
@@ -77,6 +83,7 @@ export default function Home() {
   }
 
   return (
+    <>
     <main className="min-h-screen bg-background font-body text-foreground">
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
         <header className="mb-8 relative">
@@ -130,8 +137,7 @@ export default function Home() {
 
           <TabsContent value="sale" className="mt-6">
             <SaleForm 
-              entryToEdit={editingSale}
-              onEntrySaved={() => setEditingSale(null)}
+              onEntrySaved={() => { /* Can be used to refresh recent list */ }}
               entryToPrint={printingSale}
               onPrintDialogChange={() => setPrintingSale(null)}
             />
@@ -152,6 +158,7 @@ export default function Home() {
               onEditDiesel={handleEditDiesel}
               onPrintSale={handlePrintSale}
               onPrintDiesel={handlePrintDiesel}
+              refreshKey={refreshReports}
             />
           </TabsContent>
 
@@ -180,5 +187,15 @@ export default function Home() {
         </Tabs>
       </div>
     </main>
+
+    {editingSale && (
+        <EditSaleDialog
+            isOpen={!!editingSale}
+            onClose={() => setEditingSale(null)}
+            onSaleUpdated={onSaleUpdated}
+            saleEntry={editingSale}
+        />
+    )}
+    </>
   );
 }
