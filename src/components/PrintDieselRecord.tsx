@@ -24,14 +24,14 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
 
 
   return (
-    <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
+    <div className="bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans text-xs">
       <div>
-        <header className="flex justify-between items-start pb-4 border-b-2 border-gray-400 mb-4">
+        <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2">
           <div>
-            <h1 className="text-3xl font-bold">Raghuvir Infrastructure</h1>
-            <p className="text-base">Diesel Record</p>
+            <h1 className="text-xl font-bold">Raghuvir Infrastructure</h1>
+            <p className="text-xs">Diesel Record</p>
           </div>
-          <div className="text-right">
+          <div className="text-right text-xs">
             <p><strong>Record ID:</strong> {data.id}</p>
             <p><strong>Date:</strong> {data.date}</p>
             <p><strong>Time:</strong> {data.time}</p>
@@ -39,7 +39,7 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
         </header>
 
         <main className="flex justify-between items-start">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3 flex-grow">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow">
             <div className="col-span-2">
                 <strong className="block text-gray-600">Vehicle Number:</strong>
                 <span>{data.vehicleNumber}</span>
@@ -69,13 +69,13 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
               <span>₹{amount.toFixed(2)}</span>
             </div>
           </div>
-           <div className="ml-8 flex-shrink-0">
-             <QRCode value={qrCodeValue} size={128} />
+           <div className="ml-4 flex-shrink-0">
+             <QRCode value={qrCodeValue} size={80} />
           </div>
         </main>
       </div>
 
-      <footer className="text-center text-xs text-gray-500 pt-4 mt-auto">
+      <footer className="text-center text-xs text-gray-500 pt-2 mt-auto">
         This is a computer-generated document.
       </footer>
     </div>

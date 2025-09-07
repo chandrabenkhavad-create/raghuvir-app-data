@@ -17,21 +17,19 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
 
   const qrCodeValue = JSON.stringify(data);
   
-  // Ensure that weight values are numbers before calling toFixed
   const grosswt = Number(data.grosswt || 0);
   const tarewt = Number(data.tarewt || 0);
   const netwt = Number(data.netwt || 0);
-  const royaltyWeight = Number(data.royaltyWeight || 0);
 
   return (
-    <div className="bg-white text-black p-8 w-[210mm] min-h-[148mm] border border-gray-400 flex flex-col justify-between font-sans text-sm">
+    <div className="bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans text-xs">
       <div>
-        <header className="flex justify-between items-start pb-4 border-b-2 border-gray-400 mb-4">
+        <header className="flex justify-between items-start pb-2 border-b-2 border-gray-400 mb-2">
           <div>
-            <h1 className="text-3xl font-bold">Raghuvir Infrastructure</h1>
-            <p className="text-base">Sale Record</p>
+            <h1 className="text-xl font-bold">Raghuvir Infrastructure</h1>
+            <p className="text-xs">Sale Record</p>
           </div>
-          <div className="text-right">
+          <div className="text-right text-xs">
             <p><strong>DC No:</strong> {String(data.dcno).padStart(3, '0')}</p>
             <p><strong>Date:</strong> {data.date}</p>
             <p><strong>Time:</strong> {data.time}</p>
@@ -39,11 +37,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         </header>
 
         <main className="flex justify-between items-start">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-3 flex-grow">
-            <div className="col-span-2">
-              <strong className="block text-gray-600">Supplier:</strong>
-              <span>{data.supplier}</span>
-            </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 flex-grow">
             <div className="col-span-2">
               <strong className="block text-gray-600">Customer:</strong>
               <span>{data.customer || data.site}</span>
@@ -69,8 +63,8 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <span>{data.royaltyPassNumber || 'N/A'}</span>
             </div>
              <div>
-              <strong className="block text-gray-600">Royalty Weight:</strong>
-              <span>{typeof data.royaltyWeight === 'number' ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
+                <strong className="block text-gray-600">Royalty Weight:</strong>
+                <span>{typeof data.royaltyWeight === 'number' && data.royaltyWeight >= 0 ? `${Number(data.royaltyWeight).toFixed(2)} KG` : 'N/A'}</span>
             </div>
             <div>
               <strong className="block text-gray-600">Gross Weight:</strong>
@@ -85,19 +79,19 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <span>{netwt.toFixed(2)} KG</span>
             </div>
             {data.remarks && (
-              <div className="col-span-2 mt-2">
+              <div className="col-span-2 mt-1">
                 <strong className="block text-gray-600">Remarks:</strong>
-                <p className="mt-1 border p-2 rounded-md">{data.remarks}</p>
+                <p className="mt-1 border p-1 rounded-md text-[10px]">{data.remarks}</p>
               </div>
             )}
           </div>
-          <div className="ml-8 flex-shrink-0">
-             <QRCode value={qrCodeValue} size={128} />
+          <div className="ml-4 flex-shrink-0">
+             <QRCode value={qrCodeValue} size={80} />
           </div>
         </main>
       </div>
 
-      <footer className="text-center text-xs text-gray-500 pt-4 mt-auto">
+      <footer className="text-center text-xs text-gray-500 pt-2 mt-auto">
         This is a computer-generated document.
       </footer>
     </div>
