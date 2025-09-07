@@ -116,7 +116,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   };
 
   const salesHeaders = [
-    "id", "dcno", "date", "time", "material", "supplier", "customer",
+    "id", "dcno", "date", "time", "material", "purchase", "customer",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
     "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
   ];
@@ -236,7 +236,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <TableCell>{sale.vehicleNumber}</TableCell>
                       <TableCell>{sale.material}</TableCell>
                       <TableCell>{sale.customer || sale.site}</TableCell>
-                      <TableCell>{sale.netwt.toFixed(2)} KG</TableCell>
+                      <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}>
                             <Printer className="mr-2 h-4 w-4" />
@@ -342,8 +342,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                     <TableRow key={diesel.id}>
                       <TableCell>{diesel.date}</TableCell>
                       <TableCell>{diesel.vehicleNumber}</TableCell>
-                      <TableCell>{diesel.liters.toFixed(2)} L</TableCell>
-                      <TableCell>₹{diesel.amount.toFixed(2)}</TableCell>
+                      <TableCell>{Number(diesel.liters).toFixed(2)} L</TableCell>
+                      <TableCell>₹{Number(diesel.amount).toFixed(2)}</TableCell>
                       <TableCell>{diesel.pump}</TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="outline" size="sm" onClick={() => onPrintDiesel(diesel)}>

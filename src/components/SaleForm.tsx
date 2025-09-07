@@ -38,7 +38,7 @@ import { RecentSales } from './RecentSales';
 const saleSchema = z.object({
   dcno: z.coerce.number(),
   material: z.string().min(1, 'Material is required'),
-  supplier: z.string().min(1, 'Supplier is required'),
+  purchase: z.string().min(1, 'Purchase is required'),
   customer: z.string().min(1, 'Customer is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -72,7 +72,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
     defaultValues: {
       dcno: 0,
       material: '',
-      supplier: '',
+      purchase: '',
       customer: '',
       transporter: '',
       vehicleNumber: '',
@@ -95,7 +95,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       form.reset({
         dcno: newDcNo,
         material: '',
-        supplier: '',
+        purchase: '',
         customer: '',
         transporter: '',
         vehicleNumber: '',
@@ -120,7 +120,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       form.reset({ 
         dcno: 1,
         material: '',
-        supplier: '',
+        purchase: '',
         customer: '',
         transporter: '',
         vehicleNumber: '',
@@ -268,12 +268,12 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                     />
                      <FormField
                       control={form.control}
-                      name="supplier"
+                      name="purchase"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Building /> Supplier</FormLabel>
+                          <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., ABC Suppliers" {...field} />
+                            <Input placeholder="e.g., ABC Traders" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

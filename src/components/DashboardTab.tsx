@@ -85,14 +85,14 @@ export function DashboardTab() {
         }, {} as Record<string, number>);
     }, [filteredSalesData]);
 
-    const supplierMaterials = useMemo(() => {
+    const purchaseMaterials = useMemo(() => {
         if (!filteredSalesData.length) return {};
         return filteredSalesData.reduce((acc, sale) => {
-            if (!acc[sale.supplier]) {
-                acc[sale.supplier] = {};
+            if (!acc[sale.purchase]) {
+                acc[sale.purchase] = {};
             }
             const netwt = Number(sale.netwt) || 0;
-            acc[sale.supplier][sale.material] = (acc[sale.supplier][sale.material] || 0) + netwt;
+            acc[sale.purchase][sale.material] = (acc[sale.purchase][sale.material] || 0) + netwt;
             return acc;
         }, {} as Record<string, Record<string, number>>);
     }, [filteredSalesData]);
@@ -384,13 +384,13 @@ export function DashboardTab() {
                  </Card>
                  <Card className="lg:col-span-4">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Building /> Material Supply by Supplier</CardTitle>
+                        <CardTitle className="flex items-center gap-2"><Building /> Material Purchase by Party</CardTitle>
                     </CardHeader>
                     <CardContent className="overflow-auto max-h-96">
                         <div className="space-y-4">
-                            {Object.entries(supplierMaterials).map(([supplier, materials]) => (
-                                <Card key={supplier} className="bg-muted/50">
-                                    <CardHeader><CardTitle className="text-lg">{supplier}</CardTitle></CardHeader>
+                            {Object.entries(purchaseMaterials).map(([purchase, materials]) => (
+                                <Card key={purchase} className="bg-muted/50">
+                                    <CardHeader><CardTitle className="text-lg">{purchase}</CardTitle></CardHeader>
                                     <CardContent>
                                         <Table>
                                             <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>

@@ -6,7 +6,7 @@ export interface SaleEntry {
   date: string;
   time: string;
   material: string;
-  supplier: string;
+  purchase: string;
   customer: string;
   transporter: string;
   grosswt: number;
