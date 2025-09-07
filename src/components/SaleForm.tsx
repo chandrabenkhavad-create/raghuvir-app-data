@@ -53,7 +53,6 @@ const saleSchema = z.object({
   driver: z.string().min(1, 'Driver is required'),
   royaltyPassNumber: z.string().optional(),
   royaltyWeight: z.coerce.number().optional(),
-  site: z.string().min(1, 'Site is required'),
   remarks: z.string().optional(),
 });
 
@@ -84,7 +83,6 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
       transporter: '',
       vehicleNumber: '',
       driver: '',
-      site: '',
       remarks: '',
       grosswt: 0,
       tarewt: 0,
@@ -109,7 +107,6 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
         transporter: '',
         vehicleNumber: '',
         driver: '',
-        site: '',
         remarks: '',
         grosswt: 0,
         tarewt: 0,
@@ -135,7 +132,6 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
         transporter: '',
         vehicleNumber: '',
         driver: '',
-        site: '',
         remarks: '',
         grosswt: 0,
         tarewt: 0,
@@ -191,7 +187,9 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
     
     try {
       let savedEntry: SaleEntry;
-      const submissionData = {...data, site: data.customer }; // Use customer value for site field
+      // The `site` field is deprecated but the DB table might still have it.
+      // We will save the `customer` value into the `site` field for backward compatibility.
+      const submissionData = { ...data, site: data.customer };
 
       if (editingEntryId) {
         savedEntry = await updateSaleEntry(editingEntryId, submissionData);
