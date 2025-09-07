@@ -91,26 +91,33 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
               <strong className="block text-gray-600">Royalty Pass Number:</strong>
               <span>{data.royaltyPassNumber || 'N/A'}</span>
             </div>)}
-             {settings.showSaleWeightDetails && (<div className={compactPadding}>
-                <strong className="block text-gray-600">Gross Weight:</strong>
-                <span>{grosswt.toFixed(2)} KG</span>
-            </div>)}
-             {settings.showSaleWeightDetails && (<div className={compactPadding}>
-                <strong className="block text-gray-600">Tare Weight:</strong>
-                <span>{tarewt.toFixed(2)} KG</span>
-            </div>)}
-             {settings.showSaleRoyalty && (<div className={compactPadding}>
+            {settings.showSaleRoyalty && (<div className={compactPadding}>
                 <strong className="block text-gray-600">Royalty Weight:</strong>
                 <span>{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
             </div>)}
-            <div className={`font-bold ${compactPadding}`}>
-              <strong className="block text-gray-600">Net Weight:</strong>
-              <span>{netwt.toFixed(2)} KG</span>
-            </div>
-            {settings.showSaleRent && (<div className={compactPadding}>
+             {settings.showSaleRent && (<div className={compactPadding}>
               <strong className="block text-gray-600">Rent:</strong>
               <span>₹{rent.toFixed(2)}</span>
             </div>)}
+
+            {/* This is the new vertical layout for weights */}
+            {settings.showSaleWeightDetails && (
+              <div className="col-span-2 mt-2 space-y-1">
+                 <div>
+                    <strong className="block text-gray-600">Gross Weight:</strong>
+                    <span>{grosswt.toFixed(2)} KG</span>
+                 </div>
+                 <div>
+                    <strong className="block text-gray-600">Tare Weight:</strong>
+                    <span>{tarewt.toFixed(2)} KG</span>
+                 </div>
+                 <div className="font-bold text-base pt-1">
+                    <strong className="block text-gray-600">Net Weight:</strong>
+                    <span>{netwt.toFixed(2)} KG</span>
+                 </div>
+              </div>
+            )}
+           
             {settings.showSaleRemarks && data.remarks && (
               <div className="col-span-2 mt-1">
                 <strong className="block text-gray-600">Remarks:</strong>
