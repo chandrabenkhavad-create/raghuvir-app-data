@@ -3,10 +3,11 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { verifyUser } from '@/services/userService';
+import type { User } from '@/types';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: string | null;
+  user: Omit<User, 'password'> | null;
   login: (user: string, pass: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -17,33 +18,33 @@ const AUTH_KEY = 'raghuvir_infra_auth';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<string | null>(null);
+  const [user, setUser] = useState<Omit<User, 'password'> | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     try {
-      const storedAuth = localStorage.getItem(AUTH_KEY);
+      const storedAuth = sessionStorage.getItem(AUTH_KEY);
       if (storedAuth) {
-        const { authenticated, username } = JSON.parse(storedAuth);
+        const { authenticated, userData } = JSON.parse(storedAuth);
         setIsAuthenticated(authenticated);
-        setUser(username);
+        setUser(userData);
       }
     } catch (error) {
-        console.error("Could not read from local storage", error)
+        console.error("Could not read from session storage", error)
     } finally {
         setLoading(false);
     }
   }, []);
 
   const login = async (username: string, pass: string): Promise<boolean> => {
-    const isValid = await verifyUser(username, pass);
-    if (isValid) {
+    const validUser = await verifyUser(username, pass);
+    if (validUser) {
       setIsAuthenticated(true);
-      setUser(username);
+      setUser(validUser);
       try {
-        localStorage.setItem(AUTH_KEY, JSON.stringify({ authenticated: true, username }));
+        sessionStorage.setItem(AUTH_KEY, JSON.stringify({ authenticated: true, userData: validUser }));
       } catch (error) {
-        console.error("Could not write to local storage", error)
+        console.error("Could not write to session storage", error)
       }
       return true;
     }
@@ -54,9 +55,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     try {
-      localStorage.removeItem(AUTH_KEY);
+      sessionStorage.removeItem(AUTH_KEY);
     } catch (error) {
-      console.error("Could not remove from local storage", error)
+      console.error("Could not remove from session storage", error)
     }
   };
   

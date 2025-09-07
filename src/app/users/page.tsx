@@ -9,11 +9,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { UserPlus, ArrowLeft, Loader2, UserCog, Trash2 } from 'lucide-react';
+import { UserPlus, ArrowLeft, Loader2, UserCog, Trash2, ShieldCheck, Shield } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { addUser, getAllUsers, deleteUser } from '@/services/userService';
 import type { User } from '@/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -34,6 +35,7 @@ import {
 const userSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters long'),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
+  role: z.enum(['admin', 'user'], { required_error: 'You need to select a role.' }),
 });
 
 type UserFormValues = z.infer<typeof userSchema>;
@@ -49,7 +51,7 @@ export default function UsersPage() {
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/login');
-    } else if (user !== 'admin') {
+    } else if (user?.role !== 'admin') {
       toast({
         variant: 'destructive',
         title: 'Access Denied',
@@ -72,7 +74,7 @@ export default function UsersPage() {
   }
 
   useEffect(() => {
-      if (user === 'admin') {
+      if (user?.role === 'admin') {
           fetchUsers();
       }
   }, [user]);
@@ -82,6 +84,7 @@ export default function UsersPage() {
     defaultValues: {
       username: '',
       password: '',
+      role: 'user',
     },
   });
 
@@ -125,7 +128,7 @@ export default function UsersPage() {
   };
 
 
-  if (user !== 'admin') {
+  if (user?.role !== 'admin') {
     return (
       <main className="flex min-h-screen items-center justify-center">
         <p>Redirecting...</p>
@@ -180,6 +183,36 @@ export default function UsersPage() {
                             </FormItem>
                             )}
                         />
+                         <FormField
+                          control={form.control}
+                          name="role"
+                          render={({ field }) => (
+                            <FormItem className="space-y-3">
+                              <FormLabel>User Role</FormLabel>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  defaultValue={field.value}
+                                  className="flex space-x-4"
+                                >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value="user" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal flex items-center gap-2"><Shield /> User</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                    <FormControl>
+                                      <RadioGroupItem value="admin" />
+                                    </FormControl>
+                                    <FormLabel className="font-normal flex items-center gap-2"><ShieldCheck /> Admin</FormLabel>
+                                  </FormItem>
+                                </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <Button type="submit" disabled={form.formState.isSubmitting}>
                             {form.formState.isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4" />}
                             Add User
@@ -204,7 +237,8 @@ export default function UsersPage() {
                                 <TableHeader>
                                     <TableRow>
                                     <TableHead>Username</TableHead>
-                                    <TableHead>Created At</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead>Created</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -212,6 +246,7 @@ export default function UsersPage() {
                                     {users.map((u) => (
                                     <TableRow key={u.id}>
                                         <TableCell>{u.username}</TableCell>
+                                        <TableCell className="capitalize">{u.role}</TableCell>
                                         <TableCell>{new Date(u.created_at).toLocaleDateString()}</TableCell>
                                         <TableCell className="text-right">
                                             {u.username !== 'admin' && (

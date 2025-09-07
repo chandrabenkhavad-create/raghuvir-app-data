@@ -40,13 +40,10 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-       <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-primary font-headline">
+       <div className="text-center mb-14">
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-primary font-headline">
             Raghuvir Infrastructure
           </h1>
-          <p className="text-muted-foreground mt-2 text-lg">
-            Sayla-Sudamda Road,Sudamda.
-          </p>
         </div>
       <Card className="w-full max-w-sm">
         <CardHeader>

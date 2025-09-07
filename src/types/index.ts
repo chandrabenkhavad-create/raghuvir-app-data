@@ -7,13 +7,14 @@ export interface SaleEntry {
   time: string;
   material: string;
   supplier: string;
+  customer: string;
   transporter: string;
   grosswt: number;
   tarewt: number;
   netwt: number;
   rent: number;
   driver: string;
-  site: string;
+  site: string; // This will be deprecated or repurposed. For now, customer field is primary.
   remarks?: string;
   vehicleNumber: string;
   royaltyPassNumber?: string;
@@ -39,5 +40,6 @@ export interface User {
   id: number;
   username: string;
   password?: string;
+  role: 'admin' | 'user';
   created_at: string;
 }

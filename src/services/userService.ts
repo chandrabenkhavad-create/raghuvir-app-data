@@ -9,6 +9,9 @@ async function runQuery<T>(query: (supabase: ReturnType<typeof getSupabase>) => 
     try {
         const supabase = getSupabase();
         // No error thrown here, but supabase can be null if not configured
+        if (!supabase) {
+            return emptyState;
+        }
         const { data, error } = await query(supabase);
 
         if (error) {
@@ -36,11 +39,11 @@ export async function addUser(entry: Omit<User, 'id' | 'created_at'>): Promise<U
         const supabase = getSupabase();
         if (!supabase) throw new Error("Supabase not connected");
         
-        const hashedPassword = await bcrypt.hash(entry.password, 10);
+        const hashedPassword = await bcrypt.hash(entry.password!, 10);
         
         const { data, error } = await supabase
             .from('users')
-            .insert([{ username: entry.username, password: hashedPassword }])
+            .insert([{ username: entry.username, password: hashedPassword, role: entry.role }])
             .select()
             .single();
 
@@ -55,36 +58,62 @@ export async function addUser(entry: Omit<User, 'id' | 'created_at'>): Promise<U
     }
 }
 
-export async function verifyUser(username: string, pass: string): Promise<boolean> {
+export async function verifyUser(username: string, pass: string): Promise<User | null> {
+     let supabase;
      try {
-        getSupabase(); // This will throw if not configured
+        supabase = getSupabase();
      } catch (e) {
          // Supabase is not configured, fall back to default admin user
-         return username === 'admin' && pass === 'admin';
+         console.log("Supabase not configured, falling back to default admin credentials.");
+         if (username === 'admin' && pass === 'admin') {
+            return { id: 0, username: 'admin', role: 'admin', created_at: new Date().toISOString() };
+         }
+         return null;
      }
 
-     const user = await runQuery(supabase => 
-        supabase
-            .from('users')
-            .select('password')
-            .eq('username', username)
-            .single()
-    , null);
+    // This is a workaround for RLS. We can't query the users table directly with anon key
+    // if RLS is enabled. A secure way is to use a postgres function.
+    // However, for simplicity in Studio, we are querying directly.
+    // The user must create a policy to allow anon users to read the 'users' table.
+     const { data: user, error } = await supabase
+        .from('users')
+        .select('id, username, password, role, created_at')
+        .eq('username', username)
+        .single();
+    
+     if (error && error.code !== 'PGRST116') {
+        // PGRST116 means no rows found, which is not a "real" error in this case.
+        console.error("Error fetching user for verification:", error.message);
+        // This could be due to RLS policies.
+        throw new Error(`Could not verify user. Check your RLS policies on the 'users' table. Error: ${error.message}`);
+     }
 
-    if (!user || !user.password) {
-        // For the default admin user if users table is empty or user not found
-        if (username === 'admin' && pass === 'admin') {
-            const users = await getAllUsers();
-            if (users.length === 0) {
-                 // First time login, add admin user
-                await addUser({ username: 'admin', password: 'admin' });
-                return true;
-            }
+    if (user && user.password) {
+        const isMatch = await bcrypt.compare(pass, user.password);
+        if (isMatch) {
+            const { password, ...userWithoutPassword } = user;
+            return userWithoutPassword;
         }
-        return false;
+    }
+
+    // User not found, check for default admin on first run
+    if (username === 'admin' && pass === 'admin') {
+        const { data: allUsers, error: fetchAllError } = await supabase.from('users').select('id').limit(1);
+        if (fetchAllError) {
+             throw new Error(`Could not check for existing users. Check RLS policies. Error: ${fetchAllError.message}`);
+        }
+
+        if (allUsers.length === 0) {
+             console.log("No users found. Creating default admin user.");
+             // This will likely fail if RLS is enabled and no policy allows insertion.
+             // The user needs an RLS policy for this too.
+             const newAdmin = await addUser({ username: 'admin', password: 'admin', role: 'admin' });
+             const { password, ...adminWithoutPassword } = newAdmin;
+             return adminWithoutPassword;
+        }
     }
     
-    return bcrypt.compare(pass, user.password);
+    return null;
 }
 
 
@@ -92,7 +121,7 @@ export async function getAllUsers(): Promise<Omit<User, 'password'>[]> {
   return runQuery(supabase => 
     supabase
         .from('users')
-        .select('id, username, created_at')
+        .select('id, username, role, created_at')
         .order('id', { ascending: false })
   , []);
 }
