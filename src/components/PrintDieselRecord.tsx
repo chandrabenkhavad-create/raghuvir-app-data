@@ -28,7 +28,7 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
   const compactPadding = settings.useCompactLayout ? 'py-0' : 'py-0.5';
 
   return (
-    <div className={`bg-white text-black p-4 w-[220mm] min-h-[110mm] border border-gray-400 flex flex-col justify-between font-sans ${settings.fontSize}`}>
+    <div className={`bg-white text-black p-4 w-[210mm] min-h-[99mm] border border-gray-400 flex flex-col justify-between font-sans ${settings.fontSize}`}>
       <div>
         {settings.showCompanyHeader && (
           <header className="pb-2 border-b-2 border-gray-400 mb-2">
