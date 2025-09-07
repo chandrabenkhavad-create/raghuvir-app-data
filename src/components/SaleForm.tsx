@@ -272,26 +272,6 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
       }
   }
 
-
-  if (dcNumber === null && !entryToEdit) {
-      return (
-          <Card>
-              <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                      <Package /> Sale Entry
-                  </CardTitle>
-                  <CardDescription>Enter the details of the new sale.</CardDescription>
-              </CardHeader>
-              <CardContent className="flex items-center justify-center h-96">
-                   <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        <p className="text-muted-foreground">Loading DC Number...</p>
-                   </div>
-              </CardContent>
-          </Card>
-      )
-  }
-
   return (
     <>
       <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
@@ -314,7 +294,7 @@ export const SaleForm: FC<SaleFormProps> = ({ entryToEdit, onEntrySaved, entryTo
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
-                            <Input type="text" value={String(dcNumber || field.value).padStart(3, '0')} disabled />
+                            <Input type="text" value={dcNumber !== null ? String(dcNumber).padStart(3, '0') : '...'} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
