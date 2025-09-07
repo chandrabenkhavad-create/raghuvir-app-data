@@ -19,6 +19,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import type { SaleEntry, DieselEntry } from '@/types';
 import { EditSaleDialog } from '@/components/EditSaleDialog';
 import { EditDieselDialog } from '@/components/EditDieselDialog';
+import { PrintLayoutSettings } from '@/components/PrintLayoutSettings';
 
 export default function Home() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -155,28 +156,31 @@ export default function Home() {
           </TabsContent>
 
           <TabsContent value="settings" className="mt-6">
-             <Card className="max-w-md mx-auto">
-                <CardHeader>
-                    <CardTitle>Application Settings</CardTitle>
-                    <CardDescription>Manage application-wide settings and user actions.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                     <div className="flex items-center justify-between p-3 border rounded-lg">
-                       <span className="font-medium">Theme</span>
-                       <ThemeToggle />
-                    </div>
-                     {user?.role === 'admin' && (
-                        <Link href="/users" passHref>
-                          <Button asChild variant="outline" className="w-full justify-between p-6">
-                             <a>
-                               Manage Users
-                               <UserCog className="h-5 w-5" />
-                             </a>
-                          </Button>
-                        </Link>
-                      )}
-                </CardContent>
-             </Card>
+             <div className="grid md:grid-cols-2 gap-8">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Application Settings</CardTitle>
+                        <CardDescription>Manage application-wide settings and user actions.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <div className="flex items-center justify-between p-3 border rounded-lg">
+                           <span className="font-medium">Theme</span>
+                           <ThemeToggle />
+                        </div>
+                         {user?.role === 'admin' && (
+                            <Link href="/users" passHref>
+                              <Button asChild variant="outline" className="w-full justify-between p-6">
+                                 <a>
+                                   Manage Users
+                                   <UserCog className="h-5 w-5" />
+                                 </a>
+                              </Button>
+                            </Link>
+                          )}
+                    </CardContent>
+                 </Card>
+                 <PrintLayoutSettings />
+             </div>
           </TabsContent>
         </Tabs>
       </div>
