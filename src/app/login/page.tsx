@@ -44,7 +44,7 @@ export default function LoginPage() {
           Raghuvir Infrastructure
         </h1>
       </div>
-      <div className="w-full max-w-md rounded-2xl bg-white/50 p-8 shadow-2xl backdrop-blur-lg border border-white/30">
+      <div className="w-full max-w-md rounded-2xl bg-white/50 px-8 py-12 shadow-2xl backdrop-blur-lg border border-white/30">
         <div className="flex flex-col items-center text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-white shadow-md">
                 <LogIn className="h-8 w-8 text-primary" />
