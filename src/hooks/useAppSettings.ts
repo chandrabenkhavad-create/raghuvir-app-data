@@ -7,6 +7,7 @@ export interface AppSettings {
   userCanViewDashboard: boolean;
   userCanViewReports: boolean;
   userCanViewSettings: boolean;
+  userCanEditEntries: boolean;
 }
 
 const SETTINGS_KEY = 'raghuvir_infra_app_settings';
@@ -15,6 +16,7 @@ const defaultSettings: AppSettings = {
   userCanViewDashboard: true,
   userCanViewReports: true,
   userCanViewSettings: true,
+  userCanEditEntries: true,
 };
 
 export const useAppSettings = () => {

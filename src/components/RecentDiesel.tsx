@@ -23,6 +23,8 @@ import { getRecentDieselEntries } from "@/services/dieselService";
 import type { DieselEntry } from "@/types";
 import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useAuth } from "@/components/AuthProvider";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 interface RecentDieselProps {
     refreshKey: boolean;
@@ -34,6 +36,8 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
   const [recentDiesel, setRecentDiesel] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { settings } = useAppSettings();
 
   useEffect(() => {
     async function fetchData() {
@@ -50,6 +54,8 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
     }
     fetchData();
   }, [refreshKey]);
+  
+  const canEdit = user?.role === 'admin' || settings.userCanEditEntries;
 
   if (error) {
     return (
@@ -102,10 +108,12 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onEdit(diesel)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                    </Button>
+                    {canEdit && (
+                      <Button variant="outline" size="sm" onClick={() => onEdit(diesel)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

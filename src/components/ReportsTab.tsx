@@ -31,6 +31,8 @@ import { Calendar } from "./ui/calendar";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useAuth } from "@/components/AuthProvider";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 
 interface ReportsTabProps {
@@ -46,6 +48,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { settings } = useAppSettings();
 
   // Filters
   const [salesFromDate, setSalesFromDate] = useState<Date | undefined>();
@@ -208,6 +212,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
       "amount", "driverName", "pump", "odo", "created_at"
   ];
 
+  const canEdit = user?.role === 'admin' || settings.userCanEditEntries;
+
   if (error) {
     return (
       <Alert variant="destructive" className="mt-4">
@@ -335,10 +341,12 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                        </Button>
+                        {canEdit && (
+                          <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -443,10 +451,12 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                        </Button>
+                        {canEdit && (
+                          <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -510,7 +520,9 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                             <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>
                                             <TableCell className="text-right space-x-2">
                                                  <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}><Printer className="mr-2 h-4 w-4" />Print</Button>
-                                                 <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                  {canEdit && (
+                                                    <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                  )}
                                             </TableCell>
                                             </TableRow>
                                         ))}
@@ -551,7 +563,9 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                                 <TableCell>{diesel.pump}</TableCell>
                                                 <TableCell className="text-right space-x-2">
                                                     <Button variant="outline" size="sm" onClick={() => onPrintDiesel(diesel)}><Printer className="mr-2 h-4 w-4" />Print</Button>
-                                                    <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                     {canEdit && (
+                                                        <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                     )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -661,9 +675,3 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     </Tabs>
   );
 }
-
-    
-
-    
-
-    
