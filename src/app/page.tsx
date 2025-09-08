@@ -46,24 +46,28 @@ export default function Home() {
     }
   }, [isAuthenticated, router]);
   
+  const isAdmin = user?.role === 'admin';
+  const showDashboard = isAdmin || appSettings.userCanViewDashboard;
+  const showReports = isAdmin || appSettings.userCanViewReports;
+  const showSettings = isAdmin || appSettings.userCanViewSettings;
+
   useEffect(() => {
-    // If the user is not an admin and their default tab is hidden, switch to a visible tab.
-    if (user?.role !== 'admin' && appSettingsLoaded) {
+    if (appSettingsLoaded) {
       const tabsVisibility = {
-        dashboard: appSettings.userCanViewDashboard,
+        dashboard: showDashboard,
         sale: true,
         diesel: true,
-        reports: appSettings.userCanViewReports,
-        settings: appSettings.userCanViewSettings,
+        reports: showReports,
+        settings: showSettings,
       };
 
+      // If the current active tab is not visible, switch to a default visible one.
       if (!tabsVisibility[activeTab as keyof typeof tabsVisibility]) {
-          // Default to the first available tab for the user
-          if (appSettings.userCanViewDashboard) setActiveTab('dashboard');
-          else setActiveTab('sale'); 
+          if (showDashboard) setActiveTab('dashboard');
+          else setActiveTab('sale'); // 'sale' is always visible
       }
     }
-  }, [user, appSettings, appSettingsLoaded, activeTab]);
+  }, [appSettingsLoaded, showDashboard, showReports, showSettings, activeTab]);
 
 
   const handleEditSale = (entry: SaleEntry) => {
@@ -100,11 +104,6 @@ export default function Home() {
       </main>
     );
   }
-  
-  const isAdmin = user?.role === 'admin';
-  const showDashboard = isAdmin || appSettings.userCanViewDashboard;
-  const showReports = isAdmin || appSettings.userCanViewReports;
-  const showSettings = isAdmin || appSettings.userCanViewSettings;
 
   return (
     <>
@@ -140,9 +139,9 @@ export default function Home() {
             {showSettings && <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Settings</TabsTrigger>}
           </TabsList>
           
-          <TabsContent value="dashboard" className="mt-6">
+          {showDashboard && <TabsContent value="dashboard" className="mt-6">
             <DashboardTab />
-          </TabsContent>
+          </TabsContent>}
 
           <TabsContent value="sale" className="mt-6">
             <SaleForm 
@@ -161,7 +160,7 @@ export default function Home() {
             />
           </TabsContent>
 
-          <TabsContent value="reports" className="mt-6">
+          {showReports && <TabsContent value="reports" className="mt-6">
             <ReportsTab 
               onEditSale={handleEditSale}
               onEditDiesel={handleEditDiesel}
@@ -169,9 +168,9 @@ export default function Home() {
               onPrintDiesel={handlePrintDiesel}
               refreshKey={refreshReports}
             />
-          </TabsContent>
+          </TabsContent>}
 
-          <TabsContent value="settings" className="mt-6">
+          {showSettings && <TabsContent value="settings" className="mt-6">
              <div className="space-y-8">
                  <Card>
                     <CardHeader>
@@ -203,7 +202,7 @@ export default function Home() {
                     </div>
                  )}
              </div>
-          </TabsContent>
+          </TabsContent>}
         </Tabs>
       </div>
     </main>
