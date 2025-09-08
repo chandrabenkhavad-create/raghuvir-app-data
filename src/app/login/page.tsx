@@ -38,9 +38,11 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-200 via-sky-300 to-white p-4">
-      <div className="absolute top-8 left-8 text-2xl font-bold text-gray-800">
-        Raghuvir Infrastructure
+    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-br from-blue-200 via-sky-300 to-white p-4">
+      <div className="text-center mb-10">
+        <h1 className="text-5xl font-bold text-gray-800 font-headline tracking-wider">
+          Raghuvir Infrastructure
+        </h1>
       </div>
       <div className="w-full max-w-md rounded-2xl bg-white/50 p-8 shadow-2xl backdrop-blur-lg border border-white/30">
         <div className="flex flex-col items-center text-center">
