@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import QRCode from "react-qr-code";
 import type { DieselEntry } from '@/types';
 import { usePrintSettings } from '@/hooks/usePrintSettings';
+import { cn } from '@/lib/utils';
 
 interface PrintDieselRecordProps {
   data: DieselEntry | null;
@@ -27,8 +28,18 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
   const compactClass = settings.useCompactLayout ? 'gap-y-0.5' : 'gap-y-1.5';
   const compactPadding = settings.useCompactLayout ? 'py-0' : 'py-0.5';
 
+  const pageSizeClasses = {
+      DL: 'w-[210mm] min-h-[99mm]',
+      A4_portrait: 'w-[210mm] min-h-[297mm]',
+      A4_landscape: 'w-[297mm] min-h-[210mm]',
+  };
+
   return (
-    <div className={`bg-white text-black p-4 w-[210mm] min-h-[99mm] border border-gray-400 flex flex-col justify-between font-sans ${settings.fontSize}`}>
+    <div className={cn(
+        'bg-white text-black p-4 border border-gray-400 flex flex-col justify-between font-sans',
+        pageSizeClasses[settings.pageSize],
+        settings.fontSize
+    )}>
       <div>
         {settings.showCompanyHeader && (
           <header className="pb-2 border-b-2 border-gray-400 mb-2">

@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2, Weight, Car, Eye } from "lucide-react";
+import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2, Weight, Car, Eye, Sheet } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import {
@@ -87,6 +87,25 @@ export function PrintLayoutSettings() {
 
                     <Card className="bg-muted/30 p-4 space-y-2">
                         <h3 className="font-semibold mb-2">General Layout</h3>
+                        <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <Sheet className="h-5 w-5 text-muted-foreground" />
+                                <Label htmlFor="page-size">Page Size</Label>
+                            </div>
+                            <Select
+                                value={settings.pageSize}
+                                onValueChange={(value: PrintSettings['pageSize']) => handleSettingChange('pageSize', value)}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select page size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="DL">DL (210mm x 99mm)</SelectItem>
+                                    <SelectItem value="A4_portrait">A4 Portrait</SelectItem>
+                                    <SelectItem value="A4_landscape">A4 Landscape</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <div className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex items-center gap-3">
                                 <Brush className="h-5 w-5 text-muted-foreground" />

@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export interface PrintSettings {
+  pageSize: 'DL' | 'A4_portrait' | 'A4_landscape';
   fontSize: 'text-sm' | 'text-base' | 'text-lg';
   showQRCode: boolean;
   showCompanyHeader: boolean;
@@ -37,6 +38,7 @@ export interface PrintSettings {
 const SETTINGS_KEY = 'raghuvir_infra_print_settings';
 
 const defaultSettings: PrintSettings = {
+  pageSize: 'DL',
   fontSize: 'text-base',
   showQRCode: true,
   showCompanyHeader: true,
