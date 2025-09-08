@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-br from-blue-200 via-sky-300 to-white p-4">
       <div className="text-center mb-10">
-        <h1 className="text-5xl font-bold text-gray-800 font-headline tracking-wider">
+        <h1 className="text-5xl font-bold font-headline tracking-wider bg-gradient-to-r from-[#5761B2] to-[#AFC5A8] bg-clip-text text-transparent">
           Raghuvir Infrastructure
         </h1>
       </div>
