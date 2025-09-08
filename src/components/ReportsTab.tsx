@@ -91,6 +91,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   }, [salesData, dieselData]);
 
   const filteredSalesData = useMemo(() => {
+    const searchTerm = salesSearchTerm.toLowerCase().trim();
     return salesData.filter(sale => {
       // Date filtering
       if (salesFromDate || salesToDate) {
@@ -101,7 +102,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
         if (end && saleDate > end) return false;
       }
       // DC No search
-      if (salesSearchTerm && !String(sale.dcno).includes(salesSearchTerm)) {
+      if (searchTerm && !String(sale.dcno).toLowerCase().includes(searchTerm)) {
         return false;
       }
       return true;
@@ -660,6 +661,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     </Tabs>
   );
 }
+
+    
 
     
 
