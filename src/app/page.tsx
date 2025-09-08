@@ -172,17 +172,17 @@ export default function Home() {
 
           {showSettings && <TabsContent value="settings" className="mt-6">
              <div className="space-y-8">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Application Settings</CardTitle>
-                        <CardDescription>Manage application-wide settings and user actions.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                         <div className="flex items-center justify-between p-3 border rounded-lg">
-                           <span className="font-medium">Dark/Light Mode</span>
-                           <ThemeToggle />
-                        </div>
-                         {isAdmin && (
+                 {isAdmin && (
+                     <Card>
+                        <CardHeader>
+                            <CardTitle>Application Settings</CardTitle>
+                            <CardDescription>Manage application-wide settings and user actions.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             <div className="flex items-center justify-between p-3 border rounded-lg">
+                               <span className="font-medium">Dark/Light Mode</span>
+                               <ThemeToggle />
+                            </div>
                             <Link href="/users" passHref>
                               <Button asChild variant="outline" className="w-full justify-start p-6 text-left">
                                  <div className="flex justify-between items-center w-full">
@@ -191,16 +191,14 @@ export default function Home() {
                                  </div>
                               </Button>
                             </Link>
-                          )}
-                    </CardContent>
-                 </Card>
-                 {isAdmin && (
-                    <div className="space-y-8">
-                        <UserPermissionsSettings />
-                        <CompanyDetailsSettings />
-                        <PrintLayoutSettings />
-                    </div>
+                        </CardContent>
+                     </Card>
                  )}
+                 
+                 {isAdmin && <UserPermissionsSettings />}
+                 
+                 <CompanyDetailsSettings />
+                 <PrintLayoutSettings />
              </div>
           </TabsContent>}
         </Tabs>
