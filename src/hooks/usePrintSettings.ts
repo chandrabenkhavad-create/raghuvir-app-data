@@ -39,7 +39,7 @@ const SETTINGS_KEY = 'raghuvir_infra_print_settings';
 
 const defaultSettings: PrintSettings = {
   pageSize: 'DL',
-  fontSize: 'text-base',
+  fontSize: 'text-sm',
   showQRCode: true,
   showCompanyHeader: true,
   showFooter: true,
