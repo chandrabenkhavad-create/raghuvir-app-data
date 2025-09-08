@@ -202,19 +202,18 @@ export function DashboardTab() {
     return (
         <div className="space-y-6">
             <div className="flex justify-end">
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>Filter Dashboard</CardTitle>
-                        <CardDescription>Select a date range to filter all dashboard metrics.</CardDescription>
+                <Card className="max-w-md">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-lg">Filter Dashboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                    "w-full sm:w-[240px] justify-start text-left font-normal",
+                                    "w-full sm:w-auto flex-1 justify-start text-left font-normal",
                                     !fromDate && "text-muted-foreground"
                                     )}
                                 >
@@ -236,7 +235,7 @@ export function DashboardTab() {
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                    "w-full sm:w-[240px] justify-start text-left font-normal",
+                                    "w-full sm:w-auto flex-1 justify-start text-left font-normal",
                                     !toDate && "text-muted-foreground"
                                     )}
                                 >
@@ -434,6 +433,9 @@ export function DashboardTab() {
 
     
 
+
+
+    
 
 
     
