@@ -163,7 +163,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
              {suggestionLists.driver.map(d => <option key={d} value={d} />)}
            </datalist>
           <DialogHeader>
-            <DialogTitle>Edit Sale Entry (DC No: {String(saleEntry?.dcno).padStart(3, '0')})</DialogTitle>
+            <DialogTitle>Edit Sale Entry (DC No: {saleEntry?.dcno})</DialogTitle>
             <DialogDescription>
               Update the details of this sale entry. Click Update to save changes.
             </DialogDescription>

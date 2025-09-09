@@ -287,7 +287,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
-                            <Input type="text" value={dcNumber !== null ? String(dcNumber).padStart(3, '0') : 'Loading...'} disabled />
+                            <Input type="text" value={dcNumber !== null ? String(dcNumber) : 'Loading...'} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

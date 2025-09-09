@@ -63,7 +63,7 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
                     </div>
                 </div>
                 <div className="text-right text-sm flex-shrink-0">
-                  <p><strong>DC No:</strong> {String(data.dcno).padStart(3, '0')}</p>
+                  <p><strong>DC No:</strong> {data.dcno}</p>
                   <p><strong>Date:</strong> {data.date}</p>
                   <p><strong>Time:</strong> {data.time}</p>
                 </div>

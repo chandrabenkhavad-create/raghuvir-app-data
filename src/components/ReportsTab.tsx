@@ -330,7 +330,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 <TableBody>
                   {filteredSalesData.map((sale) => (
                     <TableRow key={sale.id}>
-                      <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                      <TableCell>{sale.dcno}</TableCell>
                       <TableCell>{sale.date}</TableCell>
                       <TableCell>{sale.vehicleNumber}</TableCell>
                       <TableCell>{sale.material}</TableCell>
@@ -514,7 +514,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                         <TableBody>
                                         {vehicleFilteredSales.map((sale) => (
                                             <TableRow key={sale.id}>
-                                            <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                                            <TableCell>{sale.dcno}</TableCell>
                                             <TableCell>{sale.date}</TableCell>
                                             <TableCell>{sale.material}</TableCell>
                                             <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>

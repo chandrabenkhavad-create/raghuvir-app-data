@@ -98,7 +98,7 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
             <TableBody>
               {recentSales.map((sale) => (
                 <TableRow key={sale.id}>
-                  <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                  <TableCell>{sale.dcno}</TableCell>
                   <TableCell>{sale.date}</TableCell>
                   <TableCell>{sale.vehicleNumber}</TableCell>
                   <TableCell>{sale.material}</TableCell>
