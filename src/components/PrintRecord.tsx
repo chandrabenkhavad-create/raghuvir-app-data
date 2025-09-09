@@ -76,12 +76,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
            <div className={`grid grid-cols-2 gap-x-6 flex-grow text-sm ${compactClass}`}>
              {/* Left Column */}
              <div className={`space-y-1 ${compactClass}`}>
-                {settings.showSalePurchase && (
-                  <div className={compactPadding}>
-                      <strong className="block text-gray-600">Purchase:</strong>
-                      <span className="text-lg">{data.purchase}</span>
-                  </div>
-                )}
                  <div className={compactPadding}>
                     <strong className="block text-gray-600">Customer:</strong>
                     <span className="text-lg">{data.customer || data.site}</span>
@@ -107,12 +101,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
                         <span className="text-lg">{netwt.toFixed(2)} KG</span>
                      </div>
                   </div>
-                )}
-                 {settings.showSaleRent && (
-                    <div className={`${compactPadding} mt-1`}>
-                        <strong className="block text-gray-600">Rent:</strong>
-                        <span>₹{rent.toFixed(2)}</span>
-                    </div>
                 )}
              </div>
              

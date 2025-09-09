@@ -18,12 +18,10 @@ export interface PrintSettings {
   companyWebsite: string;
   useCompactLayout: boolean;
   // Sale specific
-  showSalePurchase: boolean;
   showSaleTransporter: boolean;
   showSaleDriver: boolean;
   showSaleVehicleNumber: boolean;
   showSaleWeightDetails: boolean;
-  showSaleRent: boolean;
   showSaleRemarks: boolean;
   showSaleRoyalty: boolean;
   // Diesel specific
@@ -52,12 +50,10 @@ const defaultSettings: PrintSettings = {
   companyWebsite: '',
   authorizedSignatory: 'For Raghuvir Infrastructure',
   useCompactLayout: false,
-  showSalePurchase: true,
   showSaleTransporter: true,
   showSaleDriver: true,
   showSaleVehicleNumber: true,
   showSaleWeightDetails: true,
-  showSaleRent: true,
   showSaleRemarks: true,
   showSaleRoyalty: true,
   showDieselDriver: true,
