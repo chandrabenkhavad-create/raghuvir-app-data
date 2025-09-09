@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 
 export interface PrintSettings {
   pageSize: 'DL' | 'A4_portrait' | 'A4_landscape';
@@ -17,23 +18,16 @@ export interface PrintSettings {
   companyEmail: string;
   companyWebsite: string;
   useCompactLayout: boolean;
-  // Sale specific
-  showSaleTransporter: boolean;
-  showSaleDriver: boolean;
   showSaleVehicleNumber: boolean;
   showSaleWeightDetails: boolean;
   showSaleRemarks: boolean;
   showSaleRoyalty: boolean;
-  // Diesel specific
   showDieselDriver: boolean;
   showDieselOdo: boolean;
-  // New
   authorizedSignatory: string;
   saleDocumentTitle: string;
   dieselDocumentTitle: string;
 }
-
-const SETTINGS_KEY = 'raghuvir_infra_print_settings';
 
 const defaultSettings: PrintSettings = {
   pageSize: 'DL',
@@ -50,8 +44,6 @@ const defaultSettings: PrintSettings = {
   companyWebsite: '',
   authorizedSignatory: 'For Raghuvir Infrastructure',
   useCompactLayout: false,
-  showSaleTransporter: true,
-  showSaleDriver: true,
   showSaleVehicleNumber: true,
   showSaleWeightDetails: true,
   showSaleRemarks: true,
@@ -63,45 +55,34 @@ const defaultSettings: PrintSettings = {
 };
 
 export const usePrintSettings = () => {
+  const { user, updateUserSettingsInContext } = useAuth();
   const [settings, setSettings] = useState<PrintSettings>(defaultSettings);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const storedSettings = localStorage.getItem(SETTINGS_KEY);
-      if (storedSettings) {
-        // Merge stored settings with defaults to ensure all keys are present
-        setSettings(prev => ({ ...defaultSettings, ...JSON.parse(storedSettings) }));
-      }
-    } catch (error) {
-      console.error("Could not read print settings from localStorage", error);
-      // Fallback to default settings
-      setSettings(defaultSettings);
-    } finally {
+    if (user) {
+        const userSettings = user.settings || {};
+        setSettings({ ...defaultSettings, ...userSettings });
         setIsLoaded(true);
+    } else if (user === null) {
+        // Handle logged out state
+        setIsLoaded(true);
+        setSettings(defaultSettings);
     }
-  }, []);
+    // if user is undefined, we are still loading, do nothing
+  }, [user]);
 
   const updateSettings = useCallback((newSettings: Partial<PrintSettings>) => {
-    setSettings(prevSettings => {
-      const updated = { ...prevSettings, ...newSettings };
-      try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
-      } catch (error) {
-         console.error("Could not save print settings to localStorage", error);
-      }
-      return updated;
-    });
-  }, []);
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
+    updateUserSettingsInContext(updated);
+  }, [settings, updateUserSettingsInContext]);
   
   const resetSettings = useCallback(() => {
-    try {
-        localStorage.removeItem(SETTINGS_KEY);
-        setSettings(defaultSettings);
-    } catch (error) {
-        console.error("Could not remove print settings from localStorage", error);
-    }
-  }, []);
+    const newSettings = { ...settings, ...defaultSettings };
+    setSettings(defaultSettings);
+    updateUserSettingsInContext(newSettings);
+  }, [settings, updateUserSettingsInContext]);
 
   return { settings, updateSettings, isLoaded, resetSettings };
 };

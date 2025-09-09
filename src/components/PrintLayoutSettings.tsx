@@ -7,8 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2, Weight, Car, Eye, Sheet } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { Brush, QrCode, Pilcrow, Milestone, Eye, Sheet, Heading2, Weight, Car, Ticket, FileText, Gauge, User, Minimize2, Fuel, PackageSearch, RotateCw } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -52,7 +51,7 @@ export function PrintLayoutSettings() {
                     <div className="flex justify-between items-center">
                         <div>
                             <CardTitle>Print Layout Settings</CardTitle>
-                            <CardDescription>Customize the layout for all printed records.</CardDescription>
+                            <CardDescription>Customize the layout for all printed records. These settings are saved to your user account.</CardDescription>
                         </div>
                         <AlertDialogTrigger asChild>
                             <Button variant="outline">
@@ -178,14 +177,6 @@ export function PrintLayoutSettings() {
                         <Card className="bg-muted/30 p-4 space-y-2">
                             <h3 className="font-semibold mb-2 flex items-center gap-2"><PackageSearch /> Sale Print Fields</h3>
                             <div className="flex items-center justify-between p-2 border rounded-lg">
-                                <Label htmlFor="show-sale-transporter" className="flex items-center gap-2"><Truck className="h-4 w-4" />Transporter</Label>
-                                <Switch id="show-sale-transporter" checked={settings.showSaleTransporter} onCheckedChange={(c) => handleSettingChange('showSaleTransporter', c)} />
-                            </div>
-                            <div className="flex items-center justify-between p-2 border rounded-lg">
-                                <Label htmlFor="show-sale-driver" className="flex items-center gap-2"><User className="h-4 w-4" />Driver</Label>
-                                <Switch id="show-sale-driver" checked={settings.showSaleDriver} onCheckedChange={(c) => handleSettingChange('showSaleDriver', c)} />
-                            </div>
-                            <div className="flex items-center justify-between p-2 border rounded-lg">
                                 <Label htmlFor="show-sale-vehicle" className="flex items-center gap-2"><Car className="h-4 w-4" />Vehicle Number</Label>
                                 <Switch id="show-sale-vehicle" checked={settings.showSaleVehicleNumber} onCheckedChange={(c) => handleSettingChange('showSaleVehicleNumber', c)} />
                             </div>
@@ -247,7 +238,7 @@ export function PrintLayoutSettings() {
             <AlertDialogTitle>Reset all print settings?</AlertDialogTitle>
             <AlertDialogDescription>
                 This action cannot be undone. All your custom print layout settings
-                will be reset to their default values.
+                will be reset to their default values and saved to your account.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

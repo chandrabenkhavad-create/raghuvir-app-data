@@ -3,7 +3,9 @@
 
 import { getSupabase } from '@/lib/supabaseClient';
 import bcrypt from 'bcryptjs';
-import type { User } from '@/types';
+import type { User, AppSettings, PrintSettings } from '@/types';
+
+type UserSettings = AppSettings & PrintSettings;
 
 // This generic query runner handles Supabase queries, including connection errors and non-existent tables.
 async function runQuery<T>(
@@ -83,7 +85,7 @@ export async function verifyUser(username: string, pass: string): Promise<User |
     // The user must create a policy to allow anon users to read the 'users' table.
      const { data: user, error } = await supabase
         .from('users')
-        .select('id, username, password, role, created_at')
+        .select('id, username, password, role, created_at, settings')
         .eq('username', username)
         .single();
     
@@ -120,6 +122,24 @@ export async function verifyUser(username: string, pass: string): Promise<User |
     }
     
     return null;
+}
+
+export async function updateUserSettings(userId: number, settings: UserSettings): Promise<User> {
+    try {
+        const supabase = getSupabase();
+        if (!supabase) throw new Error("Supabase not connected");
+        const { data, error } = await supabase
+            .from('users')
+            .update({ settings })
+            .eq('id', userId)
+            .select()
+            .single();
+        if (error) throw error;
+        return data;
+    } catch (error: any) {
+        console.error(`Failed to update settings for user ${userId}:`, error);
+        throw new Error(`Failed to update user settings: ${error.message}`);
+    }
 }
 
 

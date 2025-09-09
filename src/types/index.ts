@@ -12,7 +12,6 @@ export interface SaleEntry {
   grosswt: number;
   tarewt: number;
   netwt: number;
-  rent: number;
   driver: string;
   site: string; // This will be deprecated or repurposed. For now, customer field is primary.
   remarks?: string;
@@ -36,10 +35,44 @@ export interface DieselEntry {
   created_at: string;
 }
 
+export interface AppSettings {
+  userCanViewDashboard: boolean;
+  userCanViewReports: boolean;
+  userCanViewSettings: boolean;
+  userCanEditEntries: boolean;
+}
+
+export interface PrintSettings {
+  pageSize: 'DL' | 'A4_portrait' | 'A4_landscape';
+  fontSize: 'text-sm' | 'text-base' | 'text-lg';
+  showQRCode: boolean;
+  showCompanyHeader: boolean;
+  showFooter: boolean;
+  companyName: string;
+  companyAddress: string;
+  companyContact: string;
+  companyLogoUrl: string;
+  companyGst: string;
+  companyEmail: string;
+  companyWebsite: string;
+  useCompactLayout: boolean;
+  showSaleVehicleNumber: boolean;
+  showSaleWeightDetails: boolean;
+  showSaleRemarks: boolean;
+  showSaleRoyalty: boolean;
+  showDieselDriver: boolean;
+  showDieselOdo: boolean;
+  authorizedSignatory: string;
+  saleDocumentTitle: string;
+  dieselDocumentTitle: string;
+}
+
+
 export interface User {
   id: number;
   username: string;
   password?: string;
   role: 'admin' | 'user';
   created_at: string;
+  settings?: AppSettings & PrintSettings;
 }

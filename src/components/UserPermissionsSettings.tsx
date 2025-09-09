@@ -33,7 +33,7 @@ export function UserPermissionsSettings() {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
-                <CardDescription>Control what users with the 'user' role can see and do. Admins always have full access.</CardDescription>
+                <CardDescription>Control what users with the 'user' role can see and do. These settings are saved per user account.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
