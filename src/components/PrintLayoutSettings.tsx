@@ -234,13 +234,13 @@ export function PrintLayoutSettings() {
                     <div className="space-y-8">
                         <div>
                              <h3 className="font-semibold mb-4 text-center">Sale Record Preview</h3>
-                             <div className="scale-[0.45] mx-auto">
+                             <div className="scale-[0.4] mx-auto">
                                 <PrintRecord data={sampleSale} />
                              </div>
                         </div>
                          <div>
                              <h3 className="font-semibold mb-4 text-center">Diesel Record Preview</h3>
-                              <div className="scale-[0.45] mx-auto">
+                              <div className="scale-[0.4] mx-auto">
                                 <PrintDieselRecord data={sampleDiesel} />
                              </div>
                         </div>
