@@ -39,12 +39,12 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-gradient-to-br from-blue-200 via-sky-300 to-white p-4">
-      <div className="text-center mb-16">
-        <h1 className="text-6xl font-bold font-headline tracking-wider bg-gradient-to-r from-[#4C1A57] to-[#753a80] bg-clip-text text-transparent py-2">
+      <div className="text-center mb-8 sm:mb-16">
+        <h1 className="text-4xl sm:text-6xl font-bold font-headline tracking-wider bg-gradient-to-r from-[#4C1A57] to-[#753a80] bg-clip-text text-transparent py-2">
           Raghuvir Infrastructure
         </h1>
       </div>
-      <div className="w-full max-w-md rounded-2xl bg-white/50 px-8 py-12 shadow-2xl backdrop-blur-lg border border-white/30">
+      <div className="w-full max-w-md rounded-2xl bg-white/50 px-6 sm:px-8 py-12 shadow-2xl backdrop-blur-lg border border-white/30">
         <div className="flex flex-col items-center text-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-white shadow-md">
                 <LogIn className="h-8 w-8 text-primary" />
@@ -57,7 +57,7 @@ export default function LoginPage() {
             </p>
         </div>
 
-        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="mt-8 space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }} className="mt-10 space-y-6">
             <div className="space-y-4">
                 <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />

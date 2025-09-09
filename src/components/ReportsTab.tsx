@@ -229,7 +229,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
 
   return (
     <Tabs defaultValue="sales">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
         <TabsTrigger value="sales">Sales Report</TabsTrigger>
         <TabsTrigger value="diesel">Diesel Report</TabsTrigger>
         <TabsTrigger value="vehicle">Vehicle Wise Report</TabsTrigger>
@@ -244,7 +244,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 A complete log of all sales entries.
               </CardDescription>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
                  <div className="relative w-full sm:w-auto">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -259,7 +259,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !salesFromDate && "text-muted-foreground"
                         )}
                       >
@@ -281,7 +281,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !salesToDate && "text-muted-foreground"
                         )}
                       >
@@ -365,13 +365,13 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 A complete log of all diesel entries.
               </CardDescription>
             </div>
-             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
                  <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !dieselFromDate && "text-muted-foreground"
                         )}
                       >
@@ -393,7 +393,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !dieselToDate && "text-muted-foreground"
                         )}
                       >
@@ -586,13 +586,13 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 <CardTitle>Party-wise Purchase Report</CardTitle>
                 <CardDescription>Material purchased from each party.</CardDescription>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
                  <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !purchaseFromDate && "text-muted-foreground"
                         )}
                       >
@@ -614,7 +614,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !purchaseToDate && "text-muted-foreground"
                         )}
                       >

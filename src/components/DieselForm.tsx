@@ -293,7 +293,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
                     )}
                   />
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
                   <DialogTrigger asChild>
                     <Button
