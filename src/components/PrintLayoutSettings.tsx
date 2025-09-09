@@ -240,7 +240,7 @@ export function PrintLayoutSettings() {
                         </div>
                          <div>
                              <h3 className="font-semibold mb-4 text-center">Diesel Record Preview</h3>
-                              <div className="scale-[0.3] mx-auto">
+                              <div className="scale-[0.6] mx-auto">
                                 <PrintDieselRecord data={sampleDiesel} />
                              </div>
                         </div>
