@@ -34,6 +34,7 @@ const dieselSchema = z.object({
   driverName: z.string().min(1, 'Driver name is required'),
   pump: z.string().min(1, 'Pump name is required'),
   odo: z.coerce.number().int().positive('ODO reading must be a positive number'),
+  mileage: z.coerce.number().optional(),
 });
 
 type DieselFormValues = z.infer<typeof dieselSchema>;
@@ -48,6 +49,7 @@ interface EditDieselDialogProps {
 export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, onDieselUpdated, dieselEntry }) => {
   const { toast } = useToast();
   const [allDiesel, setAllDiesel] = useState<DieselEntry[]>([]);
+  const [previousOdoForEdit, setPreviousOdoForEdit] = useState<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -67,18 +69,45 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
   });
 
   useEffect(() => {
-    if (dieselEntry) {
-      form.reset(dieselEntry);
+    if (dieselEntry && isOpen) {
+      form.reset({
+        ...dieselEntry,
+        mileage: dieselEntry.mileage ?? 0,
+      });
+
+      // Find the ODO of the entry just before the one being edited
+      const vehicleEntries = allDiesel
+        .filter(entry => entry.vehicleNumber.toLowerCase() === dieselEntry.vehicleNumber.toLowerCase() && entry.id < dieselEntry.id)
+        .sort((a, b) => b.id - a.id);
+      
+      if (vehicleEntries.length > 0) {
+        setPreviousOdoForEdit(vehicleEntries[0].odo);
+      } else {
+        setPreviousOdoForEdit(null);
+      }
+
     }
-  }, [dieselEntry, form, isOpen]);
+  }, [dieselEntry, form, isOpen, allDiesel]);
 
   const liters = form.watch('liters');
   const rate = form.watch('rate');
+  const currentOdo = form.watch('odo');
 
   useEffect(() => {
     const calculatedAmount = (liters || 0) * (rate || 0);
     form.setValue('amount', parseFloat(calculatedAmount.toFixed(2)));
   }, [liters, rate, form]);
+
+  useEffect(() => {
+    if (previousOdoForEdit !== null && currentOdo > previousOdoForEdit && liters > 0) {
+      const distance = currentOdo - previousOdoForEdit;
+      const mileage = distance / liters;
+      form.setValue('mileage', parseFloat(mileage.toFixed(2)));
+    } else {
+      form.setValue('mileage', 0);
+    }
+  }, [currentOdo, previousOdoForEdit, liters, form]);
+
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     try {
@@ -221,10 +250,23 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                     control={form.control}
                     name="odo"
                     render={({ field }) => (
-                      <FormItem className="md:col-span-2 lg:col-span-1">
+                      <FormItem>
                         <FormLabel className="flex items-center gap-2"><Gauge /> ODO Meter Reading</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="e.g., 125000" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   <FormField
+                    control={form.control}
+                    name="mileage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2"><Gauge /> Mileage (km/L)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} disabled />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

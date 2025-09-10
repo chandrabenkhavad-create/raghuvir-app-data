@@ -33,6 +33,7 @@ export interface DieselEntry {
   driverName: string;
   pump: string;
   odo: number;
+  mileage?: number;
   created_at: string;
 }
 
@@ -46,7 +47,6 @@ export interface AppSettings {
 export interface PrintSettings {
   pageSize: 'DL' | 'A4_portrait' | 'A4_landscape';
   fontSize: 'text-xs' | 'text-sm' | 'text-base' | 'text-lg';
-  showQRCode: boolean;
   showCompanyHeader: boolean;
   showFooter: boolean;
   companyName: string;

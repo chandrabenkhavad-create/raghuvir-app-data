@@ -21,6 +21,7 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
   const rate = Number(data.rate || 0);
   const amount = Number(data.amount || 0);
   const odo = Number(data.odo || 0);
+  const mileage = Number(data.mileage || 0);
 
   const compactClass = settings.useCompactLayout ? 'gap-y-0.5' : 'gap-y-1.5';
   const compactPadding = settings.useCompactLayout ? 'py-0' : 'py-0.5';
@@ -98,6 +99,12 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
               <strong>Total Amount: </strong>
               <span className="text-lg">₹{amount.toFixed(2)}</span>
             </div>
+            {mileage > 0 && (
+                <div className={cn('items-baseline font-bold', compactPadding)}>
+                    <strong>Mileage: </strong>
+                    <span className="text-lg">{mileage.toFixed(2)} km/L</span>
+                </div>
+            )}
           </div>
         </main>
       </div>

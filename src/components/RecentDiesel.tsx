@@ -91,6 +91,7 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Liters</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Mileage</TableHead>
                 <TableHead>Pump</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -102,6 +103,7 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                   <TableCell>{diesel.vehicleNumber}</TableCell>
                   <TableCell>{diesel.liters.toFixed(2)} L</TableCell>
                   <TableCell>₹{diesel.amount.toFixed(2)}</TableCell>
+                  <TableCell>{diesel.mileage ? `${diesel.mileage.toFixed(2)} km/L` : 'N/A'}</TableCell>
                   <TableCell>{diesel.pump}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" onClick={() => onPrint(diesel)}>
