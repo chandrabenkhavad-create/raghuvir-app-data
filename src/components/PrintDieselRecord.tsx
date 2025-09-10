@@ -2,7 +2,6 @@
 "use client";
 
 import type { FC } from 'react';
-import QRCode from "react-qr-code";
 import type { DieselEntry } from '@/types';
 import { usePrintSettings } from '@/hooks/usePrintSettings';
 import { cn } from '@/lib/utils';
@@ -17,8 +16,6 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
   if (!data) {
     return null;
   }
-
-  const qrCodeValue = JSON.stringify(data);
   
   const liters = Number(data.liters || 0);
   const rate = Number(data.rate || 0);
@@ -72,41 +69,36 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-          <div className={`grid grid-cols-2 gap-x-6 ${compactClass} flex-grow text-sm`}>
-            <div className={`col-span-2 ${compactPadding}`}>
-                <strong className="block text-gray-600">Vehicle Number:</strong>
-                <span className="text-lg">{data.vehicleNumber}</span>
+          <div className={`grid grid-cols-2 gap-x-8 ${compactClass} flex-grow text-sm`}>
+            <div className={`col-span-2 flex justify-between items-baseline ${compactPadding}`}>
+                <strong>Vehicle Number:</strong>
+                <span className="text-lg font-semibold">{data.vehicleNumber}</span>
             </div>
-             <div className={`col-span-2 ${compactPadding}`}>
-              <strong className="block text-gray-600">Pump:</strong>
+             <div className={`col-span-2 flex justify-between items-baseline ${compactPadding}`}>
+              <strong>Pump:</strong>
               <span className="text-lg">{data.pump}</span>
             </div>
-            {settings.showDieselDriver && (<div className={compactPadding}>
-              <strong className="block text-gray-600">Driver Name:</strong>
+            {settings.showDieselDriver && (<div className={`flex justify-between items-baseline ${compactPadding}`}>
+              <strong>Driver Name:</strong>
               <span className="text-lg">{data.driverName}</span>
             </div>)}
-             {settings.showDieselOdo && (<div className={compactPadding}>
-              <strong className="block text-gray-600">ODO Reading:</strong>
+             {settings.showDieselOdo && (<div className={`flex justify-between items-baseline ${compactPadding}`}>
+              <strong>ODO Reading:</strong>
               <span className="text-lg">{odo}</span>
             </div>)}
-            <div className={compactPadding}>
-              <strong className="block text-gray-600">Liters:</strong>
+            <div className={`flex justify-between items-baseline ${compactPadding}`}>
+              <strong>Liters:</strong>
               <span className="text-lg">{liters.toFixed(2)} L</span>
             </div>
-            <div className={compactPadding}>
-              <strong className="block text-gray-600">Rate:</strong>
+            <div className={`flex justify-between items-baseline ${compactPadding}`}>
+              <strong>Rate:</strong>
               <span className="text-lg">₹{rate.toFixed(2)} / L</span>
             </div>
-            <div className={`font-bold ${compactPadding}`}>
-              <strong className="block text-gray-600">Total Amount:</strong>
+            <div className={`flex justify-between items-baseline font-bold ${compactPadding}`}>
+              <strong>Total Amount:</strong>
               <span className="text-lg">₹{amount.toFixed(2)}</span>
             </div>
           </div>
-           {settings.showQRCode && (
-            <div className="ml-4 flex-shrink-0">
-               <QRCode value={qrCodeValue} size={80} />
-            </div>
-          )}
         </main>
       </div>
 

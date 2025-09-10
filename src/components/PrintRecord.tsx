@@ -2,7 +2,6 @@
 "use client";
 
 import type { FC } from 'react';
-import QRCode from 'react-qr-code';
 import type { SaleEntry } from '@/types';
 import { usePrintSettings } from '@/hooks/usePrintSettings';
 import { cn } from '@/lib/utils';
@@ -17,8 +16,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   if (!data) {
     return null;
   }
-
-  const qrCodeValue = JSON.stringify(data);
   
   const grosswt = Number(data.grosswt || 0);
   const tarewt = Number(data.tarewt || 0);
@@ -72,33 +69,33 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-           <div className={`grid grid-cols-2 gap-x-6 flex-grow text-sm ${compactClass}`}>
+           <div className={`grid grid-cols-2 gap-x-8 flex-grow text-sm ${compactClass}`}>
              {/* Left Column */}
              <div className={`space-y-1 ${compactClass}`}>
-                 <div className={compactPadding}>
-                    <strong className="block text-gray-600">Purchase Party:</strong>
-                    <span className="text-lg">{data.purchase}</span>
+                 <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <strong>Purchase Party:</strong>
+                    <span className="text-lg font-semibold">{data.purchase}</span>
                 </div>
-                <div className={compactPadding}>
-                    <strong className="block text-gray-600">Customer:</strong>
-                    <span className="text-lg">{data.customer}</span>
+                <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <strong>Customer:</strong>
+                    <span className="text-lg font-semibold">{data.customer}</span>
                 </div>
-                <div className={compactPadding}>
-                    <strong className="block text-gray-600">Site:</strong>
-                    <span className="text-lg">{data.site}</span>
+                <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <strong>Site:</strong>
+                    <span className="text-lg font-semibold">{data.site}</span>
                 </div>
                  {settings.showSaleWeightDetails && (
                   <div className="mt-2 space-y-1">
-                     <div className={compactPadding}>
-                        <strong className="block text-gray-600">Gross Weight:</strong>
+                     <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                        <strong>Gross Weight:</strong>
                         <span className="text-lg">{grosswt.toFixed(2)} KG</span>
                      </div>
-                     <div className={compactPadding}>
-                        <strong className="block text-gray-600">Tare Weight:</strong>
+                     <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                        <strong>Tare Weight:</strong>
                         <span className="text-lg">{tarewt.toFixed(2)} KG</span>
                      </div>
-                     <div className={`font-bold pt-1 ${compactPadding}`}>
-                        <strong className="block text-gray-600">Net Weight:</strong>
+                     <div className={`flex justify-between items-baseline font-bold pt-1 ${compactPadding}`}>
+                        <strong>Net Weight:</strong>
                         <span className="text-lg">{netwt.toFixed(2)} KG</span>
                      </div>
                   </div>
@@ -107,52 +104,47 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
              
              {/* Right Column */}
              <div className={`space-y-1 ${compactClass}`}>
-                <div className={compactPadding}>
-                    <strong className="block text-gray-600">Material:</strong>
-                    <span className="text-lg">{data.material}</span>
+                <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <strong>Material:</strong>
+                    <span className="text-lg font-semibold">{data.material}</span>
                 </div>
-                 <div className={compactPadding}>
-                    <strong className="block text-gray-600">Transporter:</strong>
+                 <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <strong>Transporter:</strong>
                     <span className="text-lg">{data.transporter}</span>
                 </div>
                 {settings.showSaleVehicleNumber && (
-                    <div className={compactPadding}>
-                        <strong className="block text-gray-600">Vehicle Number:</strong>
-                        <span className="text-lg">{data.vehicleNumber}</span>
+                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                        <strong>Vehicle Number:</strong>
+                        <span className="text-lg font-semibold">{data.vehicleNumber}</span>
                     </div>
                 )}
                  {settings.showSaleDriver && (
-                    <div className={compactPadding}>
-                        <strong className="block text-gray-600">Driver:</strong>
+                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                        <strong>Driver:</strong>
                         <span className="text-lg">{data.driver}</span>
                     </div>
                  )}
                  {settings.showSaleRoyalty && (
-                    <div className={compactPadding}>
-                        <strong className="block text-gray-600">Royalty Pass Number:</strong>
+                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                        <strong>Royalty Pass Number:</strong>
                         <span className="text-lg">{data.royaltyPassNumber || 'N/A'}</span>
                     </div>
                 )}
                 {settings.showSaleRoyalty && (
-                    <div className={compactPadding}>
-                        <strong className="block text-gray-600">Royalty Weight:</strong>
+                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                        <strong>Royalty Weight:</strong>
                         <span className="text-lg">{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
                     </div>
                 )}
                 
                 {settings.showSaleRemarks && data.remarks && (
                   <div className="col-span-2 mt-2">
-                    <strong className="block text-gray-600">Remarks:</strong>
+                    <strong>Remarks:</strong>
                     <p className="mt-0.5 border p-1 rounded-md text-xs">{data.remarks}</p>
                   </div>
                 )}
              </div>
           </div>
-          {settings.showQRCode && (
-            <div className="ml-4 flex-shrink-0">
-               <QRCode value={qrCodeValue} size={80} />
-            </div>
-          )}
         </main>
       </div>
 
@@ -165,5 +157,3 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
     </div>
   );
 };
-
-    

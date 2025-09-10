@@ -7,7 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Eye, Sheet, Heading2, Weight, Car, Ticket, FileText, Gauge, User, Minimize2, Fuel, PackageSearch, RotateCw } from "lucide-react";
+import { Brush, Pilcrow, Milestone, Eye, Sheet, Heading2, Weight, Car, Ticket, FileText, Gauge, User, Minimize2, Fuel, PackageSearch, RotateCw } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -124,18 +124,6 @@ export function PrintLayoutSettings() {
                                     <SelectItem value="text-lg">Large</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                                <QrCode className="h-5 w-5 text-muted-foreground" />
-                                <Label htmlFor="show-qr-code">Show QR Code</Label>
-                            </div>
-                            <Switch
-                                id="show-qr-code"
-                                checked={settings.showQRCode}
-                                onCheckedChange={(checked) => handleSettingChange('showQRCode', checked)}
-                            />
                         </div>
 
                         <div className="flex items-center justify-between p-3 border rounded-lg">

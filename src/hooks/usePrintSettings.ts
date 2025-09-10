@@ -33,7 +33,7 @@ export interface PrintSettings {
 const defaultSettings: PrintSettings = {
   pageSize: 'DL',
   fontSize: 'text-xs',
-  showQRCode: true,
+  showQRCode: false,
   showCompanyHeader: true,
   showFooter: true,
   companyName: 'Raghuvir Infrastructure',
