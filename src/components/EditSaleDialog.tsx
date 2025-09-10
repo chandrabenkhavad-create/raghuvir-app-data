@@ -5,6 +5,7 @@ import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format } from 'date-fns';
 import { 
   Package, 
   Printer, 
@@ -20,7 +21,8 @@ import {
   Ticket,
   ScrollText,
   Briefcase,
-  MapPin
+  MapPin,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -32,10 +34,14 @@ import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import type { SaleEntry } from '@/types';
 import { updateSaleEntry, getAllSaleEntries } from '@/services/saleService';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { cn } from '@/lib/utils';
+import { Calendar } from './ui/calendar';
 
 const saleSchema = z.object({
   id: z.number(),
   dcno: z.coerce.number(),
+  date: z.string(),
   material: z.string().min(1, 'Material is required'),
   purchase: z.string().min(1, 'Purchase is required'),
   customer: z.string().min(1, 'Customer is required'),
@@ -60,6 +66,19 @@ interface EditSaleDialogProps {
   onSaleUpdated: () => void;
   saleEntry: SaleEntry;
 }
+
+// Helper to parse DD/MM/YYYY into a Date object
+const parseDate = (dateString: string): Date | undefined => {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return undefined;
+  const [day, month, year] = dateString.split('/').map(Number);
+  const date = new Date(year, month - 1, day);
+  // Check if date is valid
+  if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+    return date;
+  }
+  return undefined;
+}
+
 
 export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSaleUpdated, saleEntry }) => {
   const { toast } = useToast();
@@ -178,6 +197,40 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                    <div className="space-y-4">
                      <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel className="flex items-center gap-2"><CalendarIcon /> Date</FormLabel>
+                                <Popover>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                        "w-full pl-3 text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                        )}
+                                    >
+                                        {field.value || <span>Pick a date</span>}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={parseDate(field.value)}
+                                        onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                     <FormField
                       control={form.control}
                       name="purchase"
                       render={({ field }) => (
@@ -255,6 +308,9 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         </FormItem>
                       )}
                     />
+                  </div>
+                  
+                  <div className="space-y-4">
                      <FormField
                       control={form.control}
                       name="driver"
@@ -268,35 +324,6 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         </FormItem>
                       )}
                     />
-                     <FormField
-                      control={form.control}
-                      name="royaltyPassNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Ticket /> Royalty Pass Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., RP12345" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="royaltyWeight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><ScrollText /> Royalty Weight</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 1000" {...field} step="0.01"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <div className="space-y-4">
                     <div className="space-y-4 rounded-lg border p-4">
                        <FormField
                         control={form.control}
@@ -351,6 +378,32 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                           </FormItem>
                         )}
                       />
+                     <FormField
+                      control={form.control}
+                      name="royaltyPassNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Ticket /> Royalty Pass Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., RP12345" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="royaltyWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><ScrollText /> Royalty Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 1000" {...field} step="0.01"/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                      <FormField
                     control={form.control}
                     name="remarks"
