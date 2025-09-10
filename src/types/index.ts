@@ -8,12 +8,13 @@ export interface SaleEntry {
   material: string;
   purchase: string;
   customer: string;
+  site: string;
   transporter: string;
   grosswt: number;
   tarewt: number;
   netwt: number;
+  rent: number;
   driver: string;
-  site: string; // This will be deprecated or repurposed. For now, customer field is primary.
   remarks?: string;
   vehicleNumber: string;
   royaltyPassNumber?: string;
@@ -60,6 +61,7 @@ export interface PrintSettings {
   showSaleWeightDetails: boolean;
   showSaleRemarks: boolean;
   showSaleRoyalty: boolean;
+  showSaleDriver: boolean;
   showDieselDriver: boolean;
   showDieselOdo: boolean;
   authorizedSignatory: string;
@@ -76,3 +78,5 @@ export interface User {
   created_at: string;
   settings?: AppSettings & PrintSettings;
 }
+
+    

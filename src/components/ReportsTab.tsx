@@ -202,9 +202,9 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   };
 
   const salesHeaders = [
-    "id", "dcno", "date", "time", "material", "purchase", "customer",
+    "id", "dcno", "date", "time", "material", "purchase", "customer", "site",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
-    "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
+    "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
   ];
   
   const dieselHeaders = [
@@ -323,6 +323,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                     <TableHead>Vehicle</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Site</TableHead>
                     <TableHead>Net Weight</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -334,7 +335,8 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <TableCell>{sale.date}</TableCell>
                       <TableCell>{sale.vehicleNumber}</TableCell>
                       <TableCell>{sale.material}</TableCell>
-                      <TableCell>{sale.customer || sale.site}</TableCell>
+                      <TableCell>{sale.customer}</TableCell>
+                      <TableCell>{sale.site}</TableCell>
                       <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}>
@@ -675,3 +677,5 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     </Tabs>
   );
 }
+
+    

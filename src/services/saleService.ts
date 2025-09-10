@@ -135,3 +135,5 @@ export async function getSaleEntryById(id: number): Promise<SaleEntry | null> {
             .single()
     , null);
 }
+
+    

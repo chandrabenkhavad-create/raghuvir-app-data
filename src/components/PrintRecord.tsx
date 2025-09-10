@@ -24,7 +24,6 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
   const tarewt = Number(data.tarewt || 0);
   const netwt = Number(data.netwt || 0);
   const royaltyWeight = Number(data.royaltyWeight);
-  const rent = Number(data.rent || 0);
   
   const compactClass = settings.useCompactLayout ? 'gap-y-0.5' : 'gap-y-1.5';
   const compactPadding = settings.useCompactLayout ? 'py-0' : 'py-0.5';
@@ -77,15 +76,17 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
              {/* Left Column */}
              <div className={`space-y-1 ${compactClass}`}>
                  <div className={compactPadding}>
-                    <strong className="block text-gray-600">Customer:</strong>
-                    <span className="text-lg">{data.customer || data.site}</span>
+                    <strong className="block text-gray-600">Purchase Party:</strong>
+                    <span className="text-lg">{data.purchase}</span>
                 </div>
-                {settings.showSaleTransporter && (
-                    <div className={compactPadding}>
-                        <strong className="block text-gray-600">Transporter:</strong>
-                        <span className="text-lg">{data.transporter}</span>
-                    </div>
-                )}
+                <div className={compactPadding}>
+                    <strong className="block text-gray-600">Customer:</strong>
+                    <span className="text-lg">{data.customer}</span>
+                </div>
+                <div className={compactPadding}>
+                    <strong className="block text-gray-600">Site:</strong>
+                    <span className="text-lg">{data.site}</span>
+                </div>
                  {settings.showSaleWeightDetails && (
                   <div className="mt-2 space-y-1">
                      <div className={compactPadding}>
@@ -109,6 +110,10 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
                 <div className={compactPadding}>
                     <strong className="block text-gray-600">Material:</strong>
                     <span className="text-lg">{data.material}</span>
+                </div>
+                 <div className={compactPadding}>
+                    <strong className="block text-gray-600">Transporter:</strong>
+                    <span className="text-lg">{data.transporter}</span>
                 </div>
                 {settings.showSaleVehicleNumber && (
                     <div className={compactPadding}>
@@ -160,3 +165,5 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
     </div>
   );
 };
+
+    

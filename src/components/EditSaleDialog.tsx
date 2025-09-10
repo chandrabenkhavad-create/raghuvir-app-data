@@ -19,7 +19,8 @@ import {
   IndianRupee,
   Ticket,
   ScrollText,
-  Briefcase
+  Briefcase,
+  MapPin
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ const saleSchema = z.object({
   material: z.string().min(1, 'Material is required'),
   purchase: z.string().min(1, 'Purchase is required'),
   customer: z.string().min(1, 'Customer is required'),
+  site: z.string().min(1, 'Site is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -71,12 +73,13 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
 
   const suggestionLists = useMemo(() => {
     const purchase = [...new Set(allSales.map(s => s.purchase))];
-    const customer = [...new Set(allSales.map(s => s.customer || s.site))];
+    const customer = [...new Set(allSales.map(s => s.customer))];
+    const site = [...new Set(allSales.map(s => s.site))];
     const material = [...new Set(allSales.map(s => s.material))];
     const transporter = [...new Set(allSales.map(s => s.transporter))];
     const vehicleNumber = [...new Set(allSales.map(s => s.vehicleNumber))];
     const driver = [...new Set(allSales.map(s => s.driver))];
-    return { purchase, customer, material, transporter, vehicleNumber, driver };
+    return { purchase, customer, site, material, transporter, vehicleNumber, driver };
   }, [allSales]);
 
 
@@ -88,7 +91,6 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
     if (saleEntry) {
       form.reset({
         ...saleEntry,
-        customer: saleEntry.customer || saleEntry.site,
         royaltyWeight: saleEntry.royaltyWeight ?? 0,
       });
     }
@@ -104,7 +106,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
 
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     try {
-      const submissionData = { ...data, site: data.customer };
+      const submissionData = { ...data };
       await updateSaleEntry(saleEntry.id, submissionData);
       toast({
         title: 'Success!',
@@ -150,6 +152,9 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
            <datalist id="edit-customer-list">
              {suggestionLists.customer.map(c => <option key={c} value={c} />)}
            </datalist>
+           <datalist id="edit-site-list">
+             {suggestionLists.site.map(s => <option key={s} value={s} />)}
+           </datalist>
            <datalist id="edit-material-list">
              {suggestionLists.material.map(m => <option key={m} value={m} />)}
            </datalist>
@@ -193,6 +198,19 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
                             <Input placeholder="e.g., Local Builders" {...field} list="edit-customer-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="site"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><MapPin /> Site</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Construction Site A" {...field} list="edit-site-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -276,19 +294,6 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="rent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
                   
                   <div className="space-y-4">
@@ -334,6 +339,19 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                       />
                     </div>
                      <FormField
+                        control={form.control}
+                        name="rent"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                     <FormField
                     control={form.control}
                     name="remarks"
                     render={({ field }) => (
@@ -363,3 +381,5 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
     </Dialog>
   );
 };
+
+    

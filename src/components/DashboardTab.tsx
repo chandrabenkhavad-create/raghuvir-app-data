@@ -100,7 +100,7 @@ export function DashboardTab() {
     const customerTotalSales = useMemo(() => {
         if (!filteredSalesData.length) return {};
         return filteredSalesData.reduce((acc, sale) => {
-            const customer = sale.customer || sale.site; // Use customer field, fallback to site
+            const customer = sale.site;
             const netwt = Number(sale.netwt) || 0;
             acc[customer] = (acc[customer] || 0) + netwt;
             return acc;
@@ -410,12 +410,12 @@ export function DashboardTab() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Briefcase /> Customer Material Sales</CardTitle>
-                        <CardDescription>Total net weight of material sold to each customer</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Briefcase /> Site Material Sales</CardTitle>
+                        <CardDescription>Total net weight of material sold to each site</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Site</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {Object.entries(customerTotalSales).map(([customer, totalNetWt]) => (
                                     <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{totalNetWt.toFixed(2)}</TableCell></TableRow>
@@ -437,5 +437,7 @@ export function DashboardTab() {
 
     
 
+
+    
 
     
