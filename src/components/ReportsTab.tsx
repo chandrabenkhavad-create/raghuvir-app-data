@@ -234,13 +234,13 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   };
   
   const downloadPurchaseReportCSV = () => {
-    const dataForCsv: { party: string; material: string; total_net_weight_kg: number }[] = [];
+    const dataForCsv: { party: string; material: string; total_net_weight_ton: number }[] = [];
     Object.entries(purchaseMaterials).forEach(([party, materials]) => {
       Object.entries(materials).forEach(([material, netwt]) => {
         dataForCsv.push({
           party,
           material,
-          total_net_weight_kg: parseFloat(netwt.toFixed(2)),
+          total_net_weight_ton: parseFloat((netwt / 1000).toFixed(3)),
         });
       });
     });
@@ -717,10 +717,10 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Building2 className="h-5 w-5" />{purchase}</CardTitle></CardHeader>
                                 <CardContent>
                                     <Table>
-                                        <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                                        <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (Ton)</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                             {Object.entries(materials).map(([material, netwt]) => (
-                                                <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
+                                                <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{(netwt / 1000).toFixed(3)}</TableCell></TableRow>
                                             ))}
                                         </TableBody>
                                     </Table>
@@ -805,5 +805,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     </Tabs>
   );
 }
+
+    
 
     

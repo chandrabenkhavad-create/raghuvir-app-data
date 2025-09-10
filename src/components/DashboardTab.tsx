@@ -395,10 +395,10 @@ export function DashboardTab() {
                                     <CardHeader><CardTitle className="text-lg">{purchase}</CardTitle></CardHeader>
                                     <CardContent>
                                         <Table>
-                                            <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                                            <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (Ton)</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {Object.entries(materials).map(([material, netwt]) => (
-                                                    <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
+                                                    <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{(netwt / 1000).toFixed(3)}</TableCell></TableRow>
                                                 ))}
                                             </TableBody>
                                         </Table>
@@ -415,10 +415,10 @@ export function DashboardTab() {
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow><TableHead>Site</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Site</TableHead><TableHead className="text-right">Total Net Weight (Ton)</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {Object.entries(customerTotalSales).map(([customer, totalNetWt]) => (
-                                    <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{totalNetWt.toFixed(2)}</TableCell></TableRow>
+                                    <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{(totalNetWt / 1000).toFixed(3)}</TableCell></TableRow>
                                 ))}
                             </TableBody>
                         </Table>
@@ -437,6 +437,8 @@ export function DashboardTab() {
 
     
 
+
+    
 
     
 
