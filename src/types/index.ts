@@ -42,6 +42,7 @@ export interface AppSettings {
   userCanViewReports: boolean;
   userCanViewSettings: boolean;
   userCanEditEntries: boolean;
+  userCanViewMileage: boolean;
 }
 
 export interface PrintSettings {
@@ -78,5 +79,3 @@ export interface User {
   created_at: string;
   settings?: AppSettings & PrintSettings;
 }
-
-    

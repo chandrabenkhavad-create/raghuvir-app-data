@@ -259,19 +259,6 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       </FormItem>
                     )}
                   />
-                   <FormField
-                    control={form.control}
-                    name="mileage"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Gauge /> Mileage (km/L)</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} disabled />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
                 <DialogFooter className="pt-4 border-t">
                     <Button type="button" variant="outline" onClick={handlePrint}><Printer className="mr-2 h-4 w-4" /> Print</Button>
