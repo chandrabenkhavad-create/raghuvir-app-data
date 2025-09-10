@@ -69,32 +69,32 @@ export const PrintDieselRecord: FC<PrintDieselRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-          <div className={`grid grid-cols-2 gap-x-8 ${compactClass} flex-grow text-sm`}>
-            <div className={`col-span-2 flex justify-between items-baseline ${compactPadding}`}>
+          <div className={cn('grid grid-cols-2 gap-x-8 flex-grow text-sm', compactClass)}>
+            <div className={cn('col-span-2 flex justify-between items-baseline', compactPadding)}>
                 <strong>Vehicle Number:</strong>
                 <span className="text-lg font-semibold">{data.vehicleNumber}</span>
             </div>
-             <div className={`col-span-2 flex justify-between items-baseline ${compactPadding}`}>
+             <div className={cn('col-span-2 flex justify-between items-baseline', compactPadding)}>
               <strong>Pump:</strong>
               <span className="text-lg">{data.pump}</span>
             </div>
-            {settings.showDieselDriver && (<div className={`flex justify-between items-baseline ${compactPadding}`}>
+            {settings.showDieselDriver && (<div className={cn('flex justify-between items-baseline', compactPadding)}>
               <strong>Driver Name:</strong>
               <span className="text-lg">{data.driverName}</span>
             </div>)}
-             {settings.showDieselOdo && (<div className={`flex justify-between items-baseline ${compactPadding}`}>
+             {settings.showDieselOdo && (<div className={cn('flex justify-between items-baseline', compactPadding)}>
               <strong>ODO Reading:</strong>
               <span className="text-lg">{odo}</span>
             </div>)}
-            <div className={`flex justify-between items-baseline ${compactPadding}`}>
+            <div className={cn('flex justify-between items-baseline', compactPadding)}>
               <strong>Liters:</strong>
               <span className="text-lg">{liters.toFixed(2)} L</span>
             </div>
-            <div className={`flex justify-between items-baseline ${compactPadding}`}>
+            <div className={cn('flex justify-between items-baseline', compactPadding)}>
               <strong>Rate:</strong>
               <span className="text-lg">₹{rate.toFixed(2)} / L</span>
             </div>
-            <div className={`flex justify-between items-baseline font-bold ${compactPadding}`}>
+            <div className={cn('flex justify-between items-baseline font-bold', compactPadding)}>
               <strong>Total Amount:</strong>
               <span className="text-lg">₹{amount.toFixed(2)}</span>
             </div>

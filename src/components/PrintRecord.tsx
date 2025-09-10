@@ -69,32 +69,32 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
         )}
 
         <main className="flex justify-between items-start">
-           <div className={`grid grid-cols-2 gap-x-8 flex-grow text-sm ${compactClass}`}>
+           <div className={cn('grid grid-cols-2 gap-x-8 flex-grow text-sm', compactClass)}>
              {/* Left Column */}
-             <div className={`space-y-1 ${compactClass}`}>
-                 <div className={`flex justify-between items-baseline ${compactPadding}`}>
+             <div className={cn('space-y-1', compactClass)}>
+                 <div className={cn('flex justify-between items-baseline', compactPadding)}>
                     <strong>Purchase Party:</strong>
                     <span className="text-lg font-semibold">{data.purchase}</span>
                 </div>
-                <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                <div className={cn('flex justify-between items-baseline', compactPadding)}>
                     <strong>Customer:</strong>
                     <span className="text-lg font-semibold">{data.customer}</span>
                 </div>
-                <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                <div className={cn('flex justify-between items-baseline', compactPadding)}>
                     <strong>Site:</strong>
                     <span className="text-lg font-semibold">{data.site}</span>
                 </div>
                  {settings.showSaleWeightDetails && (
                   <div className="mt-2 space-y-1">
-                     <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                     <div className={cn('flex justify-between items-baseline', compactPadding)}>
                         <strong>Gross Weight:</strong>
                         <span className="text-lg">{grosswt.toFixed(2)} KG</span>
                      </div>
-                     <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                     <div className={cn('flex justify-between items-baseline', compactPadding)}>
                         <strong>Tare Weight:</strong>
                         <span className="text-lg">{tarewt.toFixed(2)} KG</span>
                      </div>
-                     <div className={`flex justify-between items-baseline font-bold pt-1 ${compactPadding}`}>
+                     <div className={cn('flex justify-between items-baseline font-bold pt-1', compactPadding)}>
                         <strong>Net Weight:</strong>
                         <span className="text-lg">{netwt.toFixed(2)} KG</span>
                      </div>
@@ -103,38 +103,38 @@ export const PrintRecord: FC<PrintRecordProps> = ({ data }) => {
              </div>
              
              {/* Right Column */}
-             <div className={`space-y-1 ${compactClass}`}>
-                <div className={`flex justify-between items-baseline ${compactPadding}`}>
+             <div className={cn('space-y-1', compactClass)}>
+                <div className={cn('flex justify-between items-baseline', compactPadding)}>
                     <strong>Material:</strong>
                     <span className="text-lg font-semibold">{data.material}</span>
                 </div>
-                 <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                 <div className={cn('flex justify-between items-baseline', compactPadding)}>
                     <strong>Transporter:</strong>
                     <span className="text-lg">{data.transporter}</span>
                 </div>
                 {settings.showSaleVehicleNumber && (
-                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <div className={cn('flex justify-between items-baseline', compactPadding)}>
                         <strong>Vehicle Number:</strong>
                         <span className="text-lg font-semibold">{data.vehicleNumber}</span>
                     </div>
                 )}
                  {settings.showSaleDriver && (
-                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <div className={cn('flex justify-between items-baseline', compactPadding)}>
                         <strong>Driver:</strong>
                         <span className="text-lg">{data.driver}</span>
                     </div>
                  )}
                  {settings.showSaleRoyalty && (
-                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <>
+                    <div className={cn('flex justify-between items-baseline', compactPadding)}>
                         <strong>Royalty Pass Number:</strong>
                         <span className="text-lg">{data.royaltyPassNumber || 'N/A'}</span>
                     </div>
-                )}
-                {settings.showSaleRoyalty && (
-                    <div className={`flex justify-between items-baseline ${compactPadding}`}>
+                    <div className={cn('flex justify-between items-baseline', compactPadding)}>
                         <strong>Royalty Weight:</strong>
                         <span className="text-lg">{typeof royaltyWeight === 'number' && royaltyWeight > 0 ? `${royaltyWeight.toFixed(2)} KG` : 'N/A'}</span>
                     </div>
+                    </>
                 )}
                 
                 {settings.showSaleRemarks && data.remarks && (
