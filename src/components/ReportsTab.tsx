@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck, Building2 } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck, Building2, Milestone } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
@@ -61,6 +61,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   
   const [salesSearchTerm, setSalesSearchTerm] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
+  const [selectedMileageVehicle, setSelectedMileageVehicle] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -72,7 +73,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
           getAllDieselEntries(),
         ]);
         setSalesData(sales);
-        setDieselData(diesel);
+        setDieselData(diesel.sort((a, b) => a.id - b.id)); // Sort oldest to newest for mileage calc
       } catch (e: any) {
         setError(e.message || "Failed to fetch data.");
       } finally {
@@ -158,6 +159,44 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     }, {} as Record<string, Record<string, number>>);
   }, [salesData, purchaseFromDate, purchaseToDate]);
 
+  const mileageReport = useMemo(() => {
+        if (!selectedMileageVehicle) return [];
+
+        const vehicleEntries = dieselData.filter(entry => entry.vehicleNumber === selectedMileageVehicle);
+        if (vehicleEntries.length < 2) return [];
+
+        const report: {
+            id: number;
+            date: string;
+            startOdo: number;
+            endOdo: number;
+            distance: number;
+            liters: number;
+            mileage: number;
+        }[] = [];
+
+        for (let i = 1; i < vehicleEntries.length; i++) {
+            const previousEntry = vehicleEntries[i-1];
+            const currentEntry = vehicleEntries[i];
+            
+            const distance = currentEntry.odo - previousEntry.odo;
+            const liters = currentEntry.liters;
+
+            if (distance > 0 && liters > 0) {
+                report.push({
+                    id: currentEntry.id,
+                    date: currentEntry.date,
+                    startOdo: previousEntry.odo,
+                    endOdo: currentEntry.odo,
+                    distance: distance,
+                    liters: liters,
+                    mileage: distance / liters,
+                });
+            }
+        }
+        return report.reverse();
+    }, [dieselData, selectedMileageVehicle]);
+
 
   const downloadCSV = (data: any[], filename: string, headers?: string[]) => {
     if (!data.length) return;
@@ -229,11 +268,12 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
 
   return (
     <Tabs defaultValue="sales">
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
         <TabsTrigger value="sales">Sales Report</TabsTrigger>
         <TabsTrigger value="diesel">Diesel Report</TabsTrigger>
         <TabsTrigger value="vehicle">Vehicle Wise Report</TabsTrigger>
         <TabsTrigger value="purchase">Purchase Report</TabsTrigger>
+        <TabsTrigger value="mileage">Mileage Report</TabsTrigger>
       </TabsList>
       <TabsContent value="sales">
         <Card>
@@ -674,8 +714,68 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
           </CardContent>
         </Card>
       </TabsContent>
+       <TabsContent value="mileage">
+        <Card>
+            <CardHeader>
+                <CardTitle>Vehicle Mileage Report</CardTitle>
+                <CardDescription>Select a vehicle to see its mileage between each diesel refill.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="max-w-xs">
+                    <Select onValueChange={setSelectedMileageVehicle} value={selectedMileageVehicle || ''}>
+                        <SelectTrigger>
+                            <SelectValue placeholder={<div className="flex items-center gap-2"><Truck/>Select a vehicle</div>} />
+                        </SelectTrigger>
+                        <SelectContent>
+                             {loading ? <SelectItem value="loading" disabled>Loading vehicles...</SelectItem> : allVehicleNumbers.map(vehicle => (
+                                <SelectItem key={vehicle} value={vehicle}>{vehicle}</SelectItem>
+                             ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {loading && <Skeleton className="h-40 w-full" />}
+
+                {!loading && selectedMileageVehicle && (
+                    mileageReport.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Start ODO</TableHead>
+                                    <TableHead>End ODO</TableHead>
+                                    <TableHead>Distance (km)</TableHead>
+                                    <TableHead>Liters Filled</TableHead>
+                                    <TableHead className="font-bold text-right">Mileage (km/L)</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {mileageReport.map(report => (
+                                    <TableRow key={report.id}>
+                                        <TableCell>{report.date}</TableCell>
+                                        <TableCell>{report.startOdo}</TableCell>
+                                        <TableCell>{report.endOdo}</TableCell>
+                                        <TableCell>{report.distance.toFixed(2)}</TableCell>
+                                        <TableCell>{report.liters.toFixed(2)}</TableCell>
+                                        <TableCell className="font-bold text-right">{report.mileage.toFixed(2)}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <div className="text-center py-10">
+                            <p className="text-muted-foreground">
+                                Not enough data to generate a mileage report for this vehicle.
+                            </p>
+                            <p className="text-sm text-muted-foreground/80">
+                                At least two diesel entries are required.
+                            </p>
+                        </div>
+                    )
+                )}
+            </CardContent>
+        </Card>
+      </TabsContent>
     </Tabs>
   );
 }
-
-    

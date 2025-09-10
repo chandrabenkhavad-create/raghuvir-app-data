@@ -2,7 +2,7 @@
 "use client";
 
 import { useAuth } from '@/components/AuthProvider';
-import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings, Milestone } from 'lucide-react';
+import { FileSpreadsheet, Fuel, LayoutDashboard, LogOut, Package, UserCog, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -13,7 +13,6 @@ import { SaleForm } from '@/components/SaleForm';
 import { DieselForm } from '@/components/DieselForm';
 import { ReportsTab } from '@/components/ReportsTab';
 import { DashboardTab } from '@/components/DashboardTab';
-import { MileageTab } from '@/components/MileageTab';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SupabaseStatus } from '@/components/SupabaseStatus';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -51,7 +50,6 @@ export default function Home() {
   const showDashboard = isAdmin || appSettings.userCanViewDashboard;
   const showReports = isAdmin || appSettings.userCanViewReports;
   const showSettings = isAdmin || appSettings.userCanViewSettings;
-  const showMileage = isAdmin || appSettings.userCanViewMileage;
 
   useEffect(() => {
     if (appSettingsLoaded) {
@@ -59,7 +57,6 @@ export default function Home() {
         dashboard: showDashboard,
         sale: true,
         diesel: true,
-        mileage: showMileage,
         reports: showReports,
         settings: showSettings,
       };
@@ -70,7 +67,7 @@ export default function Home() {
           else setActiveTab('sale'); // 'sale' is always visible
       }
     }
-  }, [appSettingsLoaded, showDashboard, showReports, showSettings, showMileage, activeTab]);
+  }, [appSettingsLoaded, showDashboard, showReports, showSettings, activeTab]);
 
 
   const handleEditSale = (entry: SaleEntry) => {
@@ -139,11 +136,10 @@ export default function Home() {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-3 md:grid-cols-6 max-w-5xl mx-auto gap-2 h-auto flex-wrap">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 max-w-4xl mx-auto gap-2 h-auto flex-wrap">
             {showDashboard && <TabsTrigger value="dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</TabsTrigger>}
             <TabsTrigger value="sale"><Package className="mr-2 h-4 w-4" />Sale Entry</TabsTrigger>
             <TabsTrigger value="diesel"><Fuel className="mr-2 h-4 w-4" />Diesel Entry</TabsTrigger>
-            {showMileage && <TabsTrigger value="mileage"><Milestone className="mr-2 h-4 w-4" />Mileage</TabsTrigger>}
             {showReports && <TabsTrigger value="reports"><FileSpreadsheet className="mr-2 h-4 w-4" />Reports</TabsTrigger>}
             {showSettings && <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Settings</TabsTrigger>}
           </TabsList>
@@ -169,10 +165,6 @@ export default function Home() {
             />
           </TabsContent>
           
-          {showMileage && <TabsContent value="mileage" className="mt-6">
-            <MileageTab />
-          </TabsContent>}
-
           {showReports && <TabsContent value="reports" className="mt-6">
             <ReportsTab 
               onEditSale={handleEditSale}

@@ -42,7 +42,6 @@ export interface AppSettings {
   userCanViewReports: boolean;
   userCanViewSettings: boolean;
   userCanEditEntries: boolean;
-  userCanViewMileage: boolean;
 }
 
 export interface PrintSettings {

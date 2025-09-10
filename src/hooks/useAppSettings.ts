@@ -9,7 +9,6 @@ export interface AppSettings {
   userCanViewReports: boolean;
   userCanViewSettings: boolean;
   userCanEditEntries: boolean;
-  userCanViewMileage: boolean;
 }
 
 const defaultSettings: AppSettings = {
@@ -17,7 +16,6 @@ const defaultSettings: AppSettings = {
   userCanViewReports: true,
   userCanViewSettings: true,
   userCanEditEntries: true,
-  userCanViewMileage: true,
 };
 
 export const useAppSettings = () => {
