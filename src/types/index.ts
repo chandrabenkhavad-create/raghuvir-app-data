@@ -45,7 +45,7 @@ export interface AppSettings {
 
 export interface PrintSettings {
   pageSize: 'DL' | 'A4_portrait' | 'A4_landscape';
-  fontSize: 'text-sm' | 'text-base' | 'text-lg';
+  fontSize: 'text-xs' | 'text-sm' | 'text-base' | 'text-lg';
   showQRCode: boolean;
   showCompanyHeader: boolean;
   showFooter: boolean;

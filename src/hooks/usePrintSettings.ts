@@ -6,7 +6,7 @@ import { useAuth } from '@/components/AuthProvider';
 
 export interface PrintSettings {
   pageSize: 'DL' | 'A4_portrait' | 'A4_landscape';
-  fontSize: 'text-sm' | 'text-base' | 'text-lg';
+  fontSize: 'text-xs' | 'text-sm' | 'text-base' | 'text-lg';
   showQRCode: boolean;
   showCompanyHeader: boolean;
   showFooter: boolean;
@@ -22,6 +22,7 @@ export interface PrintSettings {
   showSaleWeightDetails: boolean;
   showSaleRemarks: boolean;
   showSaleRoyalty: boolean;
+  showSaleDriver: boolean;
   showDieselDriver: boolean;
   showDieselOdo: boolean;
   authorizedSignatory: string;
@@ -31,7 +32,7 @@ export interface PrintSettings {
 
 const defaultSettings: PrintSettings = {
   pageSize: 'DL',
-  fontSize: 'text-sm',
+  fontSize: 'text-xs',
   showQRCode: true,
   showCompanyHeader: true,
   showFooter: true,
@@ -48,6 +49,7 @@ const defaultSettings: PrintSettings = {
   showSaleWeightDetails: true,
   showSaleRemarks: true,
   showSaleRoyalty: true,
+  showSaleDriver: true,
   showDieselDriver: true,
   showDieselOdo: true,
   saleDocumentTitle: 'DELIVERY CHALLAN (Original)',

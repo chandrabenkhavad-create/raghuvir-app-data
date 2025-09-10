@@ -118,6 +118,7 @@ export function PrintLayoutSettings() {
                                     <SelectValue placeholder="Select font size" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="text-xs">Extra Small</SelectItem>
                                     <SelectItem value="text-sm">Small</SelectItem>
                                     <SelectItem value="text-base">Medium</SelectItem>
                                     <SelectItem value="text-lg">Large</SelectItem>
