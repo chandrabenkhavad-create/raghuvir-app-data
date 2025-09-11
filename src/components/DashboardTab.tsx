@@ -100,7 +100,7 @@ export function DashboardTab() {
     const customerTotalSales = useMemo(() => {
         if (!filteredSalesData.length) return {};
         return filteredSalesData.reduce((acc, sale) => {
-            const customer = sale.customer || sale.site; // Use customer field, fallback to site
+            const customer = sale.site;
             const netwt = Number(sale.netwt) || 0;
             acc[customer] = (acc[customer] || 0) + netwt;
             return acc;
@@ -202,19 +202,18 @@ export function DashboardTab() {
     return (
         <div className="space-y-6">
             <div className="flex justify-end">
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>Filter Dashboard</CardTitle>
-                        <CardDescription>Select a date range to filter all dashboard metrics.</CardDescription>
+                <Card className="max-w-md">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-lg">Filter Dashboard</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex flex-col sm:flex-row items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-2">
                             <Popover>
                                 <PopoverTrigger asChild>
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                    "w-full sm:w-[240px] justify-start text-left font-normal",
+                                    "w-full sm:w-auto flex-1 justify-start text-left font-normal",
                                     !fromDate && "text-muted-foreground"
                                     )}
                                 >
@@ -236,7 +235,7 @@ export function DashboardTab() {
                                 <Button
                                     variant={"outline"}
                                     className={cn(
-                                    "w-full sm:w-[240px] justify-start text-left font-normal",
+                                    "w-full sm:w-auto flex-1 justify-start text-left font-normal",
                                     !toDate && "text-muted-foreground"
                                     )}
                                 >
@@ -396,10 +395,10 @@ export function DashboardTab() {
                                     <CardHeader><CardTitle className="text-lg">{purchase}</CardTitle></CardHeader>
                                     <CardContent>
                                         <Table>
-                                            <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                                            <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (Ton)</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {Object.entries(materials).map(([material, netwt]) => (
-                                                    <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
+                                                    <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{(netwt / 1000).toFixed(3)}</TableCell></TableRow>
                                                 ))}
                                             </TableBody>
                                         </Table>
@@ -411,15 +410,15 @@ export function DashboardTab() {
                 </Card>
                 <Card className="lg:col-span-2">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Briefcase /> Customer Material Sales</CardTitle>
-                        <CardDescription>Total net weight of material sold to each customer</CardDescription>
+                        <CardTitle className="flex items-center gap-2"><Briefcase /> Site Material Sales</CardTitle>
+                        <CardDescription>Total net weight of material sold to each site</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Table>
-                            <TableHeader><TableRow><TableHead>Customer</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Site</TableHead><TableHead className="text-right">Total Net Weight (Ton)</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {Object.entries(customerTotalSales).map(([customer, totalNetWt]) => (
-                                    <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{totalNetWt.toFixed(2)}</TableCell></TableRow>
+                                    <TableRow key={customer}><TableCell>{customer}</TableCell><TableCell className="text-right">{(totalNetWt / 1000).toFixed(3)}</TableCell></TableRow>
                                 ))}
                             </TableBody>
                         </Table>
@@ -435,5 +434,12 @@ export function DashboardTab() {
     
 
 
+
+    
+
+
+    
+
+    
 
     

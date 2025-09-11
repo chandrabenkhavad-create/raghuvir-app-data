@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,7 +16,7 @@ import {
   User, 
   Building, 
   Gauge,
-  PlusCircle
+  Info
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -26,11 +26,10 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import type { DieselEntry, MasterDataItem } from '@/types';
-import { addDieselEntry } from '@/services/dieselService';
-import { getMasterData } from '@/services/masterService';
+import type { DieselEntry } from '@/types';
+import { addDieselEntry, getAllDieselEntries } from '@/services/dieselService';
 import { RecentDiesel } from './RecentDiesel';
-import { Combobox } from './ui/combobox';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -40,22 +39,38 @@ const dieselSchema = z.object({
   driverName: z.string().min(1, 'Driver name is required'),
   pump: z.string().min(1, 'Pump name is required'),
   odo: z.coerce.number().int().positive('ODO reading must be a positive number'),
+  mileage: z.coerce.number().optional(),
 });
 
 type DieselFormValues = z.infer<typeof dieselSchema>;
 
 interface DieselFormProps {
+  onEntrySaved: () => void;
   entryToPrint: DieselEntry | null;
   onPrintDialogChange: () => void;
   onEditRequest: (entry: DieselEntry) => void;
+  refreshKey: boolean;
 }
 
-export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
+export const DieselForm: FC<DieselFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest, refreshKey }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<DieselEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [refreshRecent, setRefreshRecent] = useState(false);
   const { toast } = useToast();
-  const [pumps, setPumps] = useState<MasterDataItem[]>([]);
+  const [allDiesel, setAllDiesel] = useState<DieselEntry[]>([]);
+  
+  const [previousOdo, setPreviousOdo] = useState<number | null>(null);
+
+
+  useEffect(() => {
+    getAllDieselEntries().then(setAllDiesel);
+  }, [refreshKey]);
+
+  const suggestionLists = useMemo(() => {
+    const vehicleNumber = [...new Set(allDiesel.map(d => d.vehicleNumber))];
+    const driverName = [...new Set(allDiesel.map(d => d.driverName))];
+    const pump = [...new Set(allDiesel.map(d => d.pump))];
+    return { vehicleNumber, driverName, pump };
+  }, [allDiesel]);
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
@@ -67,17 +82,9 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       driverName: '',
       pump: '',
       odo: 0,
+      mileage: 0,
     },
   });
-
-  const fetchPumps = async () => {
-      try {
-          const pumpData = await getMasterData('pumps');
-          setPumps(pumpData);
-      } catch (error) {
-          toast({ variant: 'destructive', title: 'Error fetching pumps', description: (error as Error).message });
-      }
-  }
   
   const resetForm = () => {
     form.reset({
@@ -88,12 +95,13 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
         driverName: '',
         pump: '',
         odo: 0,
+        mileage: 0,
     });
+    setPreviousOdo(null);
   }
   
   useEffect(() => {
     resetForm();
-    fetchPumps();
   }, []);
 
 
@@ -112,11 +120,42 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
 
   const liters = form.watch('liters');
   const rate = form.watch('rate');
+  const vehicleNumber = form.watch('vehicleNumber');
+  const currentOdo = form.watch('odo');
 
   useEffect(() => {
     const calculatedAmount = (liters || 0) * (rate || 0);
     form.setValue('amount', parseFloat(calculatedAmount.toFixed(2)));
   }, [liters, rate, form]);
+  
+  // Effect to find previous ODO reading
+  useEffect(() => {
+    if (vehicleNumber && allDiesel.length > 0) {
+      const vehicleEntries = allDiesel
+        .filter(entry => entry.vehicleNumber.toLowerCase() === vehicleNumber.toLowerCase())
+        .sort((a, b) => b.id - a.id); // Sort by most recent ID
+
+      if (vehicleEntries.length > 0) {
+        setPreviousOdo(vehicleEntries[0].odo);
+      } else {
+        setPreviousOdo(null); // No previous entry found for this vehicle
+      }
+    } else {
+        setPreviousOdo(null);
+    }
+  }, [vehicleNumber, allDiesel]);
+
+  // Effect to calculate mileage and set it in the form
+  useEffect(() => {
+    if (previousOdo !== null && currentOdo > previousOdo && liters > 0) {
+      const distance = currentOdo - previousOdo;
+      const mileage = distance / liters;
+      form.setValue('mileage', parseFloat(mileage.toFixed(2)));
+    } else {
+      form.setValue('mileage', 0);
+    }
+  }, [currentOdo, previousOdo, liters, form]);
+
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     try {
@@ -136,8 +175,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       setInternalEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
       resetForm();
-      setRefreshRecent(prev => !prev);
-      fetchPumps(); // Refresh pumps list in case a new one was added
+      onEntrySaved(); // Triggers refresh on parent page
 
     } catch (error) {
       console.error('Failed to save entry:', error);
@@ -180,135 +218,140 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
 
   return (
     <>
-      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Fuel /> New Diesel Entry
-            </CardTitle>
-            <CardDescription>
-              Enter the details of the diesel purchase.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="vehicleNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., MH12-AB1234" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="liters"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Droplets /> Liters</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 20.5" {...field} step="0.01" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="rate"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Tag /> Rate</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 95.50" {...field} step="0.01" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="amount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><IndianRupee /> Amount</FormLabel>
-                        <FormControl>
-                          <Input type="number" {...field} disabled />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="driverName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Jane Smith" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="pump"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
-                        <FormControl>
-                           <Combobox
-                                options={pumps.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type pump..."
-                            />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="odo"
-                    render={({ field }) => (
-                      <FormItem className="md:col-span-2 lg:col-span-1">
-                        <FormLabel className="flex items-center gap-2"><Gauge /> ODO Meter Reading</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 125000" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={!internalEntryToPrint}
-                    >
-                      <Printer className="mr-2 h-4 w-4" />
-                      Print Last Entry
-                    </Button>
-                  </DialogTrigger>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+      <datalist id="diesel-vehicleNumber-list">
+        {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+      </datalist>
+      <datalist id="diesel-driverName-list">
+        {suggestionLists.driverName.map(d => <option key={d} value={d} />)}
+      </datalist>
+      <datalist id="diesel-pump-list">
+        {suggestionLists.pump.map(p => <option key={p} value={p} />)}
+      </datalist>
 
+      <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Fuel /> New Diesel Entry
+              </CardTitle>
+              <CardDescription>
+                Enter the details of the diesel purchase. Mileage is calculated and saved automatically.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="vehicleNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., MH12-AB1234" {...field} list="diesel-vehicleNumber-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="driverName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Jane Smith" {...field} list="diesel-driverName-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="odo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Gauge /> Current ODO Reading</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 125000" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                      <FormField
+                      control={form.control}
+                      name="liters"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Droplets /> Liters</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 20.5" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="rate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Tag /> Rate</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 95.50" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Amount</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} disabled />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="pump"
+                      render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., HP Petrol Pump" {...field} list="diesel-pump-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
+                    <DialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={!internalEntryToPrint}
+                      >
+                        <Printer className="mr-2 h-4 w-4" />
+                        Print Last Entry
+                      </Button>
+                    </DialogTrigger>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+        
         <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle>Print Preview</DialogTitle>
@@ -326,7 +369,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       </Dialog>
       <div className="mt-8">
         <RecentDiesel 
-            refreshKey={refreshRecent} 
+            refreshKey={refreshKey} 
             onPrint={handleReprint}
             onEdit={onEditRequest}
         />

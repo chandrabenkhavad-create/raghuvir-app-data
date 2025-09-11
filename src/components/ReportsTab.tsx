@@ -19,7 +19,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "./ui/button";
-import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck, Building2 } from "lucide-react";
+import { Download, AlertTriangle, Calendar as CalendarIcon, Edit, Printer, Search, Truck, Building2, Milestone } from "lucide-react";
 import { getAllSaleEntries } from "@/services/saleService";
 import { getAllDieselEntries } from "@/services/dieselService";
 import type { SaleEntry, DieselEntry } from "@/types";
@@ -31,6 +31,8 @@ import { Calendar } from "./ui/calendar";
 import { Input } from "./ui/input";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useAuth } from "@/components/AuthProvider";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 
 interface ReportsTabProps {
@@ -41,11 +43,24 @@ interface ReportsTabProps {
   refreshKey: boolean;
 }
 
+interface MileageReportEntry {
+    id: number;
+    date: string;
+    startOdo: number;
+    endOdo: number;
+    distance: number;
+    liters: number;
+    mileage: number;
+}
+
+
 export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiesel, refreshKey }: ReportsTabProps) {
   const [salesData, setSalesData] = useState<SaleEntry[]>([]);
   const [dieselData, setDieselData] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { settings } = useAppSettings();
 
   // Filters
   const [salesFromDate, setSalesFromDate] = useState<Date | undefined>();
@@ -57,7 +72,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   
   const [salesSearchTerm, setSalesSearchTerm] = useState("");
   const [selectedVehicle, setSelectedVehicle] = useState<string | null>(null);
-
+  
   useEffect(() => {
     async function fetchData() {
       try {
@@ -68,7 +83,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
           getAllDieselEntries(),
         ]);
         setSalesData(sales);
-        setDieselData(diesel);
+        setDieselData(diesel.sort((a, b) => a.id - b.id)); // Sort oldest to newest for mileage calc
       } catch (e: any) {
         setError(e.message || "Failed to fetch data.");
       } finally {
@@ -91,6 +106,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   }, [salesData, dieselData]);
 
   const filteredSalesData = useMemo(() => {
+    const searchTerm = salesSearchTerm.toLowerCase().trim();
     return salesData.filter(sale => {
       // Date filtering
       if (salesFromDate || salesToDate) {
@@ -101,7 +117,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
         if (end && saleDate > end) return false;
       }
       // DC No search
-      if (salesSearchTerm && !String(sale.dcno).includes(salesSearchTerm)) {
+      if (searchTerm && !String(sale.dcno).toLowerCase().includes(searchTerm)) {
         return false;
       }
       return true;
@@ -153,6 +169,41 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
     }, {} as Record<string, Record<string, number>>);
   }, [salesData, purchaseFromDate, purchaseToDate]);
 
+  const mileageReport = useMemo(() => {
+        const report: Record<string, MileageReportEntry[]> = {};
+
+        allVehicleNumbers.forEach(vehicle => {
+             const vehicleEntries = dieselData.filter(entry => entry.vehicleNumber === vehicle);
+             if (vehicleEntries.length < 2) return;
+             
+             const vehicleMileage: MileageReportEntry[] = [];
+             for (let i = 1; i < vehicleEntries.length; i++) {
+                const previousEntry = vehicleEntries[i-1];
+                const currentEntry = vehicleEntries[i];
+                
+                const distance = currentEntry.odo - previousEntry.odo;
+                const liters = currentEntry.liters;
+
+                if (distance > 0 && liters > 0) {
+                    vehicleMileage.push({
+                        id: currentEntry.id,
+                        date: currentEntry.date,
+                        startOdo: previousEntry.odo,
+                        endOdo: currentEntry.odo,
+                        distance: distance,
+                        liters: liters,
+                        mileage: distance / liters,
+                    });
+                }
+            }
+            if (vehicleMileage.length > 0) {
+                report[vehicle] = vehicleMileage.reverse().slice(0, 5); // Get latest 5
+            }
+        });
+        
+        return report;
+    }, [dieselData, allVehicleNumbers]);
+
 
   const downloadCSV = (data: any[], filename: string, headers?: string[]) => {
     if (!data.length) return;
@@ -183,29 +234,45 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
   };
   
   const downloadPurchaseReportCSV = () => {
-    const dataForCsv: { party: string; material: string; total_net_weight_kg: number }[] = [];
+    const dataForCsv: { party: string; material: string; total_net_weight_ton: number }[] = [];
     Object.entries(purchaseMaterials).forEach(([party, materials]) => {
       Object.entries(materials).forEach(([material, netwt]) => {
         dataForCsv.push({
           party,
           material,
-          total_net_weight_kg: parseFloat(netwt.toFixed(2)),
+          total_net_weight_ton: parseFloat((netwt / 1000).toFixed(3)),
         });
       });
     });
     downloadCSV(dataForCsv, 'party_wise_purchase_report');
   };
 
+  const downloadMileageReportCSV = () => {
+    const dataForCsv: (MileageReportEntry & { vehicleNumber: string })[] = [];
+    Object.entries(mileageReport).forEach(([vehicleNumber, entries]) => {
+        entries.forEach(entry => {
+            dataForCsv.push({
+                vehicleNumber: vehicleNumber,
+                ...entry
+            });
+        });
+    });
+    const headers = ["vehicleNumber", "date", "startOdo", "endOdo", "distance", "liters", "mileage"];
+    downloadCSV(dataForCsv, 'mileage_report', headers);
+  }
+
   const salesHeaders = [
-    "id", "dcno", "date", "time", "material", "purchase", "customer",
+    "id", "dcno", "date", "time", "material", "purchase", "customer", "site",
     "transporter", "grosswt", "tarewt", "netwt", "rent", "driver",
-    "site", "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
+    "remarks", "vehicleNumber", "royaltyPassNumber", "royaltyWeight", "created_at"
   ];
   
   const dieselHeaders = [
       "id", "date", "time", "vehicleNumber", "liters", "rate", 
       "amount", "driverName", "pump", "odo", "created_at"
   ];
+
+  const canEdit = user?.role === 'admin' || settings.userCanEditEntries;
 
   if (error) {
     return (
@@ -222,11 +289,12 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
 
   return (
     <Tabs defaultValue="sales">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
         <TabsTrigger value="sales">Sales Report</TabsTrigger>
         <TabsTrigger value="diesel">Diesel Report</TabsTrigger>
         <TabsTrigger value="vehicle">Vehicle Wise Report</TabsTrigger>
         <TabsTrigger value="purchase">Purchase Report</TabsTrigger>
+        <TabsTrigger value="mileage">Mileage Report</TabsTrigger>
       </TabsList>
       <TabsContent value="sales">
         <Card>
@@ -237,7 +305,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 A complete log of all sales entries.
               </CardDescription>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
                  <div className="relative w-full sm:w-auto">
                     <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -252,7 +320,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !salesFromDate && "text-muted-foreground"
                         )}
                       >
@@ -274,7 +342,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !salesToDate && "text-muted-foreground"
                         )}
                       >
@@ -316,6 +384,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                     <TableHead>Vehicle</TableHead>
                     <TableHead>Material</TableHead>
                     <TableHead>Customer</TableHead>
+                    <TableHead>Site</TableHead>
                     <TableHead>Net Weight</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -323,21 +392,24 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 <TableBody>
                   {filteredSalesData.map((sale) => (
                     <TableRow key={sale.id}>
-                      <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                      <TableCell>{sale.dcno}</TableCell>
                       <TableCell>{sale.date}</TableCell>
                       <TableCell>{sale.vehicleNumber}</TableCell>
                       <TableCell>{sale.material}</TableCell>
-                      <TableCell>{sale.customer || sale.site}</TableCell>
+                      <TableCell>{sale.customer}</TableCell>
+                      <TableCell>{sale.site}</TableCell>
                       <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}>
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                        </Button>
+                        {canEdit && (
+                          <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -356,13 +428,13 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 A complete log of all diesel entries.
               </CardDescription>
             </div>
-             <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+             <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
                  <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !dieselFromDate && "text-muted-foreground"
                         )}
                       >
@@ -384,7 +456,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !dieselToDate && "text-muted-foreground"
                         )}
                       >
@@ -442,10 +514,12 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                             <Printer className="mr-2 h-4 w-4" />
                             Print
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                        </Button>
+                        {canEdit && (
+                          <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                          </Button>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -503,13 +577,15 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                         <TableBody>
                                         {vehicleFilteredSales.map((sale) => (
                                             <TableRow key={sale.id}>
-                                            <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                                            <TableCell>{sale.dcno}</TableCell>
                                             <TableCell>{sale.date}</TableCell>
                                             <TableCell>{sale.material}</TableCell>
                                             <TableCell>{Number(sale.netwt).toFixed(2)} KG</TableCell>
                                             <TableCell className="text-right space-x-2">
                                                  <Button variant="outline" size="sm" onClick={() => onPrintSale(sale)}><Printer className="mr-2 h-4 w-4" />Print</Button>
-                                                 <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                  {canEdit && (
+                                                    <Button variant="outline" size="sm" onClick={() => onEditSale(sale)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                  )}
                                             </TableCell>
                                             </TableRow>
                                         ))}
@@ -550,7 +626,9 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                                 <TableCell>{diesel.pump}</TableCell>
                                                 <TableCell className="text-right space-x-2">
                                                     <Button variant="outline" size="sm" onClick={() => onPrintDiesel(diesel)}><Printer className="mr-2 h-4 w-4" />Print</Button>
-                                                    <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                     {canEdit && (
+                                                        <Button variant="outline" size="sm" onClick={() => onEditDiesel(diesel)}><Edit className="mr-2 h-4 w-4" />Edit</Button>
+                                                     )}
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -571,13 +649,13 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 <CardTitle>Party-wise Purchase Report</CardTitle>
                 <CardDescription>Material purchased from each party.</CardDescription>
             </div>
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center gap-2 w-full md:w-auto">
                  <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !purchaseFromDate && "text-muted-foreground"
                         )}
                       >
@@ -599,7 +677,7 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full sm:w-auto justify-start text-left font-normal",
                           !purchaseToDate && "text-muted-foreground"
                         )}
                       >
@@ -639,10 +717,10 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                                 <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Building2 className="h-5 w-5" />{purchase}</CardTitle></CardHeader>
                                 <CardContent>
                                     <Table>
-                                        <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (KG)</TableHead></TableRow></TableHeader>
+                                        <TableHeader><TableRow><TableHead>Material</TableHead><TableHead className="text-right">Total Net Weight (Ton)</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                             {Object.entries(materials).map(([material, netwt]) => (
-                                                <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{netwt.toFixed(2)}</TableCell></TableRow>
+                                                <TableRow key={material}><TableCell>{material}</TableCell><TableCell className="text-right">{(netwt / 1000).toFixed(3)}</TableCell></TableRow>
                                             ))}
                                         </TableBody>
                                     </Table>
@@ -655,6 +733,73 @@ export function ReportsTab({ onEditSale, onEditDiesel, onPrintSale, onPrintDiese
                 </div>
              )}
           </CardContent>
+        </Card>
+      </TabsContent>
+       <TabsContent value="mileage">
+        <Card>
+            <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <CardTitle>Vehicle Mileage Report</CardTitle>
+                    <CardDescription>Showing the last 5 mileage records for each vehicle.</CardDescription>
+                </div>
+                 <Button
+                    onClick={downloadMileageReportCSV}
+                    disabled={loading || Object.keys(mileageReport).length === 0}
+                    className="w-full sm:w-auto"
+                >
+                    <Download className="mr-2" /> Download Full Report
+                </Button>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {loading && <Skeleton className="h-40 w-full" />}
+
+                {!loading && Object.keys(mileageReport).length > 0 ? (
+                    <div className="space-y-6">
+                        {Object.entries(mileageReport).map(([vehicleNumber, entries]) => (
+                            <Card key={vehicleNumber} className="bg-muted/50">
+                               <CardHeader>
+                                  <CardTitle className="text-lg flex items-center gap-2">
+                                     <Truck className="h-5 w-5" /> {vehicleNumber}
+                                  </CardTitle>
+                               </CardHeader>
+                               <CardContent>
+                                     <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Date</TableHead>
+                                                <TableHead>Distance (km)</TableHead>
+                                                <TableHead>Liters</TableHead>
+                                                <TableHead className="font-bold text-right">Mileage (km/L)</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {entries.map(report => (
+                                                <TableRow key={report.id}>
+                                                    <TableCell>{report.date}</TableCell>
+                                                    <TableCell>{report.distance.toFixed(2)}</TableCell>
+                                                    <TableCell>{report.liters.toFixed(2)}</TableCell>
+                                                    <TableCell className="font-bold text-right">{report.mileage.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                               </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                ) : (
+                    !loading && (
+                        <div className="text-center py-10">
+                            <p className="text-muted-foreground">
+                                No mileage data available.
+                            </p>
+                            <p className="text-sm text-muted-foreground/80">
+                                At least two diesel entries for a vehicle are required to calculate mileage.
+                            </p>
+                        </div>
+                    )
+                )}
+            </CardContent>
         </Card>
       </TabsContent>
     </Tabs>

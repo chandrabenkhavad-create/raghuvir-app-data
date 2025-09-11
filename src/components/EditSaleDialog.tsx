@@ -1,10 +1,11 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format } from 'date-fns';
 import { 
   Package, 
   Printer, 
@@ -19,7 +20,9 @@ import {
   IndianRupee,
   Ticket,
   ScrollText,
-  Briefcase
+  Briefcase,
+  MapPin,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -29,17 +32,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import type { SaleEntry, MasterDataItem } from '@/types';
-import { updateSaleEntry } from '@/services/saleService';
-import { getMasterData } from '@/services/masterService';
-import { Combobox } from './ui/combobox';
+import type { SaleEntry } from '@/types';
+import { updateSaleEntry, getAllSaleEntries } from '@/services/saleService';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { cn } from '@/lib/utils';
+import { Calendar } from './ui/calendar';
 
 const saleSchema = z.object({
   id: z.number(),
   dcno: z.coerce.number(),
+  date: z.string(),
   material: z.string().min(1, 'Material is required'),
   purchase: z.string().min(1, 'Purchase is required'),
   customer: z.string().min(1, 'Customer is required'),
+  site: z.string().min(1, 'Site is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -61,45 +67,49 @@ interface EditSaleDialogProps {
   saleEntry: SaleEntry;
 }
 
+// Helper to parse DD/MM/YYYY into a Date object
+const parseDate = (dateString: string): Date | undefined => {
+  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return undefined;
+  const [day, month, year] = dateString.split('/').map(Number);
+  const date = new Date(year, month - 1, day);
+  // Check if date is valid
+  if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+    return date;
+  }
+  return undefined;
+}
+
+
 export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSaleUpdated, saleEntry }) => {
   const { toast } = useToast();
-  const [materials, setMaterials] = useState<MasterDataItem[]>([]);
-  const [customers, setCustomers] = useState<MasterDataItem[]>([]);
-  const [transporters, setTransporters] = useState<MasterDataItem[]>([]);
-  const [purchaseParties, setPurchaseParties] = useState<MasterDataItem[]>([]);
+  const [allSales, setAllSales] = useState<SaleEntry[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      getAllSaleEntries().then(setAllSales);
+    }
+  }, [isOpen]);
+
+  const suggestionLists = useMemo(() => {
+    const purchase = [...new Set(allSales.map(s => s.purchase))];
+    const customer = [...new Set(allSales.map(s => s.customer))];
+    const site = [...new Set(allSales.map(s => s.site))];
+    const material = [...new Set(allSales.map(s => s.material))];
+    const transporter = [...new Set(allSales.map(s => s.transporter))];
+    const vehicleNumber = [...new Set(allSales.map(s => s.vehicleNumber))];
+    const driver = [...new Set(allSales.map(s => s.driver))];
+    return { purchase, customer, site, material, transporter, vehicleNumber, driver };
+  }, [allSales]);
+
 
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
   });
 
-  const fetchMasterData = async () => {
-      try {
-          const [matData, custData, tranData, purData] = await Promise.all([
-              getMasterData('materials'),
-              getMasterData('customers'),
-              getMasterData('transporters'),
-              getMasterData('purchase_parties')
-          ]);
-          setMaterials(matData);
-          setCustomers(custData);
-          setTransporters(tranData);
-          setPurchaseParties(purData);
-      } catch (error) {
-          toast({ variant: 'destructive', title: 'Error fetching master data', description: (error as Error).message });
-      }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchMasterData();
-    }
-  }, [isOpen]);
-
   useEffect(() => {
     if (saleEntry) {
       form.reset({
         ...saleEntry,
-        customer: saleEntry.customer || saleEntry.site,
         royaltyWeight: saleEntry.royaltyWeight ?? 0,
       });
     }
@@ -115,7 +125,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
 
   const onSubmit: SubmitHandler<SaleFormValues> = async (data) => {
     try {
-      const submissionData = { ...data, site: data.customer };
+      const submissionData = { ...data };
       await updateSaleEntry(saleEntry.id, submissionData);
       toast({
         title: 'Success!',
@@ -155,8 +165,29 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl">
+           <datalist id="edit-purchase-list">
+             {suggestionLists.purchase.map(p => <option key={p} value={p} />)}
+           </datalist>
+           <datalist id="edit-customer-list">
+             {suggestionLists.customer.map(c => <option key={c} value={c} />)}
+           </datalist>
+           <datalist id="edit-site-list">
+             {suggestionLists.site.map(s => <option key={s} value={s} />)}
+           </datalist>
+           <datalist id="edit-material-list">
+             {suggestionLists.material.map(m => <option key={m} value={m} />)}
+           </datalist>
+           <datalist id="edit-transporter-list">
+             {suggestionLists.transporter.map(t => <option key={t} value={t} />)}
+           </datalist>
+           <datalist id="edit-vehicleNumber-list">
+             {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+           </datalist>
+           <datalist id="edit-driver-list">
+             {suggestionLists.driver.map(d => <option key={d} value={d} />)}
+           </datalist>
           <DialogHeader>
-            <DialogTitle>Edit Sale Entry (DC No: {String(saleEntry?.dcno).padStart(3, '0')})</DialogTitle>
+            <DialogTitle>Edit Sale Entry (DC No: {saleEntry?.dcno})</DialogTitle>
             <DialogDescription>
               Update the details of this sale entry. Click Update to save changes.
             </DialogDescription>
@@ -166,18 +197,47 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                    <div className="space-y-4">
                      <FormField
+                        control={form.control}
+                        name="date"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel className="flex items-center gap-2"><CalendarIcon /> Date</FormLabel>
+                                <Popover>
+                                <PopoverTrigger asChild>
+                                    <FormControl>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                        "w-full pl-3 text-left font-normal",
+                                        !field.value && "text-muted-foreground"
+                                        )}
+                                    >
+                                        {field.value || <span>Pick a date</span>}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                    </Button>
+                                    </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar
+                                        mode="single"
+                                        selected={parseDate(field.value)}
+                                        onSelect={(date) => field.onChange(date ? format(date, 'dd/MM/yyyy') : '')}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                     <FormField
                       control={form.control}
                       name="purchase"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Combobox
-                                options={purchaseParties.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type party..."
-                            />
+                            <Input placeholder="e.g., Self" {...field} list="edit-purchase-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -190,12 +250,20 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                            <Combobox
-                                options={customers.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type customer..."
-                            />
+                            <Input placeholder="e.g., Local Builders" {...field} list="edit-customer-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="site"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><MapPin /> Site</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Construction Site A" {...field} list="edit-site-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -208,12 +276,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                            <Combobox
-                                options={materials.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type material..."
-                            />
+                            <Input placeholder="e.g., 20mm" {...field} list="edit-material-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -226,12 +289,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                            <Combobox
-                                options={transporters.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type transporter..."
-                            />
+                            <Input placeholder="e.g., Self" {...field} list="edit-transporter-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -244,59 +302,7 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MH12AB1234" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="driver"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="royaltyPassNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><Ticket /> Royalty Pass Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., RP12345" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="royaltyWeight"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><ScrollText /> Royalty Weight</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 1000" {...field} step="0.01"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="rent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
+                            <Input placeholder="e.g., MH12AB1234" {...field} list="edit-vehicleNumber-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -305,6 +311,19 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                   </div>
                   
                   <div className="space-y-4">
+                     <FormField
+                      control={form.control}
+                      name="driver"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., John Doe" {...field} list="edit-driver-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <div className="space-y-4 rounded-lg border p-4">
                        <FormField
                         control={form.control}
@@ -347,6 +366,45 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
                       />
                     </div>
                      <FormField
+                        control={form.control}
+                        name="rent"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                     <FormField
+                      control={form.control}
+                      name="royaltyPassNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><Ticket /> Royalty Pass Number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., RP12345" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="royaltyWeight"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><ScrollText /> Royalty Weight</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 1000" {...field} step="0.01"/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
                     control={form.control}
                     name="remarks"
                     render={({ field }) => (
@@ -376,3 +434,5 @@ export const EditSaleDialog: FC<EditSaleDialogProps> = ({ isOpen, onClose, onSal
     </Dialog>
   );
 };
+
+    

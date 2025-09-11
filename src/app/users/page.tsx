@@ -139,14 +139,14 @@ export default function UsersPage() {
   return (
     <>
     <AlertDialog>
-        <main className="min-h-screen bg-background font-body text-foreground p-8">
+        <main className="min-h-screen bg-background font-body text-foreground p-4 sm:p-8">
         <div className="max-w-4xl mx-auto">
             <div className="mb-8">
                 <Link href="/" passHref>
                     <Button variant="outline"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard</Button>
                 </Link>
             </div>
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <Card>
                     <CardHeader>
                     <CardTitle className="text-2xl flex items-center gap-2"><UserPlus /> Add New User</CardTitle>

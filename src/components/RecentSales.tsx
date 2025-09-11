@@ -23,6 +23,8 @@ import { getRecentSaleEntries } from "@/services/saleService";
 import type { SaleEntry } from "@/types";
 import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useAuth } from "@/components/AuthProvider";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 interface RecentSalesProps {
     refreshKey: boolean;
@@ -34,6 +36,8 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
   const [recentSales, setRecentSales] = useState<SaleEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { settings } = useAppSettings();
 
   useEffect(() => {
     async function fetchData() {
@@ -50,6 +54,8 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
     }
     fetchData();
   }, [refreshKey]);
+
+  const canEdit = user?.role === 'admin' || settings.userCanEditEntries;
 
   if (error) {
     return (
@@ -92,7 +98,7 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
             <TableBody>
               {recentSales.map((sale) => (
                 <TableRow key={sale.id}>
-                  <TableCell>{String(sale.dcno).padStart(3, "0")}</TableCell>
+                  <TableCell>{sale.dcno}</TableCell>
                   <TableCell>{sale.date}</TableCell>
                   <TableCell>{sale.vehicleNumber}</TableCell>
                   <TableCell>{sale.material}</TableCell>
@@ -102,10 +108,12 @@ export function RecentSales({ refreshKey, onPrint, onEdit }: RecentSalesProps) {
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                    </Button>
+                    {canEdit && (
+                      <Button variant="outline" size="sm" onClick={() => onEdit(sale)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

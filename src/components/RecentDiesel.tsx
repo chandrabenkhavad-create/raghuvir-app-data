@@ -23,6 +23,8 @@ import { getRecentDieselEntries } from "@/services/dieselService";
 import type { DieselEntry } from "@/types";
 import { Skeleton } from "./ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { useAuth } from "@/components/AuthProvider";
+import { useAppSettings } from "@/hooks/useAppSettings";
 
 interface RecentDieselProps {
     refreshKey: boolean;
@@ -34,6 +36,8 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
   const [recentDiesel, setRecentDiesel] = useState<DieselEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { settings } = useAppSettings();
 
   useEffect(() => {
     async function fetchData() {
@@ -50,6 +54,8 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
     }
     fetchData();
   }, [refreshKey]);
+  
+  const canEdit = user?.role === 'admin' || settings.userCanEditEntries;
 
   if (error) {
     return (
@@ -85,6 +91,7 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                 <TableHead>Vehicle</TableHead>
                 <TableHead>Liters</TableHead>
                 <TableHead>Amount</TableHead>
+                <TableHead>Mileage</TableHead>
                 <TableHead>Pump</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -96,16 +103,19 @@ export function RecentDiesel({ refreshKey, onPrint, onEdit }: RecentDieselProps)
                   <TableCell>{diesel.vehicleNumber}</TableCell>
                   <TableCell>{diesel.liters.toFixed(2)} L</TableCell>
                   <TableCell>₹{diesel.amount.toFixed(2)}</TableCell>
+                  <TableCell>{diesel.mileage ? `${diesel.mileage.toFixed(2)} km/L` : 'N/A'}</TableCell>
                   <TableCell>{diesel.pump}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" onClick={() => onPrint(diesel)}>
                         <Printer className="mr-2 h-4 w-4" />
                         Print
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => onEdit(diesel)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                    </Button>
+                    {canEdit && (
+                      <Button variant="outline" size="sm" onClick={() => onEdit(diesel)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

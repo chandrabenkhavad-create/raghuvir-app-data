@@ -33,7 +33,7 @@ export function CompanyDetailsSettings() {
         <Card>
             <CardHeader>
                 <CardTitle>Company Details</CardTitle>
-                <CardDescription>Manage your company's information for printouts. This will appear on all printed records.</CardDescription>
+                <CardDescription>Manage your company's information for printouts. This will appear on all printed records and is saved to your account.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                  <div className="grid md:grid-cols-2 gap-4">

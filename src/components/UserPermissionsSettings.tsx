@@ -5,7 +5,7 @@ import { useAppSettings, type AppSettings } from "@/hooks/useAppSettings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Label } from "./ui/label";
 import { Switch } from "./ui/switch";
-import { ShieldCheck, LayoutDashboard, FileSpreadsheet, Database, Settings } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, FileSpreadsheet, Settings, Edit } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 
 export function UserPermissionsSettings() {
@@ -33,7 +33,7 @@ export function UserPermissionsSettings() {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><ShieldCheck /> User Permissions</CardTitle>
-                <CardDescription>Control which main tabs are visible to users with the 'user' role. Admins can always see all tabs.</CardDescription>
+                <CardDescription>Control what users with the 'user' role can see and do. These settings are saved per user account.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -61,17 +61,6 @@ export function UserPermissionsSettings() {
                     </div>
                     <div className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                            <Database className="h-5 w-5 text-muted-foreground" />
-                            <Label htmlFor="show-masters">User can see Masters</Label>
-                        </div>
-                        <Switch
-                            id="show-masters"
-                            checked={settings.userCanViewMasters}
-                            onCheckedChange={(checked) => handleSettingChange('userCanViewMasters', checked)}
-                        />
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center gap-3">
                             <Settings className="h-5 w-5 text-muted-foreground" />
                             <Label htmlFor="show-settings">User can see Settings</Label>
                         </div>
@@ -79,6 +68,17 @@ export function UserPermissionsSettings() {
                             id="show-settings"
                             checked={settings.userCanViewSettings}
                             onCheckedChange={(checked) => handleSettingChange('userCanViewSettings', checked)}
+                        />
+                    </div>
+                     <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                            <Edit className="h-5 w-5 text-muted-foreground" />
+                            <Label htmlFor="can-edit">User can edit entries</Label>
+                        </div>
+                        <Switch
+                            id="can-edit"
+                            checked={settings.userCanEditEntries}
+                            onCheckedChange={(checked) => handleSettingChange('userCanEditEntries', checked)}
                         />
                     </div>
                 </div>

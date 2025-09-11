@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,7 +20,8 @@ import {
   IndianRupee,
   Ticket,
   ScrollText,
-  Briefcase
+  Briefcase,
+  MapPin
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -31,11 +32,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { PrintRecord } from '@/components/PrintRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import type { SaleEntry, MasterDataItem } from '@/types';
-import { addSaleEntry, getLastSaleEntry } from '@/services/saleService';
-import { getMasterData } from '@/services/masterService';
+import type { SaleEntry } from '@/types';
+import { addSaleEntry, getLastSaleEntry, getAllSaleEntries } from '@/services/saleService';
 import { RecentSales } from './RecentSales';
-import { Combobox } from './ui/combobox';
 
 
 const saleSchema = z.object({
@@ -43,6 +42,7 @@ const saleSchema = z.object({
   material: z.string().min(1, 'Material is required'),
   purchase: z.string().min(1, 'Purchase is required'),
   customer: z.string().min(1, 'Customer is required'),
+  site: z.string().min(1, 'Site is required'),
   transporter: z.string().min(1, 'Transporter is required'),
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
   grosswt: z.coerce.number().positive('Gross weight must be a positive number'),
@@ -62,21 +62,31 @@ interface SaleFormProps {
   entryToPrint: SaleEntry | null;
   onPrintDialogChange: () => void;
   onEditRequest: (entry: SaleEntry) => void;
+  refreshKey: boolean;
 }
 
-export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
+export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest, refreshKey }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<SaleEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
   const [dcNumber, setDcNumber] = useState<number | null>(null);
-  const [refreshRecentSales, setRefreshRecentSales] = useState(false);
+  const [allSales, setAllSales] = useState<SaleEntry[]>([]);
 
-  // Master data states
-  const [materials, setMaterials] = useState<MasterDataItem[]>([]);
-  const [customers, setCustomers] = useState<MasterDataItem[]>([]);
-  const [transporters, setTransporters] = useState<MasterDataItem[]>([]);
-  const [purchaseParties, setPurchaseParties] = useState<MasterDataItem[]>([]);
-  
+  useEffect(() => {
+    getAllSaleEntries().then(setAllSales);
+  }, [refreshKey]);
+
+  const suggestionLists = useMemo(() => {
+    const purchase = [...new Set(allSales.map(s => s.purchase))];
+    const customer = [...new Set(allSales.map(s => s.customer))];
+    const site = [...new Set(allSales.map(s => s.site))];
+    const material = [...new Set(allSales.map(s => s.material))];
+    const transporter = [...new Set(allSales.map(s => s.transporter))];
+    const vehicleNumber = [...new Set(allSales.map(s => s.vehicleNumber))];
+    const driver = [...new Set(allSales.map(s => s.driver))];
+    return { purchase, customer, site, material, transporter, vehicleNumber, driver };
+  }, [allSales]);
+
   const form = useForm<SaleFormValues>({
     resolver: zodResolver(saleSchema),
     defaultValues: {
@@ -84,6 +94,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       material: '',
       purchase: '',
       customer: '',
+      site: '',
       transporter: '',
       vehicleNumber: '',
       driver: '',
@@ -96,23 +107,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       royaltyWeight: 0,
     },
   });
-
-  const fetchMasterData = async () => {
-      try {
-          const [matData, custData, tranData, purData] = await Promise.all([
-              getMasterData('materials'),
-              getMasterData('customers'),
-              getMasterData('transporters'),
-              getMasterData('purchase_parties')
-          ]);
-          setMaterials(matData);
-          setCustomers(custData);
-          setTransporters(tranData);
-          setPurchaseParties(purData);
-      } catch (error) {
-          toast({ variant: 'destructive', title: 'Error fetching master data', description: (error as Error).message });
-      }
-  };
   
   const resetFormForNewEntry = async () => {
     try {
@@ -124,6 +118,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         material: '',
         purchase: '',
         customer: '',
+        site: '',
         transporter: '',
         vehicleNumber: '',
         driver: '',
@@ -135,7 +130,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         royaltyPassNumber: '',
         royaltyWeight: 0,
       });
-      onEntrySaved();
+      
     } catch (error) {
       console.error("Failed to fetch last DC number for new entry", error);
       toast({
@@ -149,6 +144,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         material: '',
         purchase: '',
         customer: '',
+        site: '',
         transporter: '',
         vehicleNumber: '',
         driver: '',
@@ -165,7 +161,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
 
   useEffect(() => {
     resetFormForNewEntry();
-    fetchMasterData();
   }, []);
 
   useEffect(() => {
@@ -198,7 +193,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
     
     try {
       let savedEntry: SaleEntry;
-      const submissionData = { ...data, site: data.customer };
+      const submissionData = { ...data };
 
       const now = new Date();
       const newEntryData: Omit<SaleEntry, 'id' | 'created_at' > = { 
@@ -216,8 +211,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       setInternalEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
       await resetFormForNewEntry();
-      setRefreshRecentSales(prev => !prev);
-      fetchMasterData(); // Refresh master data in case a new item was added
+      onEntrySaved();
       
     } catch (error) {
        console.error('Failed to save entry:', error);
@@ -260,6 +254,28 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
 
   return (
     <>
+      <datalist id="purchase-list">
+        {suggestionLists.purchase.map(p => <option key={p} value={p} />)}
+      </datalist>
+      <datalist id="customer-list">
+        {suggestionLists.customer.map(c => <option key={c} value={c} />)}
+      </datalist>
+       <datalist id="site-list">
+        {suggestionLists.site.map(s => <option key={s} value={s} />)}
+      </datalist>
+      <datalist id="material-list">
+        {suggestionLists.material.map(m => <option key={m} value={m} />)}
+      </datalist>
+      <datalist id="transporter-list">
+        {suggestionLists.transporter.map(t => <option key={t} value={t} />)}
+      </datalist>
+      <datalist id="vehicleNumber-list">
+        {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+      </datalist>
+      <datalist id="driver-list">
+        {suggestionLists.driver.map(d => <option key={d} value={d} />)}
+      </datalist>
+
       <Dialog open={isPrintDialogOpen} onOpenChange={setIsPrintDialogOpen}>
         <Card>
           <CardHeader>
@@ -280,7 +296,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Hash /> DC No.</FormLabel>
                           <FormControl>
-                            <Input type="text" value={dcNumber !== null ? String(dcNumber).padStart(3, '0') : 'Loading...'} disabled />
+                            <Input type="text" value={dcNumber !== null ? String(dcNumber) : 'Loading...'} disabled />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -293,12 +309,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Building /> Purchase From</FormLabel>
                           <FormControl>
-                            <Combobox
-                                options={purchaseParties.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type party..."
-                            />
+                             <Input placeholder="e.g., Self" {...field} list="purchase-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -311,12 +322,20 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Briefcase /> Customer</FormLabel>
                           <FormControl>
-                             <Combobox
-                                options={customers.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type customer..."
-                            />
+                             <Input placeholder="e.g., Local Builders" {...field} list="customer-list" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="site"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><MapPin /> Site</FormLabel>
+                          <FormControl>
+                             <Input placeholder="e.g., Construction Site A" {...field} list="site-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -329,12 +348,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Package /> Material</FormLabel>
                           <FormControl>
-                             <Combobox
-                                options={materials.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type material..."
-                            />
+                             <Input placeholder="e.g., 20mm" {...field} list="material-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -347,12 +361,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Truck /> Transporter</FormLabel>
                           <FormControl>
-                             <Combobox
-                                options={transporters.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type transporter..."
-                            />
+                             <Input placeholder="e.g., Self" {...field} list="transporter-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -365,7 +374,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., MH12AB1234" {...field} />
+                            <Input placeholder="e.g., MH12AB1234" {...field} list="vehicleNumber-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -378,7 +387,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                         <FormItem>
                           <FormLabel className="flex items-center gap-2"><User /> Driver</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., John Doe" {...field} />
+                            <Input placeholder="e.g., John Doe" {...field} list="driver-list" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -405,19 +414,6 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                           <FormLabel className="flex items-center gap-2"><ScrollText /> Royalty Weight</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="e.g., 1000" {...field} step="0.01"/>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="rent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -468,6 +464,19 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
                       />
                     </div>
                      <FormField
+                      control={form.control}
+                      name="rent"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center gap-2"><IndianRupee /> Rent</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g., 5000" {...field} step="0.01" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
                     control={form.control}
                     name="remarks"
                     render={({ field }) => (
@@ -484,7 +493,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
 
                  
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                   <Button type="submit"><Save className="mr-2 h-4 w-4" />Submit Entry</Button>
                    <DialogTrigger asChild>
                     <Button
@@ -519,7 +528,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       </Dialog>
       <div className="mt-8">
         <RecentSales 
-            refreshKey={refreshRecentSales} 
+            refreshKey={refreshKey} 
             onPrint={handleReprint}
             onEdit={onEditRequest}
         />

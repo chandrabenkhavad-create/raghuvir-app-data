@@ -1,12 +1,11 @@
 
 "use client";
 
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC, useMemo } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { 
-  Fuel, 
   Printer, 
   Save, 
   Car, 
@@ -24,10 +23,8 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { PrintDieselRecord } from '@/components/PrintDieselRecord';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import type { DieselEntry, MasterDataItem } from '@/types';
-import { updateDieselEntry } from '@/services/dieselService';
-import { getMasterData } from '@/services/masterService';
-import { Combobox } from './ui/combobox';
+import type { DieselEntry } from '@/types';
+import { updateDieselEntry, getAllDieselEntries } from '@/services/dieselService';
 
 const dieselSchema = z.object({
   vehicleNumber: z.string().min(1, 'Vehicle number is required'),
@@ -37,6 +34,7 @@ const dieselSchema = z.object({
   driverName: z.string().min(1, 'Driver name is required'),
   pump: z.string().min(1, 'Pump name is required'),
   odo: z.coerce.number().int().positive('ODO reading must be a positive number'),
+  mileage: z.coerce.number().optional(),
 });
 
 type DieselFormValues = z.infer<typeof dieselSchema>;
@@ -50,40 +48,66 @@ interface EditDieselDialogProps {
 
 export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, onDieselUpdated, dieselEntry }) => {
   const { toast } = useToast();
-  const [pumps, setPumps] = useState<MasterDataItem[]>([]);
+  const [allDiesel, setAllDiesel] = useState<DieselEntry[]>([]);
+  const [previousOdoForEdit, setPreviousOdoForEdit] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      getAllDieselEntries().then(setAllDiesel);
+    }
+  }, [isOpen]);
+
+  const suggestionLists = useMemo(() => {
+    const vehicleNumber = [...new Set(allDiesel.map(d => d.vehicleNumber))];
+    const driverName = [...new Set(allDiesel.map(d => d.driverName))];
+    const pump = [...new Set(allDiesel.map(d => d.pump))];
+    return { vehicleNumber, driverName, pump };
+  }, [allDiesel]);
 
   const form = useForm<DieselFormValues>({
     resolver: zodResolver(dieselSchema),
   });
 
-  const fetchPumps = async () => {
-      try {
-          const pumpData = await getMasterData('pumps');
-          setPumps(pumpData);
-      } catch (error) {
-          toast({ variant: 'destructive', title: 'Error fetching pumps', description: (error as Error).message });
+  useEffect(() => {
+    if (dieselEntry && isOpen) {
+      form.reset({
+        ...dieselEntry,
+        mileage: dieselEntry.mileage ?? 0,
+      });
+
+      // Find the ODO of the entry just before the one being edited
+      const vehicleEntries = allDiesel
+        .filter(entry => entry.vehicleNumber.toLowerCase() === dieselEntry.vehicleNumber.toLowerCase() && entry.id < dieselEntry.id)
+        .sort((a, b) => b.id - a.id);
+      
+      if (vehicleEntries.length > 0) {
+        setPreviousOdoForEdit(vehicleEntries[0].odo);
+      } else {
+        setPreviousOdoForEdit(null);
       }
-  }
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchPumps();
     }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (dieselEntry) {
-      form.reset(dieselEntry);
-    }
-  }, [dieselEntry, form, isOpen]);
+  }, [dieselEntry, form, isOpen, allDiesel]);
 
   const liters = form.watch('liters');
   const rate = form.watch('rate');
+  const currentOdo = form.watch('odo');
 
   useEffect(() => {
     const calculatedAmount = (liters || 0) * (rate || 0);
     form.setValue('amount', parseFloat(calculatedAmount.toFixed(2)));
   }, [liters, rate, form]);
+
+  useEffect(() => {
+    if (previousOdoForEdit !== null && currentOdo > previousOdoForEdit && liters > 0) {
+      const distance = currentOdo - previousOdoForEdit;
+      const mileage = distance / liters;
+      form.setValue('mileage', parseFloat(mileage.toFixed(2)));
+    } else {
+      form.setValue('mileage', 0);
+    }
+  }, [currentOdo, previousOdoForEdit, liters, form]);
+
 
   const onSubmit: SubmitHandler<DieselFormValues> = async (data) => {
     try {
@@ -126,6 +150,15 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl">
+           <datalist id="edit-diesel-vehicleNumber-list">
+             {suggestionLists.vehicleNumber.map(v => <option key={v} value={v} />)}
+           </datalist>
+           <datalist id="edit-diesel-driverName-list">
+             {suggestionLists.driverName.map(d => <option key={d} value={d} />)}
+           </datalist>
+           <datalist id="edit-diesel-pump-list">
+             {suggestionLists.pump.map(p => <option key={p} value={p} />)}
+           </datalist>
           <DialogHeader>
             <DialogTitle>Edit Diesel Entry (ID: {dieselEntry?.id})</DialogTitle>
             <DialogDescription>
@@ -142,7 +175,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Car /> Vehicle Number</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., MH12-AB1234" {...field} />
+                          <Input placeholder="e.g., MH12-AB1234" {...field} list="edit-diesel-vehicleNumber-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -194,7 +227,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><User /> Driver Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Jane Smith" {...field} />
+                          <Input placeholder="e.g., Jane Smith" {...field} list="edit-diesel-driverName-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -207,12 +240,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                       <FormItem>
                         <FormLabel className="flex items-center gap-2"><Building /> Pump</FormLabel>
                         <FormControl>
-                           <Combobox
-                                options={pumps.map(item => ({ value: item.name, label: item.name }))}
-                                value={field.value}
-                                onChange={field.onChange}
-                                placeholder="Select or type pump..."
-                            />
+                          <Input placeholder="e.g., HP Petrol Pump" {...field} list="edit-diesel-pump-list" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -222,7 +250,7 @@ export const EditDieselDialog: FC<EditDieselDialogProps> = ({ isOpen, onClose, o
                     control={form.control}
                     name="odo"
                     render={({ field }) => (
-                      <FormItem className="md:col-span-2 lg:col-span-1">
+                      <FormItem>
                         <FormLabel className="flex items-center gap-2"><Gauge /> ODO Meter Reading</FormLabel>
                         <FormControl>
                           <Input type="number" placeholder="e.g., 125000" {...field} />

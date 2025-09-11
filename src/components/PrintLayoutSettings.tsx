@@ -7,8 +7,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Switch } from "./ui/switch";
-import { Brush, QrCode, Pilcrow, Milestone, Building2, MapPin, Phone, Image as ImageIcon, Box, Truck, User, IndianRupee, FileText, Ticket, Gauge, Minimize2, PackageSearch, Fuel, Mail, Globe, Landmark, RotateCw, Edit, Heading2, Weight, Car, Eye } from "lucide-react";
-import { Separator } from "./ui/separator";
+import { Brush, Pilcrow, Milestone, Eye, Sheet, Heading2, Weight, Car, Ticket, FileText, Gauge, User, Minimize2, Fuel, PackageSearch, RotateCw } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   AlertDialog,
@@ -52,7 +51,7 @@ export function PrintLayoutSettings() {
                     <div className="flex justify-between items-center">
                         <div>
                             <CardTitle>Print Layout Settings</CardTitle>
-                            <CardDescription>Customize the layout for all printed records.</CardDescription>
+                            <CardDescription>Customize the layout for all printed records. These settings are saved to your user account.</CardDescription>
                         </div>
                         <AlertDialogTrigger asChild>
                             <Button variant="outline">
@@ -89,6 +88,25 @@ export function PrintLayoutSettings() {
                         <h3 className="font-semibold mb-2">General Layout</h3>
                         <div className="flex items-center justify-between p-3 border rounded-lg">
                             <div className="flex items-center gap-3">
+                                <Sheet className="h-5 w-5 text-muted-foreground" />
+                                <Label htmlFor="page-size">Page Size</Label>
+                            </div>
+                            <Select
+                                value={settings.pageSize}
+                                onValueChange={(value: PrintSettings['pageSize']) => handleSettingChange('pageSize', value)}
+                            >
+                                <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Select page size" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="DL">DL (210mm x 99mm)</SelectItem>
+                                    <SelectItem value="A4_portrait">A4 Portrait</SelectItem>
+                                    <SelectItem value="A4_landscape">A4 Landscape</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center gap-3">
                                 <Brush className="h-5 w-5 text-muted-foreground" />
                                 <Label htmlFor="font-size">Font Size</Label>
                             </div>
@@ -100,23 +118,12 @@ export function PrintLayoutSettings() {
                                     <SelectValue placeholder="Select font size" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                    <SelectItem value="text-xs">Extra Small</SelectItem>
                                     <SelectItem value="text-sm">Small</SelectItem>
                                     <SelectItem value="text-base">Medium</SelectItem>
                                     <SelectItem value="text-lg">Large</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
-
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-3">
-                                <QrCode className="h-5 w-5 text-muted-foreground" />
-                                <Label htmlFor="show-qr-code">Show QR Code</Label>
-                            </div>
-                            <Switch
-                                id="show-qr-code"
-                                checked={settings.showQRCode}
-                                onCheckedChange={(checked) => handleSettingChange('showQRCode', checked)}
-                            />
                         </div>
 
                         <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -159,28 +166,12 @@ export function PrintLayoutSettings() {
                         <Card className="bg-muted/30 p-4 space-y-2">
                             <h3 className="font-semibold mb-2 flex items-center gap-2"><PackageSearch /> Sale Print Fields</h3>
                             <div className="flex items-center justify-between p-2 border rounded-lg">
-                                <Label htmlFor="show-sale-purchase" className="flex items-center gap-2"><Building2 className="h-4 w-4" />Purchase Party</Label>
-                                <Switch id="show-sale-purchase" checked={settings.showSalePurchase} onCheckedChange={(c) => handleSettingChange('showSalePurchase', c)} />
-                            </div>
-                            <div className="flex items-center justify-between p-2 border rounded-lg">
-                                <Label htmlFor="show-sale-transporter" className="flex items-center gap-2"><Truck className="h-4 w-4" />Transporter</Label>
-                                <Switch id="show-sale-transporter" checked={settings.showSaleTransporter} onCheckedChange={(c) => handleSettingChange('showSaleTransporter', c)} />
-                            </div>
-                            <div className="flex items-center justify-between p-2 border rounded-lg">
-                                <Label htmlFor="show-sale-driver" className="flex items-center gap-2"><User className="h-4 w-4" />Driver</Label>
-                                <Switch id="show-sale-driver" checked={settings.showSaleDriver} onCheckedChange={(c) => handleSettingChange('showSaleDriver', c)} />
-                            </div>
-                            <div className="flex items-center justify-between p-2 border rounded-lg">
                                 <Label htmlFor="show-sale-vehicle" className="flex items-center gap-2"><Car className="h-4 w-4" />Vehicle Number</Label>
                                 <Switch id="show-sale-vehicle" checked={settings.showSaleVehicleNumber} onCheckedChange={(c) => handleSettingChange('showSaleVehicleNumber', c)} />
                             </div>
                             <div className="flex items-center justify-between p-2 border rounded-lg">
                                 <Label htmlFor="show-sale-weights" className="flex items-center gap-2"><Weight className="h-4 w-4" />Weight Details (Gross/Tare)</Label>
                                 <Switch id="show-sale-weights" checked={settings.showSaleWeightDetails} onCheckedChange={(c) => handleSettingChange('showSaleWeightDetails', c)} />
-                            </div>
-                            <div className="flex items-center justify-between p-2 border rounded-lg">
-                                <Label htmlFor="show-sale-rent" className="flex items-center gap-2"><IndianRupee className="h-4 w-4" />Rent</Label>
-                                <Switch id="show-sale-rent" checked={settings.showSaleRent} onCheckedChange={(c) => handleSettingChange('showSaleRent', c)} />
                             </div>
                             <div className="flex items-center justify-between p-2 border rounded-lg">
                                 <Label htmlFor="show-sale-royalty" className="flex items-center gap-2"><Ticket className="h-4 w-4" />Royalty Details</Label>
@@ -215,13 +206,13 @@ export function PrintLayoutSettings() {
                     <div className="space-y-8">
                         <div>
                              <h3 className="font-semibold mb-4 text-center">Sale Record Preview</h3>
-                             <div className="scale-75 mx-auto">
+                             <div className="scale-[0.6] mx-auto">
                                 <PrintRecord data={sampleSale} />
                              </div>
                         </div>
                          <div>
                              <h3 className="font-semibold mb-4 text-center">Diesel Record Preview</h3>
-                              <div className="scale-75 mx-auto">
+                              <div className="scale-[0.6] mx-auto">
                                 <PrintDieselRecord data={sampleDiesel} />
                              </div>
                         </div>
@@ -236,7 +227,7 @@ export function PrintLayoutSettings() {
             <AlertDialogTitle>Reset all print settings?</AlertDialogTitle>
             <AlertDialogDescription>
                 This action cannot be undone. All your custom print layout settings
-                will be reset to their default values.
+                will be reset to their default values and saved to your account.
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -247,7 +238,3 @@ export function PrintLayoutSettings() {
         </AlertDialog>
     );
 }
-
-    
-
-    

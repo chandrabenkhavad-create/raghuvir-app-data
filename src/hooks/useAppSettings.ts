@@ -2,61 +2,50 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/components/AuthProvider';
 
 export interface AppSettings {
   userCanViewDashboard: boolean;
   userCanViewReports: boolean;
-  userCanViewMasters: boolean;
   userCanViewSettings: boolean;
+  userCanEditEntries: boolean;
 }
-
-const SETTINGS_KEY = 'raghuvir_infra_app_settings';
 
 const defaultSettings: AppSettings = {
   userCanViewDashboard: true,
   userCanViewReports: true,
-  userCanViewMasters: true,
   userCanViewSettings: true,
+  userCanEditEntries: true,
 };
 
 export const useAppSettings = () => {
+  const { user, updateUserSettingsInContext } = useAuth();
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const storedSettings = localStorage.getItem(SETTINGS_KEY);
-      if (storedSettings) {
-        setSettings(prev => ({ ...defaultSettings, ...JSON.parse(storedSettings) }));
-      }
-    } catch (error) {
-      console.error("Could not read app settings from localStorage", error);
+    if (user) {
+      const userSettings = user.settings || {};
+      setSettings({ ...defaultSettings, ...userSettings });
+      setIsLoaded(true);
+    } else if (user === null) {
+      // Handle logged out state
+      setIsLoaded(true);
       setSettings(defaultSettings);
-    } finally {
-        setIsLoaded(true);
     }
-  }, []);
+    // if user is undefined, we are still loading, so do nothing.
+  }, [user]);
 
   const updateSettings = useCallback((newSettings: Partial<AppSettings>) => {
-    setSettings(prevSettings => {
-      const updated = { ...prevSettings, ...newSettings };
-      try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
-      } catch (error) {
-         console.error("Could not save app settings to localStorage", error);
-      }
-      return updated;
-    });
-  }, []);
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
+    updateUserSettingsInContext(updated);
+  }, [settings, updateUserSettingsInContext]);
   
   const resetSettings = useCallback(() => {
-    try {
-        localStorage.removeItem(SETTINGS_KEY);
-        setSettings(defaultSettings);
-    } catch (error) {
-        console.error("Could not remove app settings from localStorage", error);
-    }
-  }, []);
+    setSettings(defaultSettings);
+    updateUserSettingsInContext(defaultSettings);
+  }, [updateUserSettingsInContext]);
 
   return { settings, updateSettings, isLoaded, resetSettings };
 };
