@@ -62,19 +62,19 @@ interface SaleFormProps {
   entryToPrint: SaleEntry | null;
   onPrintDialogChange: () => void;
   onEditRequest: (entry: SaleEntry) => void;
+  refreshKey: boolean;
 }
 
-export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
+export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest, refreshKey }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<SaleEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
   const { toast } = useToast();
   const [dcNumber, setDcNumber] = useState<number | null>(null);
-  const [refreshRecentSales, setRefreshRecentSales] = useState(false);
   const [allSales, setAllSales] = useState<SaleEntry[]>([]);
 
   useEffect(() => {
     getAllSaleEntries().then(setAllSales);
-  }, [refreshRecentSales]);
+  }, [refreshKey]);
 
   const suggestionLists = useMemo(() => {
     const purchase = [...new Set(allSales.map(s => s.purchase))];
@@ -130,7 +130,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
         royaltyPassNumber: '',
         royaltyWeight: 0,
       });
-      onEntrySaved();
+      
     } catch (error) {
       console.error("Failed to fetch last DC number for new entry", error);
       toast({
@@ -211,7 +211,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       setInternalEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
       await resetFormForNewEntry();
-      setRefreshRecentSales(prev => !prev);
+      onEntrySaved();
       
     } catch (error) {
        console.error('Failed to save entry:', error);
@@ -528,7 +528,7 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
       </Dialog>
       <div className="mt-8">
         <RecentSales 
-            refreshKey={refreshRecentSales} 
+            refreshKey={refreshKey} 
             onPrint={handleReprint}
             onEdit={onEditRequest}
         />
@@ -536,5 +536,3 @@ export const SaleForm: FC<SaleFormProps> = ({ onEntrySaved, entryToPrint: extern
     </>
   );
 };
-
-    

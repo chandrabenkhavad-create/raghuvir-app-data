@@ -45,15 +45,16 @@ const dieselSchema = z.object({
 type DieselFormValues = z.infer<typeof dieselSchema>;
 
 interface DieselFormProps {
+  onEntrySaved: () => void;
   entryToPrint: DieselEntry | null;
   onPrintDialogChange: () => void;
   onEditRequest: (entry: DieselEntry) => void;
+  refreshKey: boolean;
 }
 
-export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest }) => {
+export const DieselForm: FC<DieselFormProps> = ({ onEntrySaved, entryToPrint: externalEntryToPrint, onPrintDialogChange, onEditRequest, refreshKey }) => {
   const [internalEntryToPrint, setInternalEntryToPrint] = useState<DieselEntry | null>(null);
   const [isPrintDialogOpen, setIsPrintDialogOpen] = useState(false);
-  const [refreshRecent, setRefreshRecent] = useState(false);
   const { toast } = useToast();
   const [allDiesel, setAllDiesel] = useState<DieselEntry[]>([]);
   
@@ -62,7 +63,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
 
   useEffect(() => {
     getAllDieselEntries().then(setAllDiesel);
-  }, [refreshRecent]);
+  }, [refreshKey]);
 
   const suggestionLists = useMemo(() => {
     const vehicleNumber = [...new Set(allDiesel.map(d => d.vehicleNumber))];
@@ -174,7 +175,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       setInternalEntryToPrint(savedEntry);
       setIsPrintDialogOpen(true);
       resetForm();
-      setRefreshRecent(prev => !prev);
+      onEntrySaved(); // Triggers refresh on parent page
 
     } catch (error) {
       console.error('Failed to save entry:', error);
@@ -368,7 +369,7 @@ export const DieselForm: FC<DieselFormProps> = ({ entryToPrint: externalEntryToP
       </Dialog>
       <div className="mt-8">
         <RecentDiesel 
-            refreshKey={refreshRecent} 
+            refreshKey={refreshKey} 
             onPrint={handleReprint}
             onEdit={onEditRequest}
         />

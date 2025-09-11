@@ -38,7 +38,7 @@ export default function Home() {
   const [printingSale, setPrintingSale] = useState<SaleEntry | null>(null);
   const [printingDiesel, setPrintingDiesel] = useState<DieselEntry | null>(null);
   
-  const [refreshReports, setRefreshReports] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -88,12 +88,12 @@ export default function Home() {
   
   const onSaleUpdated = () => {
     setEditingSale(null); // Close the dialog
-    setRefreshReports(prev => !prev);
+    setRefreshKey(prev => !prev);
   }
 
   const onDieselUpdated = () => {
     setEditingDiesel(null); // Close the dialog
-    setRefreshReports(prev => !prev);
+    setRefreshKey(prev => !prev);
   }
 
 
@@ -150,18 +150,21 @@ export default function Home() {
 
           <TabsContent value="sale" className="mt-6">
             <SaleForm 
-              onEntrySaved={() => { /* Can be used to refresh recent list */ }}
+              onEntrySaved={() => setRefreshKey(prev => !prev)}
               entryToPrint={printingSale}
               onPrintDialogChange={() => setPrintingSale(null)}
               onEditRequest={handleEditSale}
+              refreshKey={refreshKey}
             />
           </TabsContent>
           
           <TabsContent value="diesel" className="mt-6">
             <DieselForm
+              onEntrySaved={() => setRefreshKey(prev => !prev)}
               entryToPrint={printingDiesel}
               onPrintDialogChange={() => setPrintingDiesel(null)}
               onEditRequest={handleEditDiesel}
+              refreshKey={refreshKey}
             />
           </TabsContent>
           
@@ -171,7 +174,7 @@ export default function Home() {
               onEditDiesel={handleEditDiesel}
               onPrintSale={handlePrintSale}
               onPrintDiesel={handlePrintDiesel}
-              refreshKey={refreshReports}
+              refreshKey={refreshKey}
             />
           </TabsContent>}
 
